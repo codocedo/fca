@@ -1,4 +1,6 @@
 class DiGraph(object):
+    EXTENT_MARK = 'ex'
+    INTENT_MARK = 'in'
     """
     Reimplementation of Networkx DiGraph's
     We only use the DiGraph structure which is very light.
@@ -15,6 +17,7 @@ class DiGraph(object):
         self.__edges_data__ = {}
         self.__successors__ = {}
         self.__predecessors__ = {}
+        
 
     def __getitem__(self, source):
         """
@@ -179,6 +182,26 @@ class ConceptLattice(DiGraph):
         concept_id: index of the concept to check
         """
         return not self.concept[concept_id]['not_visited']
+
+    def as_dict(self, g_map=False, m_map=False):
+        """
+        Returns a dict serializable version of the lattice
+        latice: Lattice to serialize
+        g_map: Maps objects' indices to labels
+        m_map: Maps attributes' indices to labels
+        """
+        g_map = g_map if g_map else {}
+        m_map = m_map if m_map else {}
+        concepts = {}
+        for concept in self.concepts():
+            concept_data = {
+                self.EXTENT_MARK: [g_map.get(i, i) for i in concept[1][self.EXTENT_MARK]],
+                self.INTENT_MARK: [m_map.get(i, i) for i in concept[1][self.INTENT_MARK].repr()],
+                'sup': self.successors(concept[0]),
+                'sub': self.predecessors(concept[0])
+                }
+            concepts[concept[0]] = concept_data
+        return concepts
 
 
 """

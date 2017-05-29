@@ -20,6 +20,7 @@ import copy
 import sys
 import os
 from fca.defs import ConceptLattice, SetPattern
+from fca.reader import PARSERS
 
 # These marks are used to represent extent and intent in dicts
 def to_bottom(lattice, atts):
@@ -70,51 +71,51 @@ def get_maximal_concept(lattice, intent, current_concept):
             return get_maximal_concept(lattice, intent, super_concept)
     return current_concept
 
-def add_intent_iteration(lattice, intent, generator, depth=1):
+def add_intent_iteration(lat, intent, generator, depth=1):
     """
     A single add_intent iteration
-    lattice: ConceptLattice(DiGraph)
+    lat: ConceptLattice(DiGraph)
     intent: intent to add
     generator: current concept
     depth: internal
     """
 
-    generator = get_maximal_concept(lattice, intent, lattice.infimum)
+    generator = get_maximal_concept(lat, intent, lat.infimum)
 
-    if generator != lattice.infimum and lattice.concept[generator][lattice.INTENT_MARK] == intent:
+    if generator != lat.infimum and lat.concept[generator][lat.INTENT_MARK] == intent:
         return generator
 
     new_parents = []
-    for candidate in lattice.upper_neighbors(generator):
-        if not lattice.concept[candidate][lattice.INTENT_MARK] <= intent:
-            cand_inter = lattice.concept[candidate][lattice.INTENT_MARK].intersection(intent)
-            candidate = add_intent_iteration(lattice, cand_inter, candidate, depth+1)
+    for candidate in lat.upper_neighbors(generator):
+        if not lat.concept[candidate][lat.INTENT_MARK] <= intent:
+            cand_inter = lat.concept[candidate][lat.INTENT_MARK].intersection(intent)
+            candidate = add_intent_iteration(lat, cand_inter, candidate, depth+1)
 
         add_parent = True
         for parent in new_parents:
-            if lattice.concept[candidate][lattice.INTENT_MARK] <= lattice.concept[parent][lattice.INTENT_MARK]:
+            if lat.concept[candidate][lat.INTENT_MARK] <= lat.concept[parent][lat.INTENT_MARK]:
                 add_parent = False
                 break
-            elif lattice.concept[parent][lattice.INTENT_MARK] <= lattice.concept[candidate][lattice.INTENT_MARK]:
+            elif lat.concept[parent][lat.INTENT_MARK] <= lat.concept[candidate][lat.INTENT_MARK]:
                 del new_parents[new_parents.index(parent)]
         if add_parent:
             new_parents.append(candidate)
 
-    new_id = len(lattice.concepts()) - 2
+    new_id = len(lat.concepts()) - 2
 
-    concept_data = {lattice.EXTENT_MARK:copy.copy(lattice.concept[generator][lattice.EXTENT_MARK]),
-                    lattice.INTENT_MARK:intent
+    concept_data = {lat.EXTENT_MARK:copy.copy(lat.concept[generator][lat.EXTENT_MARK]),
+                    lat.INTENT_MARK:intent
                    }
 
-    lattice.new_concept(new_id, concept_data)
+    lat.new_concept(new_id, concept_data)
 
     for parent in new_parents:
-        if parent in lattice[generator]:
-            lattice.remove_edge(generator, parent)
+        if parent in lat[generator]:
+            lat.remove_edge(generator, parent)
 
-        lattice.add_edge(new_id, parent)
+        lat.add_edge(new_id, parent)
 
-    lattice.add_edge(generator, new_id)
+    lat.add_edge(generator, new_id)
     return new_id
 
 
@@ -132,7 +133,7 @@ def talk(old_stdout):
     """
     sys.stdout = old_stdout
 
-def add_intent(representations, pattern=SetPattern, silent=True):
+def add_intent(representations, pattern=SetPattern, repr_parser=PARSERS['SSV'], silent=True):
     """
     Executes Add Intent algorithm over a set of representations.
     Representations should be presented in a suitable format to the provided type of pattern.
@@ -162,7 +163,7 @@ def add_intent(representations, pattern=SetPattern, silent=True):
             print('\r -> EXECUTING OBJECT:{}'.format(obj)),
 
         sys.stdout.flush()
-        intent = pattern(intent, dirty=True)
+        intent = pattern(repr_parser(intent))
         lattice.node[lattice.infimum][lattice.INTENT_MARK].join(intent)
 
         #to_bottom(g,intent)

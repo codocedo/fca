@@ -19,13 +19,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from distutils.core import setup
 setup(
   name = 'fca',
-  packages = ['fca', 'fca.algorithms', 'fca.algorithms.addIntent', 'fca.defs', 'fca.reader'],
-  version = '0.4',
+  packages = ['fca', 'fca.algorithms', 'fca.algorithms.addIntent', 'fca.defs.patterns', 'fca.defs', 'fca.reader'],
+  version = '0.43',
   description = 'A library to implement FCA tools',
   author = 'Victor Codocedo',
   author_email = 'victor.codocedo@gmail.com',
   url = 'https://github.com/codocedo/fca',
-  download_url = 'https://github.com/codocedo/fca/archive/0.4.tar.gz',
+  download_url = 'https://github.com/codocedo/fca/archive/0.43.tar.gz',
   keywords = ['formal concept analysis', 'pattern mining', 'add intent', 'data mining'],
   classifiers = [],
 )

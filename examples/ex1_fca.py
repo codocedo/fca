@@ -15,17 +15,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+# Kyori code.
+import sys
+from fca.algorithms.addIntent import add_intent
+from fca.reader import read_representations
 
-from distutils.core import setup
-setup(
-  name = 'fca',
-  packages = ['fca', 'fca.algorithms', 'fca.algorithms.addIntent', 'fca.defs.patterns', 'fca.defs', 'fca.reader'],
-  version = '0.44',
-  description = 'A library to implement Formal Concept Analysis tasks and other tools',
-  author = 'Victor Codocedo',
-  author_email = 'victor.codocedo@gmail.com',
-  url = 'https://github.com/codocedo/fca',
-  download_url = 'https://github.com/codocedo/fca/archive/0.44.tar.gz',
-  keywords = ['formal concept analysis', 'pattern mining', 'add intent', 'data mining'],
-  classifiers = [],
-)
+"""
+In this example we mine formal concepts in a single line
+"""
+if __name__ == "__main__":
+    print (add_intent(read_representations(sys.argv[1])).as_dict())

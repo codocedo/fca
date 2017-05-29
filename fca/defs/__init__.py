@@ -240,16 +240,16 @@ class Intent(object):
         If not, returns the actual representation
         """
         return self.desc
-    @staticmethod
-    def bottom():
+    @classmethod
+    def bottom(cls):
         """
         returns the bottom of the intent representation.
         It may not exists in certain spaces.
         Returns Intent type
         """
         raise NotImplementedError
-    @staticmethod
-    def top():
+    @classmethod
+    def top(cls):
         """
         returns the top of the intent representation.
         It may not exists in certain spaces.
@@ -332,12 +332,12 @@ class SetPattern(Intent):
     Implements the set intent representation
     This is, standard FCA
     """
-    @staticmethod
-    def bottom():
-        return SetPattern(set([]))
-    @staticmethod
-    def top():
-        return SetPattern(set([]))
+    @classmethod
+    def bottom(cls):
+        return cls(set([]))
+    @classmethod
+    def top(cls):
+        return cls(set([]))
     def repr(self):
         return [self.__map__.get(i, i) for i in self.desc]
     # IMPLEMENTATIONS

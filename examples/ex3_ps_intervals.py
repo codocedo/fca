@@ -19,37 +19,30 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 from fca.algorithms.addIntent import add_intent
 from fca.defs import ConceptLattice
-from fca.defs.patterns import IcebergSetPattern
+from fca.defs.patterns import IntervalPattern
 from fca.reader import read_representations
 
 
 """
-In this example we mine frequent formal concepts
-Frequent Formal Concepts cannot be directly mined with addIntent
-which is a bottom up concept builder
-
-Luckily, we can just invert the notions of extents and intents
-and go on exactly as with a normal setting
+In this example we mine pattern structure
+particularly interval pattern structures
 """
 if __name__ == "__main__":
     # Notice that we have imported a different kind of pattern
     # IcebergSetPattern allows setting a min sup value
-    IcebergSetPattern.MIN_SUP = 5
 
 
-    '''
-    # This is a hack
-    # We are going to invert the tags for Intents and Extents
-    ConceptLattice.EXTENT_MARK = 'in'
-    ConceptLattice.INTENT_MARK = 'ex'
-    '''
+    __lattice__ = add_intent(
+        read_representations(sys.argv[1]),
+        pattern=IntervalPattern,
+        repr_parser=IntervalPattern.PARSERS['SSV.I']
+    )
 
-    __lattice__ = add_intent(read_representations(sys.argv[1]), pattern=IcebergSetPattern)
 
     for concept_id, concept in __lattice__.as_dict().items():
         # Another option is to invert intent and extents when getting the lattice
         print ('{} - ({}, {})'.format(
             concept_id,
-            concept[ConceptLattice.INTENT_MARK],
-            concept[ConceptLattice.EXTENT_MARK])
+            concept[ConceptLattice.EXTENT_MARK],
+            concept[ConceptLattice.INTENT_MARK])
               )

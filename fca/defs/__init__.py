@@ -17,14 +17,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 class DiGraph(object):
-    EXTENT_MARK = 'ex'
-    INTENT_MARK = 'in'
     """
     Reimplementation of Networkx DiGraph's
     We only use the DiGraph structure which is very light.
     We do not need the rest of the library.
     This is done for the sake of performance and self containment.
     """
+    EXTENT_MARK = 'ex'
+    INTENT_MARK = 'in'
     def __init__(self):
         """
         Reimplementation of Networkx DiGraph's
@@ -35,7 +35,7 @@ class DiGraph(object):
         self.__edges_data__ = {}
         self.__successors__ = {}
         self.__predecessors__ = {}
-        
+
 
     def __getitem__(self, source):
         """
@@ -226,55 +226,112 @@ class ConceptLattice(DiGraph):
     Abstract class
 """
 class Intent(object):
-    def __init__(self,desc,dirty=False):
+    """
+    Abstract class for a formal concept intent
+    """
+    def __init__(self, desc):
         self.__map__ = {}
         self.desc = desc
         self.__type__ = 0 # 1: top, -1: bottom, 0: non-top-bottom concepts
 
+    def repr(self):
+        """
+        Returns a suitable representation
+        If not, returns the actual representation
+        """
+        return self.desc
     @staticmethod
     def bottom():
+        """
+        returns the bottom of the intent representation.
+        It may not exists in certain spaces.
+        Returns Intent type
+        """
         raise NotImplementedError
     @staticmethod
     def top():
+        """
+        returns the top of the intent representation.
+        It may not exists in certain spaces.
+        Returns Intent type
+        """
         raise NotImplementedError
-    def repr(self):
-        return self.desc
-    def intersection(self,p):
-        raise NotImplementedError
-    def set_map(self,map):
-        self.__map__ = map
-    def __str__(self):
-        return self.__Istr__()
-    def __le__(self,p):
-        return self.__Ile__(p)
-    def __eq__(self,p):
-        return self.__Ieq__(p)
-    
 
-# IMPLEMENTATIONS
-    def join(self,p):
+    def set_map(self, representation_map):
+        """
+        Sets a dictionary map to output the description
+        TODO: Maybe this should not be here
+        """
+        self.__map__ = representation_map
+    def __str__(self):
+        """
+        Returns a string representation of the intent
+        """
+        return self.__i_str__()
+    def __le__(self, other):
+        """
+        overrides the < operator
+        Tests if this intent is subsumed by another
+        In the case of sets, tests if this intent is a subset of the other
+        """
+        return self.__i_le__(other)
+
+    def __eq__(self, other):
+        """
+        overrrides the == operator
+        Tests if this intent is the same as another
+        """
+        return self.__i_eq__(other)
+
+    # IMPLEMENTATIONS: THESE NEXT METHODS SHOULD BE IMPLEMENTED BY ANY NEW REPRESENTATION
+    def intersection(self, other):
+        """
+        Intersects two intent representations
+        For the case of sets, this is actually set intersection
+        Returns a new intersected intent
+        """
+        raise NotImplementedError
+    def join(self, other):
+        """
+        Joins two representations from the perspective of the lattice
+        For the case of sets, this is actually set union
+        Instead of returning a new intent, this modifies this intent
+        by joining it with the other
+        The other should remain unchanged
+        """
         raise NotImplementedError
     def is_empty(self):
+        """
+        Tests the notion of empty representation
+        In the case of sets, this is if the cardinality is zero
+        """
         raise NotImplementedError
-    def is_empty(self):
+    def __i_str__(self):
+        """
+        Implements the string representation
+        """
         raise NotImplementedError
-    def __Istr__(self):
+    def __i_eq__(self, other):
+        """
+        Implements the == operator
+        """
         raise NotImplementedError
-    def __Ieq__(self,p):
+    def __i_le__(self, other):
+        """
+        Implements the < operator
+        """
         raise NotImplementedError
-    def __Ile__(self,p):
-        raise NotImplementedError
-    
+
 
 
 """
     Set pattern, classic FCA
 """
 class SetPattern(Intent):
-    def __init__(self,desc,dirty=False):
-        if dirty:
-            desc = set([int(i) for i in desc.split()])
-        super(SetPattern,self).__init__(desc,False)
+    """
+    Implements the set intent representation
+    This is, standard FCA
+    """
     @staticmethod
     def bottom():
         return SetPattern(set([]))
@@ -282,20 +339,17 @@ class SetPattern(Intent):
     def top():
         return SetPattern(set([]))
     def repr(self):
-        return [self.__map__.get(i,i) for i in self.desc]
+        return [self.__map__.get(i, i) for i in self.desc]
     # IMPLEMENTATIONS
-    def intersection(self,p):
-        return SetPattern(self.desc.intersection(p.desc))
-    def join(self,p):
-        self.desc = self.desc.union(p.desc)
+    def intersection(self, other):
+        return SetPattern(self.desc.intersection(other.desc))
+    def join(self, other):
+        self.desc = self.desc.union(other.desc)
     def is_empty(self):
         return len(self.desc) == 0
-    def is_empty(self):
-        return len(self.desc) == 0
-    def __Istr__(self):
+    def __i_str__(self):
         return str(self.repr())
-    def __Ieq__(self,p):
-        return self.desc == p.desc
-    def __Ile__(self,p):
-        return self.desc.issubset(p.desc)
-
+    def __i_eq__(self, other):
+        return self.desc == other.desc
+    def __i_le__(self, other):
+        return self.desc.issubset(other.desc)

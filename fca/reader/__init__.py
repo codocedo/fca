@@ -18,6 +18,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from itertools import chain
 
+PARSERS = {
+    'SSV': lambda desc: set([int(i) for i in desc.split()]),
+    'CSV': lambda desc: set([int(i) for i in desc.split(',')])
+}
+
+
 def read_plain(path):
     with open(path, 'r') as fin:
         for line in fin:

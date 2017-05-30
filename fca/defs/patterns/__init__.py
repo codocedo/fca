@@ -21,11 +21,15 @@ from fca.defs import SetPattern
 
 
 class IcebergSetPattern(SetPattern):
+    """
+    Generalizes SetPattern to allow for a minimal cardinality representation
+    """
     MIN_SUP = 0
     def __init__(self, desc):
         if len(desc) < self.MIN_SUP:
             desc = set([])
         super(IcebergSetPattern, self).__init__(desc)
+
     def intersection(self, other):
         assert IcebergSetPattern.MIN_SUP >= 0, 'MIN_SUP value should be a positive number'
         newdesc = self.desc.intersection(other.desc)
@@ -93,6 +97,25 @@ class IntervalPattern(Intent):
         return False
 
 
+class DistanceIntervalPattern(IntervalPattern):
+    """
+    Generalizes IntervalPattern to allow for a length threshold
+    for each interval
+    """
+    THETA = 0 # Distance between intervals
 
+    def intersection(self, other):
+        """
+        Each interval should be at most of length THETA
+        if not, the intersection is the bottom
+        """
+        new_interval = []
+        for i, j in zip(self.desc, other.desc):
+            if max(i[1], j[1]) - min(i[0], j[0]) <= DistanceIntervalPattern.THETA:
+                new_interval.append((min(i[0], j[0]), max(i[1], j[1])))
+            else:
+                return self.bottom()
+
+        return DistanceIntervalPattern(new_interval)
 
 

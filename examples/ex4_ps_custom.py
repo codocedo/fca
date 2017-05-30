@@ -24,38 +24,44 @@ from fca.reader import read_representations
 
 
 """
-In this example we mine pattern structure
-particularly interval pattern structures
+In this example we make a custom pattern structure by modifying
+an existing one
+Particularly, we modify the IntervalPattern intersection
+to allow for a similarity thresholding of each individual interval
 """
 
-class IntervalPatternDistance(IntervalPattern):
-    THETA = 0
+class DistanceIntervalPattern(IntervalPattern):
+    THETA = 0 # Distance between intervals
 
     def intersection(self, other):
+        """
+        Each interval should be at most of length THETA
+        if not, the intersection is the bottom
+        """
         new_interval = []
         for i, j in zip(self.desc, other.desc):
-            if max(i[1], j[1]) - min(i[0], j[0]) <= IntervalPatternDistance.THETA:
+            if max(i[1], j[1]) - min(i[0], j[0]) <= DistanceIntervalPattern.THETA:
                 new_interval.append((min(i[0], j[0]), max(i[1], j[1])))
             else:
                 return self.bottom()
-        return IntervalPatternDistance(new_interval)
+
+        return DistanceIntervalPattern(new_interval)
 
 
 if __name__ == "__main__":
     # Notice that we have imported a different kind of pattern
     # IcebergSetPattern allows setting a min sup value
-    IntervalPatternDistance.THETA = 2
+    DistanceIntervalPattern.THETA = 2
 
     __lattice__ = add_intent(
         read_representations(sys.argv[1]),
-        pattern=IntervalPatternDistance,
-        repr_parser=IntervalPatternDistance.PARSERS['SSV.I'],
+        pattern=DistanceIntervalPattern,
+        repr_parser=DistanceIntervalPattern.PARSERS['SSV.F'], # Float values
         silent=False
     )
 
 
     for concept_id, concept in __lattice__.as_dict().items():
-        # Another option is to invert intent and extents when getting the lattice
         print ('{} - ({}, {})'.format(
             concept_id,
             concept[ConceptLattice.EXTENT_MARK],

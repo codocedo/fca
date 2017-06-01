@@ -20,8 +20,7 @@ import sys
 from fca.algorithms.addIntent import add_intent
 from fca.defs import ConceptLattice
 from fca.defs.patterns import IcebergSetPattern
-from fca.reader import read_representations
-
+from fca.reader import read_representations, PARSERS
 
 """
 In this example we mine frequent formal concepts
@@ -31,25 +30,33 @@ which is a bottom up concept builder
 Luckily, we can just invert the notions of extents and intents
 and go on exactly as with a normal setting
 """
-if __name__ == "__main__":
-    # Notice that we have imported a different kind of pattern
-    # IcebergSetPattern allows setting a min sup value
-    IcebergSetPattern.MIN_SUP = 5
 
 
-    '''
-    # This is a hack
-    # We are going to invert the tags for Intents and Extents
-    ConceptLattice.EXTENT_MARK = 'in'
-    ConceptLattice.INTENT_MARK = 'ex'
-    '''
+def frequent_formal_concepts(filepath):
+    """
+    Notice that we have imported a different kind of pattern
+    IcebergSetPattern allows setting a min sup value
+    """
+    IcebergSetPattern.MIN_SUP = 0
 
-    __lattice__ = add_intent(read_representations(sys.argv[1]), pattern=IcebergSetPattern)
+    lattice = add_intent(
+        read_representations(filepath,
+                             transposed=True
+                            ),
+        pattern=IcebergSetPattern
+    )
 
-    for concept_id, concept in __lattice__.as_dict().items():
+    for concept_id, concept in lattice.as_dict().items():
         # Another option is to invert intent and extents when getting the lattice
-        print ('{} - ({}, {})'.format(
-            concept_id,
-            concept[ConceptLattice.INTENT_MARK],
-            concept[ConceptLattice.EXTENT_MARK])
-              )
+        if concept_id >= 0:
+            print ('{} - ({}, {}) - {}'.format(
+                concept_id,
+                concept[ConceptLattice.INTENT_MARK],
+                concept[ConceptLattice.EXTENT_MARK],
+                len(concept[ConceptLattice.INTENT_MARK])
+                )
+                  )
+    print len(lattice.concept)
+
+if __name__ == "__main__":
+    frequent_formal_concepts(sys.argv[1])

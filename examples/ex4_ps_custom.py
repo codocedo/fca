@@ -20,17 +20,15 @@ import sys
 from fca.algorithms.addIntent import add_intent
 from fca.defs import ConceptLattice
 from fca.defs.patterns import IntervalPattern
-from fca.reader import read_representations
-
-
-"""
-In this example we make a custom pattern structure by modifying
-an existing one
-Particularly, we modify the IntervalPattern intersection
-to allow for a similarity thresholding of each individual interval
-"""
+from fca.reader import read_representations, List2IntervalsTransformer
 
 class DistanceIntervalPattern(IntervalPattern):
+    """
+    In this example we make a custom pattern structure by modifying
+    an existing one
+    Particularly, we modify the IntervalPattern intersection
+    to allow for a similarity thresholding of each individual interval
+    """
     THETA = 0 # Distance between intervals
 
     def intersection(self, other):
@@ -50,14 +48,13 @@ class DistanceIntervalPattern(IntervalPattern):
 
 if __name__ == "__main__":
     # Notice that we have imported a different kind of pattern
-    # IcebergSetPattern allows setting a min sup value
-    DistanceIntervalPattern.THETA = 2
+    DistanceIntervalPattern.THETA = 1
 
     __lattice__ = add_intent(
-        read_representations(sys.argv[1]),
+        read_representations(sys.argv[1],
+                             transformer=List2IntervalsTransformer(int)
+                            ),
         pattern=DistanceIntervalPattern,
-        repr_parser=DistanceIntervalPattern.PARSERS['SSV.F'], # Float values
-        silent=False
     )
 
 

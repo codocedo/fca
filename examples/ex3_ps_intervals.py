@@ -20,7 +20,7 @@ import sys
 from fca.algorithms.addIntent import add_intent
 from fca.defs import ConceptLattice
 from fca.defs.patterns import IntervalPattern
-from fca.reader import read_representations
+from fca.reader import read_representations, List2IntervalsTransformer
 
 
 """
@@ -33,9 +33,10 @@ if __name__ == "__main__":
 
 
     __lattice__ = add_intent(
-        read_representations(sys.argv[1]),
-        pattern=IntervalPattern,
-        repr_parser=IntervalPattern.PARSERS['SSV.I']
+        read_representations(sys.argv[1],
+                             transformer=List2IntervalsTransformer(int)
+                            ),
+        pattern=IntervalPattern
     )
 
 

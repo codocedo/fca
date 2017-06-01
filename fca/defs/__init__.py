@@ -23,8 +23,6 @@ class DiGraph(object):
     We do not need the rest of the library.
     This is done for the sake of performance and self containment.
     """
-    EXTENT_MARK = 'ex'
-    INTENT_MARK = 'in'
     def __init__(self):
         """
         Reimplementation of Networkx DiGraph's
@@ -143,11 +141,15 @@ class ConceptLattice(DiGraph):
     Also adds functionality that belongs to a concept lattice rather than
     to a generic direcgted graph.
     """
-    def __init__(self):
+    EXTENT_MARK = 'ex'
+    INTENT_MARK = 'in'
+
+    def __init__(self, transformer=None):
         super(ConceptLattice, self).__init__()
         self.infimum = -1
         self.supremum = -2
         self.concept = self.node
+        self.__transformer = transformer
 
     def new_concept(self, concept_id, concept_data):
         """
@@ -201,22 +203,27 @@ class ConceptLattice(DiGraph):
         """
         return not self.concept[concept_id]['not_visited']
 
-    def as_dict(self, g_map=False, m_map=False):
+
+    def as_dict(self):
         """
         Returns a dict serializable version of the lattice
         latice: Lattice to serialize
         g_map: Maps objects' indices to labels
         m_map: Maps attributes' indices to labels
         """
-        g_map = g_map if g_map else {}
-        m_map = m_map if m_map else {}
+        if self.__transformer is None:
+            g_map = {}
+            m_map = {}
+        else:
+            g_map = self.__transformer.g_map()
+            m_map = self.__transformer.m_map()
         concepts = {}
         for concept in self.concepts():
             concept_data = {
                 self.EXTENT_MARK: [g_map.get(i, i) for i in concept[1][self.EXTENT_MARK]],
                 self.INTENT_MARK: [m_map.get(i, i) for i in concept[1][self.INTENT_MARK].repr()],
-                'sup': self.successors(concept[0]),
-                'sub': self.predecessors(concept[0])
+                'sup': sorted(self.successors(concept[0])),
+                'sub': sorted(self.predecessors(concept[0]))
                 }
             concepts[concept[0]] = concept_data
         return concepts
@@ -230,7 +237,6 @@ class Intent(object):
     Abstract class for a formal concept intent
     """
     def __init__(self, desc):
-        self.__map__ = {}
         self.desc = desc
         self.__type__ = 0 # 1: top, -1: bottom, 0: non-top-bottom concepts
 
@@ -257,12 +263,6 @@ class Intent(object):
         """
         raise NotImplementedError
 
-    def set_map(self, representation_map):
-        """
-        Sets a dictionary map to output the description
-        TODO: Maybe this should not be here
-        """
-        self.__map__ = representation_map
     def __str__(self):
         """
         Returns a string representation of the intent
@@ -332,6 +332,10 @@ class SetPattern(Intent):
     Implements the set intent representation
     This is, standard FCA
     """
+    def __init__(self, desc):
+        super(SetPattern, self).__init__(desc)
+        self.__map__ = {}
+
     @classmethod
     def bottom(cls):
         return cls(set([]))
@@ -353,3 +357,9 @@ class SetPattern(Intent):
         return self.desc == other.desc
     def __i_le__(self, other):
         return self.desc.issubset(other.desc)
+    # SetIntent methods
+    def set_map(self, representation_map):
+        """
+        Sets a dictionary map to output the description
+        """
+        self.__map__ = representation_map

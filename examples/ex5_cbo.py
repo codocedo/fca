@@ -28,7 +28,7 @@ def read_float_input(msg):
     Returns a float from user interface
     """
     entry = ''
-    while re.match(r'^\d+\.\d+$|^\d+$', entry) is None or float(entry > 1):
+    while re.match(r'^\d+\.\d+$|^\d+$', entry) is None or float(entry) > 1:
         entry = raw_input(msg)
     return float(entry)
 

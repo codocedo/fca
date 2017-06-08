@@ -19,7 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from fca.defs import Intent
 from fca.defs import SetPattern
 
-
 class IcebergSetPattern(SetPattern):
     """
     Generalizes SetPattern to allow for a minimal cardinality representation
@@ -38,21 +37,13 @@ class IcebergSetPattern(SetPattern):
         else:
             return IcebergSetPattern(newdesc)
 
-
-
-
 class IntervalPattern(Intent):
     """
     Interval pattern as defined by Kaytoue
     CONVEX HULL: [a,b] \\cap [x,y] = [min(a,x),max(b,y)]
     """
-    PARSERS = {
-        'SSV.I': lambda desc: [(int(i), int(i)) for i in desc.split()],
-        'SSV.F': lambda desc: [(float(i), float(i)) for i in desc.split()]
-    }
-
     @classmethod
-    def top(cls):
+    def top(cls, top_rep=None):
         top = cls([])
         top.__i_le__ = lambda s: False
         top.__i_eq__ = lambda s: False
@@ -62,7 +53,7 @@ class IntervalPattern(Intent):
         return top
 
     @classmethod
-    def bottom(cls):
+    def bottom(cls, bot_rep=None):
         bottom = cls([])
         bottom.__i_le__ = lambda s: True
         bottom.is_empty = lambda: True
@@ -71,7 +62,6 @@ class IntervalPattern(Intent):
         return bottom
 
     def intersection(self, other):
-        print 'a'
         interval = [(min(i[0], j[0]), max(i[1], j[1])) for i, j in zip(self.desc, other.desc)]
         return IntervalPattern(interval)
 
@@ -95,6 +85,13 @@ class IntervalPattern(Intent):
         pass
     def is_empty(self):
         return False
+    def __i_contains__(self, key):
+        return key in self.desc
+    def __i_len__(self):
+        return len(self.desc)
+    def __i_iter__(self):
+        for interval in self.desc:
+            yield interval
 
 
 class DistanceIntervalPattern(IntervalPattern):

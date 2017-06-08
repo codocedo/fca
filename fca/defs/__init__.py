@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import hashlib
 
 class DiGraph(object):
     """
@@ -134,30 +135,71 @@ class DiGraph(object):
         return self.successors(node)
 
 
-class ConceptLattice(DiGraph):
+class Concept(dict):
     """
-    Wrapper for the DiGraph
-    Adds some semantically sensitive methdos that wraps graph methods.
-    Also adds functionality that belongs to a concept lattice rather than
-    to a generic direcgted graph.
+    extends dictionary to add two properties
+    this is easier when accesing intent and extent
+    """
+    EMARK = '0'
+    IMARK = '1'
+    @property
+    def extent(self):
+        """
+        access extent
+        """
+        return self[self.EMARK]
+    @property
+    def intent(self):
+        """
+        access intent
+        """
+        return self[self.IMARK]
+
+
+class POSET(DiGraph):
+    """
+    Implements a POSET useful for CBO
+    A more relaxed implementation of the lattice
     """
     EXTENT_MARK = 'ex'
     INTENT_MARK = 'in'
 
     def __init__(self, transformer=None):
-        super(ConceptLattice, self).__init__()
+        super(POSET, self).__init__()
         self.infimum = -1
         self.supremum = -2
+        Concept.EMARK = self.EXTENT_MARK
+        Concept.IMARK = self.INTENT_MARK
+
         self.concept = self.node
         self.__transformer = transformer
+
+    def __getitem__(self, key):
+        """
+        Accesor to the lattice, access directly to the concept collection
+        """
+        return self.concept[key]
 
     def new_concept(self, concept_id, concept_data):
         """
         Adds a new concept to the lattice
         Wraps add_node
         """
-        concept_data['not_visited'] = True
-        self.add_node(concept_id, concept_data)
+        self.add_node(concept_id, Concept(concept_data))
+
+    def new_formal_concept(self, extent, intent, concept_id=None):
+        """
+        Adds a new concept to the lattice
+        Wraps add_node
+        """
+        if concept_id is None:
+            concept_id = len(self.node)
+
+        self.add_node(concept_id, Concept({
+            self.EXTENT_MARK: extent,
+            self.INTENT_MARK: intent
+        }))
+        return concept_id
 
     def upper_neighbors(self, concept_id):
         """
@@ -182,6 +224,58 @@ class ConceptLattice(DiGraph):
         """
         return self.nodes(data=True)
 
+    def as_dict(self):
+        """
+        Returns a dict serializable version of the lattice
+        latice: Lattice to serialize
+        g_map: Maps objects' indices to labels
+        m_map: Maps attributes' indices to labels
+        """
+        if self.__transformer is None:
+            g_map = {}
+            m_map = {}
+        else:
+            g_map = self.__transformer.g_map()
+            m_map = self.__transformer.m_map()
+        concepts = {}
+        ema = self.EXTENT_MARK
+        ima = self.INTENT_MARK
+
+        for concept in self.concepts():
+            concept_data = {
+                ema: sorted([g_map.get(i, i) for i in concept[1][ema]]),
+                ima: sorted([m_map.get(i, i) for i in concept[1][ima].repr()]),
+                'sup': sorted(self.successors(concept[0])),
+                'sub': sorted(self.predecessors(concept[0]))
+                }
+            concepts[concept[0]] = concept_data
+        return concepts
+
+class ConceptLattice(POSET):
+    """
+    Wrapper for the DiGraph
+    Adds some semantically sensitive methdos that wraps graph methods.
+    Also adds functionality that belongs to a concept lattice rather than
+    to a generic direcgted graph.
+    """
+
+    def new_concept(self, concept_id, concept_data):
+        """
+        Adds a new concept to the lattice
+        Wraps add_node
+        """
+        super(ConceptLattice, self).new_concept(concept_id, concept_data)
+        self.concept[concept_id]['not_visited'] = True
+
+    def new_formal_concept(self, extent, intent, concept_id=None):
+        """
+        Adds a new concept to the lattice
+        Wraps add_node
+        """
+        cid = super(ConceptLattice, self).new_formal_concept(extent, intent, concept_id)
+        self.concept[cid]['not_visited'] = True
+        return cid
+
     def reset_parcour(self):
         """
         Resets the visited flags from the graph
@@ -204,31 +298,6 @@ class ConceptLattice(DiGraph):
         return not self.concept[concept_id]['not_visited']
 
 
-    def as_dict(self):
-        """
-        Returns a dict serializable version of the lattice
-        latice: Lattice to serialize
-        g_map: Maps objects' indices to labels
-        m_map: Maps attributes' indices to labels
-        """
-        if self.__transformer is None:
-            g_map = {}
-            m_map = {}
-        else:
-            g_map = self.__transformer.g_map()
-            m_map = self.__transformer.m_map()
-        concepts = {}
-        for concept in self.concepts():
-            concept_data = {
-                self.EXTENT_MARK: [g_map.get(i, i) for i in concept[1][self.EXTENT_MARK]],
-                self.INTENT_MARK: [m_map.get(i, i) for i in concept[1][self.INTENT_MARK].repr()],
-                'sup': sorted(self.successors(concept[0])),
-                'sub': sorted(self.predecessors(concept[0]))
-                }
-            concepts[concept[0]] = concept_data
-        return concepts
-
-
 """
     Abstract class
 """
@@ -246,22 +315,19 @@ class Intent(object):
         If not, returns the actual representation
         """
         return self.desc
-    @classmethod
-    def bottom(cls):
+
+    def __repr__(self):
         """
-        returns the bottom of the intent representation.
-        It may not exists in certain spaces.
-        Returns Intent type
+        Returns a suitable representation
+        If not, returns the actual representation
         """
-        raise NotImplementedError
-    @classmethod
-    def top(cls):
+        return '{}:{}'.format(type(self).__name__, self.desc)
+
+    def hash(self):
         """
-        returns the top of the intent representation.
-        It may not exists in certain spaces.
-        Returns Intent type
+        Hash pattern to index them
         """
-        raise NotImplementedError
+        return hashlib.sha224(str(self)).hexdigest()
 
     def __str__(self):
         """
@@ -282,8 +348,46 @@ class Intent(object):
         Tests if this intent is the same as another
         """
         return self.__i_eq__(other)
+    def __len__(self):
+        """
+        overrides the len operator
+        returns a measure of the size of the representation if applicable
+        """
+        return self.__i_len__()
+    def __contains__(self, key):
+        """
+        overrides the "in" operator
+        return boolean
+        """
+        return self.__i_contains__(key)
+    def __iter__(self):
+        """
+        overrides iterator over the description
+        """
+        return self.__i_iter__()
 
     # IMPLEMENTATIONS: THESE NEXT METHODS SHOULD BE IMPLEMENTED BY ANY NEW REPRESENTATION
+    @classmethod
+    def bottom(cls, bot_rep=None):
+        """
+        returns the bottom of the intent representation.
+        It may not exists in certain spaces.
+        Returns Intent type
+        """
+        raise NotImplementedError
+    @classmethod
+    def top(cls, top_rep=None):
+        """
+        returns the top of the intent representation.
+        It may not exists in certain spaces.
+        Returns Intent type
+        """
+        raise NotImplementedError
+    def __i_iter__(self):
+        """
+        Implements iterable over the description
+        """
+        raise NotImplementedError
     def intersection(self, other):
         """
         Intersects two intent representations
@@ -322,7 +426,16 @@ class Intent(object):
         """
         raise NotImplementedError
 
-
+    def __i_len__(self):
+        """
+        Implements the len operator
+        """
+        raise NotImplementedError
+    def __i_contains__(self, key):
+        """
+        Implements "in" operator
+        """
+        raise NotImplementedError
 
 """
     Set pattern, classic FCA
@@ -337,13 +450,15 @@ class SetPattern(Intent):
         self.__map__ = {}
 
     @classmethod
-    def bottom(cls):
+    def bottom(cls, bot_rep=None):
         return cls(set([]))
     @classmethod
-    def top(cls):
-        return cls(set([]))
+    def top(cls, top_rep=None):
+        if top_rep is None:
+            top_rep = []
+        return cls(set(top_rep))
     def repr(self):
-        return [self.__map__.get(i, i) for i in self.desc]
+        return sorted([self.__map__.get(i, i) for i in self.desc])
     # IMPLEMENTATIONS
     def intersection(self, other):
         return SetPattern(self.desc.intersection(other.desc))
@@ -357,9 +472,17 @@ class SetPattern(Intent):
         return self.desc == other.desc
     def __i_le__(self, other):
         return self.desc.issubset(other.desc)
+    def __i_len__(self):
+        return len(self.desc)
+    def __i_contains__(self, key):
+        return key in self.desc
     # SetIntent methods
     def set_map(self, representation_map):
         """
         Sets a dictionary map to output the description
         """
         self.__map__ = representation_map
+    def __i_iter__(self):
+        for i in sorted(self.desc):
+            yield i
+

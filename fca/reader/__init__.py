@@ -19,11 +19,20 @@ import os
 from itertools import chain
 
 PARSERS = {
-    'SSV': lambda desc: set([i for i in desc.split()]),
-    'CSV': lambda desc: set([i for i in desc.split(',')])
+    'SSV': lambda desc: [i for i in desc.split()],
+    'CSV': lambda desc: [i for i in desc.split(',')]
 }
 
 
+def read_representations(path, **params):
+    """
+    Wrapper for the following classes
+    path: path to a context file
+    params: configurations
+    returns InputManager(**params)
+    """
+    params['filepath'] = path
+    return InputManager(**params)
 
 """
 ****************************************
@@ -31,25 +40,66 @@ TRANSFOMERS
 ****************************************
 """
 class Transformer(object):
+    """
+    Abstract transformer
+    Should take the output of FileManager's
+    and transform it into a suitable format for
+    a pattern
+    """
     def __init__(self):
         pass
     def transform(self, entry):
+        """
+        transform an entry into a suitable format for a pattern implementation
+        entry: list of pairs (obj, lst)
+        """
+        raise NotImplementedError
+    def parse(self, lst):
+        """
+        parse list in an entry
+        lst list of symbols
+        """
         raise NotImplementedError
     def g_map(self):
+        """
+        Returns a map to transform objects symbols back to their
+        original representation in the file
+        """
         return {}
     def m_map(self):
+        """
+        Returns a map to transform attributes symbols back to their
+        original representation in the file
+        """
         return {}
 
 class List2SetTransformer(Transformer):
+    """
+    Transform a list of symbols into a set of integers
+    It registers a map to transform intergers back to symbols
+    """
     def __init__(self):
+        """
+        Keepts a map of symbols to integers
+        for attributes and objects
+        """
         super(List2SetTransformer, self).__init__()
         self.objects = {}
         self.attributes = {}
 
     def transform(self, entry):
+        """
+        Transforms entry pair (object representation, list of attribute symbols)
+        into a set of integers suitable for SetPattern
+        It registers each symbol to the corresponding index
+        entry: (object, list)
+        """
         self.objects.setdefault(entry[0], len(self.objects))
-        atts = set([self.attributes.setdefault(att, len(self.attributes)) for att in entry[1]])
+        atts = self.parse(entry[1])
         return atts
+
+    def parse(self, lst):
+        return set([self.attributes.setdefault(att, len(self.attributes)) for att in lst])
 
     def g_map(self):
         return {j:i for i, j in self.objects.items()}
@@ -58,17 +108,39 @@ class List2SetTransformer(Transformer):
         return {j:i for i, j in self.attributes.items()}
 
 class List2IntervalsTransformer(Transformer):
+    """
+    Transform a list of symbols into a list of intervals
+    of numerical values (int, double or float)
+    """
     def __init__(self, data_type=int):
+        """
+        Configures a data type to cast interval values
+        """
         super(List2IntervalsTransformer, self).__init__()
         self.data_type = data_type
+        self.objects = {}
 
     def transform(self, entry):
+        """
+        entry: (object, list)
+        returns [(i, i)]
+        """
+        self.objects.setdefault(entry[0], len(self.objects))
+        return self.parse(entry[1])
+
+    def parse(self, lst):
         interval = []
-        for i in entry[1]:
+        for i in lst:
             interval.append((self.data_type(i), self.data_type(i)))
         return interval
 
+    def g_map(self):
+        return {j:i for i, j in self.objects.items()}
 
+
+#****************************************
+# File Managers
+#****************************************
 
 class FileManager(object):
     """
@@ -118,6 +190,7 @@ class ParseableManager(FileManager):
         """
         Return an array or iterator of strings with space separated values
         """
+
         with open(self.filepath, 'r') as fin:
             for line_i, line in enumerate(fin):
                 yield (line_i, self.parser(line.replace('\n', '')))
@@ -126,6 +199,9 @@ class ParseableManager(FileManager):
 
 
 class CXTManager(FileManager):
+    """
+    Manages a CXT context file
+    """
     def entries(self):
         """
         READS A CXT FILE
@@ -160,10 +236,91 @@ class CXTManager(FileManager):
                         representations.append((objects[len(representations)], out))
         return representations
 
-def read_representations(path, **params):
-    params['filepath'] = path
-    return InputManager(**params)
 
+
+# REGISTER FILE MANAGERS
+FMGRS = {
+    'txt': ParseableManager,
+    'cxt': CXTManager
+}
+
+
+#****************************************
+# Input Managers
+#****************************************
+class InputManager(object):
+    """
+    Data Streamer Manager
+    """
+    def __init__(self, transformer=None, **params):
+        self.transformer = transformer if transformer is not None else List2SetTransformer()
+        self._representations = None
+        
+        # Choose how to treat the file according to its extension
+        fip = params['filepath']
+        file_extension = fip[fip.rindex('.')+1:].lower()
+        assert file_extension in FMGRS.keys(), 'File should be one of {}'.format(FMGRS.keys())
+        self.__fmgr = FMGRS[file_extension](params['filepath'])
+
+        if not params.get('transposed', False):
+            self._representations = self.__fmgr.entries()
+        else:
+            self._representations = self.__fmgr.entries_transposed()
+
+    @property
+    def representations(self):
+        """
+        Returns transformed representations obtained
+        from file managers
+        """
+        for entry in self._representations:
+            yield self.transformer.transform(entry)
+
+
+class FormalContextManager(InputManager):
+    """
+    CONTEXT MANAGER
+    """
+    def __init__(self, **params):
+        super(FormalContextManager, self).__init__(**params)
+        # READ THE CONTEXT
+
+        self.g_prime = {i[0]:self.transformer.transform(i) for i in self._representations}
+
+        # OBJ COUNTER
+        self.n_objects = len(self.g_prime)
+
+        self.m_prime = {}
+        # INVERTED CONTEXT
+        for object_id, attributes in self.g_prime.items():
+            for att in attributes:
+                self.m_prime.setdefault(att, set([])).add(object_id)
+
+        # MAP ATTRIBUTES TO INDICES
+
+        # REGENERATE NEW CONTEXT WITH INDEXED ATTRIBUTES
+
+        # ATT COUNTER
+        self.n_attributes = len(self.m_prime)
+
+    @property
+    def objects(self):
+        '''
+        Returns the available indices of objects
+        returns list
+        '''
+        return sorted(self.g_prime.keys())
+    @property
+    def attributes(self):
+        '''
+        Return the available indices for attributes
+        returns list
+        '''
+        return sorted(self.m_prime.keys())
+
+#****************************************
+# Deprecated methods
+#****************************************
 
 def read_object_list(path):
     with open(path, 'r') as f:
@@ -180,92 +337,3 @@ def read_map(path):
     objects = {j:i.strip() for j, i in enumerate(lines[0].split('\n')) if i.strip() != ''}
     attributes = {j:i.strip() for j, i in enumerate(lines[1].split('\n')) if i.strip() != ''}
     return objects, attributes
-
-# REGISTER FILE MANAGERS
-FMGRS = {
-    'txt': ParseableManager,
-    'cxt': CXTManager
-}
-
-
-
-class InputManager(object):
-    """
-    Data Streamer Manager
-    """
-    def __init__(self, transformer=List2SetTransformer(), **params):
-        self.__representations = None
-        self.transformer = transformer
-
-        # Choose how to treat the file according to its extension
-        fip = params['filepath']
-        file_extension = fip[fip.rindex('.')+1:].lower()
-        assert file_extension in FMGRS.keys(), 'File should be one of {}'.format(FMGRS.keys())
-        self.__fmgr = FMGRS[file_extension](params['filepath'])
-
-
-        if not params.get('transposed', False):
-            self.__representations = self.__fmgr.entries()
-        else:
-            self.__representations = self.__fmgr.entries_transposed()
-
-    @property
-    def representations(self):
-        lst = list(self.__representations)
-        #print 'rep',lst
-        for entry in lst:
-            yield self.transformer.transform(entry)
-         #self.__representations
-
-
-class FormalContext(InputManager):
-    """
-    CONTEXT MANAGER
-    """
-    @property
-    def objects(self):
-        """
-        getter for objects property
-        """
-        return self.__objects
-
-    @property
-    def attributes(self):
-        """
-        getter for attributes property
-        """
-        return self.__attributes
-
-
-    def __init__(self, repr_parser, **params):
-        """
-        repr_parser: lambda function which returns a set of attributes
-        """
-
-        super(FormalContext, self).__init__(**params)
-        # READ THE CONTEXT
-        self.__representations = [repr_parser(rep) for rep in self.representations]
-        # OBJ COUNTER
-        self.n_objects = len(self.__representations)
-
-
-        if self.__objects is None:
-            self.__objects = range(self.n_objects)
-
-        if self.__attributes is None:
-            self.__attributes = sorted(reduce(lambda x, y: x.union(y), self.__representations))
-
-        # MAP ATTRIBUTES TO INDICES
-        self.m_map = {j:i for i, j in enumerate(self.__attributes)}
-
-        # REGENERATE NEW CONTEXT WITH INDEXED ATTRIBUTES
-        self.g_prime = [set([self.m_map[i] for i in j]) for j in self.__representations]
-        # ATT COUNTER
-        self.n_attributes = len(self.m_map)
-
-        self.m_prime = {}
-        # INVERTED CONTEXT
-        for object_id, attributes in enumerate(self.__representations):
-            for att in attributes:
-                self.m_prime.setdefault(att, set([])).add(object_id)
-

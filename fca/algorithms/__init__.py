@@ -15,3 +15,30 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
+class Algorithm(object):
+    """
+    Abstract class for algorithm.
+    Implemented by AddIntent and PSCbO
+    """
+    def __init__(self, lazy=True, **params):
+        """
+        if not lazy it should run the algorithm as soon as this class
+        is instantiated
+        """
+        if not lazy:
+            self.run()
+
+    def config(self):
+        """
+        Configs the main parameters of the algorithm
+        """
+        raise NotImplementedError
+
+    def run(self):
+        """
+        Executes the algorithm
+        """
+        raise NotImplementedError
+
+    

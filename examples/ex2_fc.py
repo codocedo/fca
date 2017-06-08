@@ -17,10 +17,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
 import sys
-from fca.algorithms.addIntent import add_intent
-from fca.defs import ConceptLattice
+import re
+from fca.algorithms.addIntent import AddIntent
 from fca.defs.patterns import IcebergSetPattern
-from fca.reader import read_representations, PARSERS
+from fca.reader import read_representations
 
 """
 In this example we mine frequent formal concepts
@@ -31,32 +31,48 @@ Luckily, we can just invert the notions of extents and intents
 and go on exactly as with a normal setting
 """
 
+def dict_printer(poset):
+    """
+    Nicely print the concepts in the poset
+    """
+    order = lambda s: (len(s[1][poset.EXTENT_MARK]), s[1][poset.EXTENT_MARK])
+    for concept_id, concept in sorted(poset.as_dict().items(), key=order):
+        # Another option is to invert intent and extents when getting the lattice
+        if concept_id >= 0:
+            print ('{} {}'.format(
+                concept[poset.EXTENT_MARK],
+                concept[poset.INTENT_MARK]
+                )
+                  )
 
-def frequent_formal_concepts(filepath):
+def read_int_input(msg):
+    """
+    Returns an int from user interface
+    """
+    entry = ''
+    while re.match(r'\d+', entry) is None or int(entry < 0):
+        entry = raw_input(msg)
+    return int(entry)
+
+def exec_ex2(filepath, min_sup):
     """
     Notice that we have imported a different kind of pattern
     IcebergSetPattern allows setting a min sup value
     """
-    IcebergSetPattern.MIN_SUP = 0
 
-    lattice = add_intent(
+    IcebergSetPattern.MIN_SUP = min_sup
+
+    lattice = AddIntent(
         read_representations(filepath,
                              transposed=True
                             ),
-        pattern=IcebergSetPattern
-    )
+        pattern=IcebergSetPattern,
+        lazy=False
+    ).lat
 
-    for concept_id, concept in lattice.as_dict().items():
-        # Another option is to invert intent and extents when getting the lattice
-        if concept_id >= 0:
-            print ('{} - ({}, {}) - {}'.format(
-                concept_id,
-                concept[ConceptLattice.INTENT_MARK],
-                concept[ConceptLattice.EXTENT_MARK],
-                len(concept[ConceptLattice.INTENT_MARK])
-                )
-                  )
-    print len(lattice.concept)
+    dict_printer(lattice)
+
 
 if __name__ == "__main__":
-    frequent_formal_concepts(sys.argv[1])
+    __msg__ = "Insert absolute minimal support [0,inf]:"
+    exec_ex2(sys.argv[1], read_int_input(__msg__))

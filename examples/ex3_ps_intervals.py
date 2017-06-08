@@ -17,33 +17,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
 import sys
-from fca.algorithms.addIntent import add_intent
-from fca.defs import ConceptLattice
+from fca.algorithms.addIntent import AddIntent
 from fca.defs.patterns import IntervalPattern
 from fca.reader import read_representations, List2IntervalsTransformer
-
+from ex2_fc import dict_printer
 
 """
 In this example we mine pattern structure
 particularly interval pattern structures
 """
-if __name__ == "__main__":
-    # Notice that we have imported a different kind of pattern
-    # IcebergSetPattern allows setting a min sup value
 
+def exec_ex3(filepath):
+    """
+    Executes exercise 2
 
-    __lattice__ = add_intent(
-        read_representations(sys.argv[1],
-                             transformer=List2IntervalsTransformer(int)
-                            ),
-        pattern=IntervalPattern
+    Notice that we have imported a different kind of pattern
+    in this case, we import IntervalPattern that is able to mine
+    interval patterns. Plus, we import a different file transformer.
+    List2IntervalsTransformer knows how to convert data file to the format
+    suitable for IntervalPatterns. It can be configured to use int or floats
+    as a base for value
+    """
+    dict_printer(
+        AddIntent(
+            read_representations(filepath,
+                                 transformer=List2IntervalsTransformer(int)
+                                ),
+            pattern=IntervalPattern,
+            lazy=False
+        ).lat
     )
 
-
-    for concept_id, concept in __lattice__.as_dict().items():
-        # Another option is to invert intent and extents when getting the lattice
-        print ('{} - ({}, {})'.format(
-            concept_id,
-            concept[ConceptLattice.EXTENT_MARK],
-            concept[ConceptLattice.INTENT_MARK])
-              )
+if __name__ == "__main__":
+    exec_ex3(sys.argv[1])

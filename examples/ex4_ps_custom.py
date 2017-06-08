@@ -17,10 +17,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
 import sys
-from fca.algorithms.addIntent import add_intent
-from fca.defs import ConceptLattice
+from fca.algorithms.addIntent import AddIntent
 from fca.defs.patterns import IntervalPattern
 from fca.reader import read_representations, List2IntervalsTransformer
+from ex2_fc import dict_printer, read_int_input
 
 class DistanceIntervalPattern(IntervalPattern):
     """
@@ -45,22 +45,30 @@ class DistanceIntervalPattern(IntervalPattern):
 
         return DistanceIntervalPattern(new_interval)
 
+def exec_ex4(filepath, theta_value):
+    """
+    Execute this example
+    """
+    DistanceIntervalPattern.THETA = int(theta_value)
 
-if __name__ == "__main__":
-    # Notice that we have imported a different kind of pattern
-    DistanceIntervalPattern.THETA = 1
-
-    __lattice__ = add_intent(
-        read_representations(sys.argv[1],
-                             transformer=List2IntervalsTransformer(int)
-                            ),
-        pattern=DistanceIntervalPattern,
+    '''
+    The rest is the same as the previous example, but we are going to assign the
+    pattern structure just created
+    '''
+    dict_printer(
+        AddIntent(
+            read_representations(filepath,
+                                 transformer=List2IntervalsTransformer(int)
+                                ),
+            pattern=DistanceIntervalPattern,
+            lazy=False
+        ).lat
     )
 
+if __name__ == "__main__":
+    __msg__ = "Insert maximal length for intervals [0,inf]:"
+    exec_ex4(sys.argv[1], read_int_input(__msg__))
 
-    for concept_id, concept in __lattice__.as_dict().items():
-        print ('{} - ({}, {})'.format(
-            concept_id,
-            concept[ConceptLattice.EXTENT_MARK],
-            concept[ConceptLattice.INTENT_MARK])
-              )
+
+
+

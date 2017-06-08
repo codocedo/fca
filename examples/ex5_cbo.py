@@ -18,15 +18,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Kyori code.
 from __future__ import print_function
 import sys
-from fca.algorithms.addIntent import AddIntent
-from fca.reader import read_representations
+import re
+from fca.reader import FormalContextManager
+from fca.algorithms.cbo import CbO
+from ex2_fc import dict_printer
 
+def read_float_input(msg):
+    """
+    Returns a float from user interface
+    """
+    entry = ''
+    while re.match(r'^\d+\.\d+$|^\d+$', entry) is None or float(entry > 1):
+        entry = raw_input(msg)
+    return float(entry)
 
-def exec_ex1(filepath):
+def exec_ex5(filepath, min_sup=0):
     """
-    In this example we mine formal concepts in a single line
+    Executes CbO in a single line
     """
-    print (AddIntent(read_representations(filepath), lazy=False).lat.as_dict())
+    dict_printer(
+        CbO(
+            FormalContextManager(filepath=filepath),
+            min_sup=min_sup,
+            lazy=False
+            ).poset
+        )
 
 if __name__ == "__main__":
-    exec_ex1(sys.argv[1])
+    __msg__ = "Insert minimal support [0,1]:"
+    exec_ex5(sys.argv[1], read_float_input(__msg__))

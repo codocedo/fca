@@ -18,14 +18,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from distutils.core import setup
 setup(
-  name = 'fca',
-  packages = ['fca', 'fca.algorithms', 'fca.algorithms.addIntent', 'fca.defs.patterns', 'fca.defs', 'fca.reader'],
-  version = '0.5',
-  description = 'A library to implement Formal Concept Analysis tasks and other tools',
-  author = 'Victor Codocedo',
-  author_email = 'victor.codocedo@gmail.com',
-  url = 'https://github.com/codocedo/fca',
-  download_url = 'https://github.com/codocedo/fca/archive/0.5.tar.gz',
-  keywords = ['formal concept analysis', 'pattern mining', 'add intent', 'data mining'],
-  classifiers = [],
-)
+    name='fca',
+    packages=[
+        'fca',
+        'fca.algorithms',
+        'fca.algorithms.addIntent',
+        'fca.algorithms.cbo',
+        'fca.defs.patterns',
+        'fca.defs.patterns.hypergraphs',
+        'fca.defs',
+        'fca.reader'
+        ],
+    version='1.0',
+    description='A library to implement Formal Concept Analysis tasks and other tools',
+    author='Victor Codocedo',
+    author_email='victor.codocedo@gmail.com',
+    url='https://github.com/codocedo/fca',
+    download_url='https://github.com/codocedo/fca/archive/1.0.tar.gz',
+    keywords=[
+        'formal concept analysis',
+        'pattern mining',
+        'add intent',
+        'data mining',
+        'close by one',
+        'cbo',
+        'pattern structures',
+        'interval pattern mining'
+        ],
+    classifiers=[],
+    )
+  

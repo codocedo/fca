@@ -168,11 +168,9 @@ class FileManager(object):
         """
         new_representation = {}
         reps = list(self.entries())
-        #print reps
         for obj, representation in reps:
             for attribute in representation:
                 new_representation.setdefault(attribute, []).append(obj)
-        #print new_representation
         for i, j in sorted(new_representation.items(), key=lambda s: s[0]):
             yield (i, j)
 
@@ -194,6 +192,18 @@ class ParseableManager(FileManager):
         with open(self.filepath, 'r') as fin:
             for line_i, line in enumerate(fin):
                 yield (line_i, self.parser(line.replace('\n', '')))
+
+class TableManager(ParseableManager):
+    """
+    Numerical data where each of the M entries is a row with N values
+    """
+    def entries_transposed(self):
+        new_representation = []
+        reps = [i[1] for i in self.entries()]
+        for coli in range(len(reps[0])):
+            new_representation.append([i[coli] for i in reps])
+        for i, j in enumerate(new_representation):
+            yield (i, j)
 
 
 
@@ -241,7 +251,8 @@ class CXTManager(FileManager):
 # REGISTER FILE MANAGERS
 FMGRS = {
     'txt': ParseableManager,
-    'cxt': CXTManager
+    'cxt': CXTManager,
+    'tab': TableManager,
 }
 
 
@@ -255,12 +266,16 @@ class InputManager(object):
     def __init__(self, transformer=None, **params):
         self.transformer = transformer if transformer is not None else List2SetTransformer()
         self._representations = None
-        
+
         # Choose how to treat the file according to its extension
-        fip = params['filepath']
-        file_extension = fip[fip.rindex('.')+1:].lower()
-        assert file_extension in FMGRS.keys(), 'File should be one of {}'.format(FMGRS.keys())
-        self.__fmgr = FMGRS[file_extension](params['filepath'])
+        fmgr = ''
+        if 'fmgr' not in params:
+            fip = params['filepath']
+            fmgr = fip[fip.rindex('.')+1:].lower()
+        else:
+            fmgr = params['fmgr']
+        assert fmgr in FMGRS.keys(), 'File should be one of {}'.format(FMGRS.keys())
+        self.__fmgr = FMGRS[fmgr](params['filepath'])
 
         if not params.get('transposed', False):
             self._representations = self.__fmgr.entries()
@@ -277,31 +292,17 @@ class InputManager(object):
             yield self.transformer.transform(entry)
 
 
-class FormalContextManager(InputManager):
+class PatternStructureManager(InputManager):
     """
-    CONTEXT MANAGER
+    Pattern structure representation
+    It only index object representations for Close By One
     """
     def __init__(self, **params):
-        super(FormalContextManager, self).__init__(**params)
-        # READ THE CONTEXT
-
+        super(PatternStructureManager, self).__init__(**params)
+        # Calculate g prime
         self.g_prime = {i[0]:self.transformer.transform(i) for i in self._representations}
-
         # OBJ COUNTER
         self.n_objects = len(self.g_prime)
-
-        self.m_prime = {}
-        # INVERTED CONTEXT
-        for object_id, attributes in self.g_prime.items():
-            for att in attributes:
-                self.m_prime.setdefault(att, set([])).add(object_id)
-
-        # MAP ATTRIBUTES TO INDICES
-
-        # REGENERATE NEW CONTEXT WITH INDEXED ATTRIBUTES
-
-        # ATT COUNTER
-        self.n_attributes = len(self.m_prime)
 
     @property
     def objects(self):
@@ -310,6 +311,25 @@ class FormalContextManager(InputManager):
         returns list
         '''
         return sorted(self.g_prime.keys())
+
+class FormalContextManager(PatternStructureManager):
+    """
+    CONTEXT MANAGER
+    Extends PatternStructure by indexing
+    attribute representations as well
+    """
+    def __init__(self, **params):
+        super(FormalContextManager, self).__init__(**params)
+
+        self.m_prime = {}
+        # Calculate m_prime
+        for object_id, attributes in self.g_prime.items():
+            for att in attributes:
+                self.m_prime.setdefault(att, set([])).add(object_id)
+
+        # ATT COUNTER
+        self.n_attributes = len(self.m_prime)
+
     @property
     def attributes(self):
         '''

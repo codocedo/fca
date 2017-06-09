@@ -26,7 +26,7 @@ def exec_ex1(filepath):
     """
     In this example we mine formal concepts in a single line
     """
-    print (AddIntent(read_representations(filepath), lazy=False).lat.as_dict())
+    print (AddIntent(read_representations(filepath), lazy=False, silent=False).lat.as_dict())
 
 if __name__ == "__main__":
     exec_ex1(sys.argv[1])

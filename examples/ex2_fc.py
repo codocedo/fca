@@ -38,8 +38,9 @@ def dict_printer(poset):
     order = lambda s: (len(s[1][poset.EXTENT_MARK]), s[1][poset.EXTENT_MARK])
     for concept_id, concept in sorted(poset.as_dict().items(), key=order):
         # Another option is to invert intent and extents when getting the lattice
-        if concept_id >= 0:
-            print ('{} {}'.format(
+        if concept_id >= -2:
+            print ('{} {} {}'.format(
+                concept_id,
                 concept[poset.EXTENT_MARK],
                 concept[poset.INTENT_MARK]
                 )

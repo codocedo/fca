@@ -133,15 +133,16 @@ class PSCbO(CbO):
 
 
     def config(self):
-        self.ctx.g_prime = {g: self.pattern(desc) for g, desc in self.ctx.g_prime.items()}
-        self.ctx.m_prime = {m: self.e_pattern(desc) for m, desc in self.ctx.m_prime.items()}
+        
+        #self.ctx.m_prime = {m: self.e_pattern(desc) for m, desc in self.ctx.m_prime.items()}
 
         self.poset = POSET(transformer=self.ctx.transformer)
         self.poset.new_formal_concept(
             self.e_pattern.bottom(),
-            self.pattern.top(self.ctx.attributes),
+            self.pattern.top(self.ctx.g_prime.values()),
             self.poset.infimum
             )
+        self.ctx.g_prime = {g: self.pattern(desc) for g, desc in self.ctx.g_prime.items()}
 
     def canonical_test(self, current_element, pointer, description):
         """
@@ -163,6 +164,7 @@ class PSCbO(CbO):
 
         BASIC CLOSE BY ONE ITERATION
         """
+        #print('running')
         if concept_id is None:
             concept_id = self.poset.infimum
 
@@ -172,11 +174,7 @@ class PSCbO(CbO):
         if len(extent) == self.ctx.n_objects or current_element >= self.ctx.n_objects:
             return
 
-        self.printer(extent, intent, depth)
-        #print('\t'*depth+'Current Attribute:{}'.format(current_object))
-        #print('\t'*depth+'=> {}'.format(self.ctx.g_prime[current_object]))
         for j in range(current_element, self.ctx.n_objects):
-            #print('\t'*depth+'J', j)
             if j not in extent.desc:
                 new_intent = intent.intersection(self.ctx.g_prime[j])
                 if self.evaluate_conditions(new_intent):
@@ -185,7 +183,6 @@ class PSCbO(CbO):
                     new_extent = self.e_pattern(
                         set([g for g, desc in self.ctx.g_prime.items() if new_intent <= desc])
                         )
-
                     # CANONICAL TEST
                     if self.canonical_test(current_element, j, new_extent):
                         new_concept = self.poset.new_formal_concept(new_extent, new_intent)

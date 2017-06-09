@@ -69,7 +69,6 @@ class IntervalPattern(Intent):
         return str(self.desc)
 
     def __i_le__(self, other):
-
         if other.is_empty():
             return False
         for i, j in zip(self.desc, other.desc):

@@ -321,7 +321,7 @@ class Intent(object):
         Returns a suitable representation
         If not, returns the actual representation
         """
-        return '{}:{}'.format(type(self).__name__, self.desc)
+        return '{}:{}'.format(type(self).__name__, self.repr())
 
     def hash(self):
         """
@@ -365,7 +365,11 @@ class Intent(object):
         overrides iterator over the description
         """
         return self.__i_iter__()
-
+    def __i_str__(self):
+        """
+        Implements the string representation
+        """
+        return str(self.repr())
     # IMPLEMENTATIONS: THESE NEXT METHODS SHOULD BE IMPLEMENTED BY ANY NEW REPRESENTATION
     @classmethod
     def bottom(cls, bot_rep=None):
@@ -410,11 +414,6 @@ class Intent(object):
         In the case of sets, this is if the cardinality is zero
         """
         raise NotImplementedError
-    def __i_str__(self):
-        """
-        Implements the string representation
-        """
-        raise NotImplementedError
     def __i_eq__(self, other):
         """
         Implements the == operator
@@ -445,10 +444,6 @@ class SetPattern(Intent):
     Implements the set intent representation
     This is, standard FCA
     """
-    def __init__(self, desc):
-        super(SetPattern, self).__init__(desc)
-        self.__map__ = {}
-
     @classmethod
     def bottom(cls, bot_rep=None):
         return cls(set([]))
@@ -458,7 +453,7 @@ class SetPattern(Intent):
             top_rep = []
         return cls(set(top_rep))
     def repr(self):
-        return sorted([self.__map__.get(i, i) for i in self.desc])
+        return sorted(self.desc)
     # IMPLEMENTATIONS
     def intersection(self, other):
         return SetPattern(self.desc.intersection(other.desc))
@@ -466,8 +461,6 @@ class SetPattern(Intent):
         self.desc = self.desc.union(other.desc)
     def is_empty(self):
         return len(self.desc) == 0
-    def __i_str__(self):
-        return str(self.repr())
     def __i_eq__(self, other):
         return self.desc == other.desc
     def __i_le__(self, other):
@@ -476,12 +469,7 @@ class SetPattern(Intent):
         return len(self.desc)
     def __i_contains__(self, key):
         return key in self.desc
-    # SetIntent methods
-    def set_map(self, representation_map):
-        """
-        Sets a dictionary map to output the description
-        """
-        self.__map__ = representation_map
+
     def __i_iter__(self):
         for i in sorted(self.desc):
             yield i

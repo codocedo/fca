@@ -29,12 +29,12 @@ setup(
         'fca.defs',
         'fca.reader'
         ],
-    version='1.0',
+    version='1.02',
     description='A library to implement Formal Concept Analysis tasks and other tools',
     author='Victor Codocedo',
     author_email='victor.codocedo@gmail.com',
     url='https://github.com/codocedo/fca',
-    download_url='https://github.com/codocedo/fca/archive/1.0.tar.gz',
+    download_url='https://github.com/codocedo/fca/archive/1.02.tar.gz',
     keywords=[
         'formal concept analysis',
         'pattern mining',

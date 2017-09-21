@@ -327,7 +327,7 @@ class Intent(object):
         """
         Hash pattern to index them
         """
-        return hashlib.sha224(str(self)).hexdigest()
+        return hashlib.sha224(str(self).encode('utf8')).hexdigest()
 
     def __str__(self):
         """

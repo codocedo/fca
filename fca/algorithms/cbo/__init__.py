@@ -17,9 +17,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
 from __future__ import print_function
+from functools import reduce
 from fca.defs import POSET, SetPattern
 from fca.reader import FormalContextManager
 from fca.algorithms import Algorithm
+
 
 def lexo(set_a, set_b):
     """

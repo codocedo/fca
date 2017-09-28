@@ -20,14 +20,7 @@ from __future__ import print_function
 from functools import reduce
 from fca.defs import POSET, SetPattern
 from fca.reader import FormalContextManager
-from fca.algorithms import Algorithm
-
-
-def lexo(set_a, set_b):
-    """
-    LEXICAL COMPARISON BETWEEN TWO SETS OF INTEGERS
-    """
-    return tuple(sorted(set_a)) <= tuple(sorted(set_b))
+from fca.algorithms import Algorithm, lexo
 
 class CbO(Algorithm):
     """
@@ -41,6 +34,7 @@ class CbO(Algorithm):
         self.min_sup = params.get('min_sup', 0)
         self.printer = params.get('printer', lambda a, b, c: None)
         self.conditions = params.get('conditions', [])
+        self.calls = 0
 
         self.config()
 
@@ -52,14 +46,13 @@ class CbO(Algorithm):
         """
         self.poset = POSET(transformer=self.ctx.transformer)
         self.poset.new_formal_concept(
-            set(range(self.ctx.n_objects)),
+            set(self.ctx.g_prime.keys()),
             self.pattern.bottom(),
             self.poset.supremum
             )
         self.conditions.append(
             lambda new_extent: len(new_extent) > self.min_sup * self.ctx.n_objects
         )
-
 
     def evaluate_conditions(self, new_extent):
         """
@@ -78,12 +71,21 @@ class CbO(Algorithm):
         Applies canonical test to a description
         """
         mask = self.pattern(set(range(pointer+1)))
-        if lexo(mask.desc, description.intersection(mask).desc):
-            if description.hash() not in self.cache:
-                self.cache.append(description.hash())
-                return True
-        return False
+        #return lexo(mask.desc, description.intersection(mask).desc)
+        return lexo(current_element.intersection(mask).desc, description.intersection(mask).desc)
 
+    def meet_concepts(self, extent1, intent1, extent2, intent2):
+        """
+        Meet Concepts 
+        """
+        new_extent = extent1.intersection(extent2)
+        if self.evaluate_conditions(new_extent):
+            new_intent = reduce(
+                lambda x, y: x.intersection(y),
+                [self.pattern(self.ctx.g_prime[i]) for i in new_extent]
+            )
+            return new_extent, new_intent
+        return False, self.pattern.bottom()
 
     def run(self, concept_id=None, current_element=0, depth=0):
         """
@@ -94,6 +96,7 @@ class CbO(Algorithm):
 
         BASIC CLOSE BY ONE ITERATION
         """
+        self.calls += 1
         if concept_id is None:
             concept_id = self.poset.supremum
 
@@ -104,40 +107,34 @@ class CbO(Algorithm):
             return
 
         self.printer(extent, intent, depth)
-        #print('\t'*depth+'Current Attribute:{}'.format(current_attribute))
 
         for j in range(current_element, self.ctx.n_attributes):
-
             if j not in intent.desc:
-                new_extent = extent.intersection(self.ctx.m_prime[j])
+                new_extent, new_intent = self.meet_concepts(
+                    extent, #EXTENT1
+                    intent, #INTENT1
+                    self.ctx.m_prime[j], #EXTENT2
+                    None, #INTENT2
+                    )
 
-                if self.evaluate_conditions(new_extent):
-                    # OBTAIN THE INTENT OF THE NEW EXTENT
-                    new_intent = reduce(lambda x, y: x.intersection(y),
-                                        [self.pattern(self.ctx.g_prime[i]) for i in new_extent])
-
-                    # CANONICAL TEST
-                    if self.canonical_test(current_element, j, new_intent):
-                        new_concept = self.poset.new_formal_concept(new_extent, new_intent)
-                        self.poset.add_edge(concept_id, new_concept)
-                        self.run(new_concept, j+1, depth+1)
-
-
-
+                # CANONICAL TEST
+                if bool(new_extent) and self.canonical_test(intent, j, new_intent) and \
+                    new_intent.hash() not in self.cache:
+                    self.cache.append(new_intent.hash())
+                    new_concept = self.poset.new_formal_concept(new_extent, new_intent)
+                    self.poset.add_edge(concept_id, new_concept)
+                    self.run(new_concept, j+1, depth+1)
 
 class PSCbO(CbO):
     """
-    Implementation of Close-by-One
+    Implementation of Close-by-One for pattern structures,
+    It is just a bottom-up enumeration
     """
     def __init__(self, ctx, pattern=SetPattern, **params):
         self.e_pattern = SetPattern
         super(PSCbO, self).__init__(ctx, pattern, **params)
 
-
     def config(self):
-        
-        #self.ctx.m_prime = {m: self.e_pattern(desc) for m, desc in self.ctx.m_prime.items()}
-
         self.poset = POSET(transformer=self.ctx.transformer)
         self.poset.new_formal_concept(
             self.e_pattern.bottom(),
@@ -146,7 +143,7 @@ class PSCbO(CbO):
             )
         self.ctx.g_prime = {g: self.pattern(desc) for g, desc in self.ctx.g_prime.items()}
 
-    def canonical_test(self, current_element, pointer, description):
+    def canonical_test(self, pointer, description):
         """
         Applies canonical test to a new_intent
         """
@@ -166,7 +163,6 @@ class PSCbO(CbO):
 
         BASIC CLOSE BY ONE ITERATION
         """
-        #print('running')
         if concept_id is None:
             concept_id = self.poset.infimum
 
@@ -184,10 +180,9 @@ class PSCbO(CbO):
                     # notice that this comparison is with respect to every representation
                     new_extent = self.e_pattern(
                         set([g for g, desc in self.ctx.g_prime.items() if new_intent <= desc])
-                        )
+                    )
                     # CANONICAL TEST
-                    if self.canonical_test(current_element, j, new_extent):
+                    if self.canonical_test(j, new_extent):
                         new_concept = self.poset.new_formal_concept(new_extent, new_intent)
                         self.poset.add_edge(new_concept, concept_id)
                         self.run(new_concept, j+1, depth+1)
-

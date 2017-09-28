@@ -18,11 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 from itertools import chain
 
-PARSERS = {
-    'SSV': lambda desc: [i for i in desc.split()],
-    'CSV': lambda desc: [i for i in desc.split(',')]
-}
-
 
 def read_representations(path, **params):
     """
@@ -35,9 +30,10 @@ def read_representations(path, **params):
     return InputManager(**params)
 
 """
-****************************************
-TRANSFOMERS
-****************************************
+**********************************************************
+TRANSFOMERS: Transform list of symbols to representations
+suitable for patterns structures
+**********************************************************
 """
 class Transformer(object):
     """
@@ -107,6 +103,10 @@ class List2SetTransformer(Transformer):
     def m_map(self):
         return {j:i for i, j in self.attributes.items()}
 
+    def original_intent(self, intent):
+        m_map = self.m_map()
+        return [m_map[i] for i in intent]
+
 class List2IntervalsTransformer(Transformer):
     """
     Transform a list of symbols into a list of intervals
@@ -137,34 +137,126 @@ class List2IntervalsTransformer(Transformer):
     def g_map(self):
         return {j:i for i, j in self.objects.items()}
 
+class List2PartitionsTransformer(List2IntervalsTransformer):
+    """
+    Transforms a list of values to a partition containing equivalence classes of indices
+    [0,1,0,1,1] -> [set([0,2]), set([1,3,4])]
+    """
+    def parse(self, lst):
+        hashes = {}
+        for i, j in enumerate(lst):
+            hashes.setdefault(j, []).append(i)
+        return [set(i) for i in hashes.values()]
+#****************************************
+# File Syntax Managers
+#****************************************
+FILE_MANAGERS = {}
 
-#****************************************
-# File Managers
-#****************************************
+def register_file_manager(target_class):
+    """
+    Function that registers file managers, used in conjunction with
+    the metaclass MCFileManager
+    """
+    FILE_MANAGERS[target_class.__name__] = target_class
+
+class MCFileManager(type):
+    """
+    Metaclass used to register file managers
+    """
+    def __new__(mcs, clsname, bases, attrs):
+        """
+        cls: class
+        clsname: classname
+        """
+        newclass = super(MCFileManager, mcs).__new__(mcs, clsname, bases, attrs)
+        register_file_manager(newclass)  # here is your register function
+        return newclass
+
 
 class FileManager(object):
     """
+    Abstract Class for File Managers
     OVERWRITE to implement a new file parser
-    By default, this one deals with space separated values
-    get_representations returns an array or iterator of space separated values
+    Implements metaclass to register new file managers
+
+    entries() returns an array or iterator of space separated values
+
+    configurations is a property used by the FileManager factory
+    to configure which FileManager should be used.
+    _cfgs should be a list of "style" and "extension"
+    the first one indicating the style of the file, 1 line per object (oa),
+    table file (tab), matrix, etc
+    The "extension" should refer to the default extensions that the 
+    file manager can be applied, e.g. txt, csv, cxt, etc.
     """
-    def __init__(self, filepath):
+    __metaclass__ = MCFileManager
+    _cfgs = []
+    def __init__(self, filepath, **params):
+        """
+        Creates a new File Manager
+        @param filepath: path to the file where the context is
+        @param params: contain ad-hoc parameters for each type of file manager
+        """
         assert filepath != '', "You must include a valid filepath for the input file"
         assert os.path.isfile(filepath), 'Input file: {} does not exist'.format(filepath)
         self.filepath = filepath
+        
+    @classmethod
+    def configurations(cls):
+        """
+        Class method used by the File Manager factory
+        @param cls: class type
+        """
+        return cls._cfgs
+
     def entries(self):
         """
-        Return an array or iterator of pairs (first, second)
+        Returns an array or iterator of pairs (first, second)
+        first value is an identifier of the line
+        second value is a representation of the line
+        """
+        raise NotImplementedError()
+    
+
+    def entries_transposed(self):
+        """
+        Returns an array or iterator of pairs (first, second)
         first value is an identifier of the line
         second value is a representation of the line
         """
         raise NotImplementedError()
 
+
+
+class ParseableManager(FileManager):
+    """
+    Default parser, this one deals with separated values
+    and 1 line per object style of formal contexts (oa)
+    By default we support space separated values (txt) and comma separated values (csv)
+    """
+    PARSERS = {
+        'txt': lambda desc: [i for i in desc.split()],
+        'csv': lambda desc: [i for i in desc.split(',')]
+    }
+    _cfgs = [('oa', 'txt'), ('oa', 'csv')]
+    
+    def __init__(self, filepath, **params):
+        super(ParseableManager, self).__init__(filepath, **params)
+        self.parser = params.get('parser', ParseableManager.PARSERS['txt'])
+        # EXTENSION TO BE REGISTERED
+
+    def entries(self):
+        """
+        Returns an array or iterator of strings with space separated values
+        """
+        with open(self.filepath, 'r') as fin:
+            for line_i, line in enumerate(fin):
+                yield (line_i, self.parser(line.replace('\n', '')))
+
     def entries_transposed(self):
         """
-        Return an array or iterator of pairs (first, second)
-        first value is an identifier of the line
-        second value is a representation of the line
+        Returns an array or iterator of strings with space separated values
+        transposing the original formal context
         """
         new_representation = {}
         reps = list(self.entries())
@@ -174,48 +266,20 @@ class FileManager(object):
         for i, j in sorted(new_representation.items(), key=lambda s: s[0]):
             yield (i, j)
 
-class ParseableManager(FileManager):
-    """
-    OVERWRITE to implement a new file parser
-    By default, this one deals with space separated values
-    get_representations returns an array or iterator of space separated values
-    """
-    def __init__(self, filepath, parser=PARSERS['SSV']):
-        super(ParseableManager, self).__init__(filepath)
-        self.parser = parser
 
-    def entries(self):
-        """
-        Return an array or iterator of strings with space separated values
-        """
-
-        with open(self.filepath, 'r') as fin:
-            for line_i, line in enumerate(fin):
-                yield (line_i, self.parser(line.replace('\n', '')))
-
-class TableManager(ParseableManager):
-    """
-    Numerical data where each of the M entries is a row with N values
-    """
-    def entries_transposed(self):
-        new_representation = []
-        reps = [i[1] for i in self.entries()]
-        for coli in range(len(reps[0])):
-            new_representation.append([i[coli] for i in reps])
-        for i, j in enumerate(new_representation):
-            yield (i, j)
-
-
-
-
-class CXTManager(FileManager):
+class CXTManager(ParseableManager):
     """
     Manages a CXT context file
+    used by other FCA tools such as ConExp and Toscana
     """
+    _cfgs = [('oa','cxt')]
+    def __init__(self, filepath, **params):
+        super(CXTManager, self).__init__(self, filepath)
+    
     def entries(self):
         """
         READS A CXT FILE
-        NOT FOR THOUGHT FOR STREAMING
+        NOT THOUGHT FOR STREAMING
         READ THE FILE ENTIRELY AND THEN PROCESS IT
         """
         with open(self.filepath, 'r') as fin:
@@ -248,13 +312,76 @@ class CXTManager(FileManager):
 
 
 
-# REGISTER FILE MANAGERS
-FMGRS = {
-    'txt': ParseableManager,
-    'cxt': CXTManager,
-    'tab': TableManager,
-}
 
+
+class TableManager(ParseableManager):
+    """
+    Numerical data where each of the M entries is a row with N values
+    Used for database entries:
+    example:
+    1 1 2 4
+    1 2 2 3
+    3 2 1 1
+    With 3 objects and 4 attributes
+    Values can be space separated (txt) or comma separated (cv)
+    """
+    _cfgs = [('tab', 'txt'), ('tab', 'csv')]
+    def __init__(self, filepath, **params):
+        super(TableManager, self).__init__(filepath, parser=ParseableManager.PARSERS[params['extension']])
+
+    def entries_transposed(self):
+        """
+        Transposition occurs like matrix transposition
+        """
+        new_representation = []
+        reps = [i[1] for i in self.entries()]
+        for coli in range(len(reps[0])):
+            new_representation.append([i[coli] for i in reps])
+        for i, j in enumerate(new_representation):
+            yield (i, j)
+       
+class FileManagerFactory(object):
+    """
+    FileManagerFactory allows creating a suitable FileManager
+    given the characteristics of the file and the options provided
+    by the user. Uses the registry created by the metclass
+    """
+    def __init__(self, filename, **kwargs):
+        """
+        @param filename: str file name to be analyzed
+        @param extension: str allows the user to specify an extension, if not provided it is obtained from filename
+        @param style: str style of the file, oa: one object per line with separated symbols for attributes, tab: matrix format
+        @kwargs: optional parameters to configure the FileManager
+
+        """
+        self._extensions = {}
+        for cls in FILE_MANAGERS.values():
+            for style_extension in cls.configurations():
+                self._extensions[style_extension] = cls
+        self._file_manager = None
+        self._extension = ''
+        self._style = 'oa' # By default, style is object-attribute
+        if kwargs.get('extension', False):
+            # If the user has forced an extension, we'll treat the file using it
+            self._extension = kwargs['extension']
+        else:
+            # If the user didn't force an extension, we'll obtain it from the file and
+            # try to use it to process the file
+            self._extension = filename[filename.rindex('.')+1:].lower()
+            kwargs['extension'] = self._extension
+        if kwargs.get('style', False):
+            # If the user has specified a file-style, we'll treat the file using it
+            self._style = kwargs['style']
+        assert (self._style, self._extension) in self._extensions, 'File should be one in {}'.format(self._extensions)
+        self.filename = filename
+        self.kwargs = kwargs
+
+    @property
+    def file_manager(self):
+        """
+        Builds the file manager configured at creation
+        """
+        return self._extensions[(self._style, self._extension)](self.filename, **self.kwargs)
 
 #****************************************
 # Input Managers
@@ -263,21 +390,16 @@ class InputManager(object):
     """
     Data Streamer Manager
     """
-    def __init__(self, transformer=None, **params):
+    def __init__(self, filepath, transposed=False, transformer=None, file_manager_params=None):
         self.transformer = transformer if transformer is not None else List2SetTransformer()
         self._representations = None
 
-        # Choose how to treat the file according to its extension
-        fmgr = ''
-        if 'fmgr' not in params:
-            fip = params['filepath']
-            fmgr = fip[fip.rindex('.')+1:].lower()
-        else:
-            fmgr = params['fmgr']
-        assert fmgr in FMGRS.keys(), 'File should be one of {}'.format(FMGRS.keys())
-        self.__fmgr = FMGRS[fmgr](params['filepath'])
+        # Choose the parser if it has not been provided according to the extension
+        file_manager_params = file_manager_params if file_manager_params is not None else {}
 
-        if not params.get('transposed', False):
+        self.__fmgr = FileManagerFactory(filepath, **file_manager_params).file_manager
+
+        if not transposed:
             self._representations = self.__fmgr.entries()
         else:
             self._representations = self.__fmgr.entries_transposed()
@@ -312,11 +434,20 @@ class PatternStructureManager(InputManager):
         '''
         return sorted(self.g_prime.keys())
 
+    def extent_prime(self, extent):
+        '''
+        Implements A' given A subseteq G
+        '''
+        if not bool(extent):
+            return reduce(lambda x, y: x.union(y),
+                          self.g_prime.values())
+        return reduce(lambda x, y: x.intersection(y),
+                      [self.g_prime[g] for g in extent])
+
 class FormalContextManager(PatternStructureManager):
     """
     CONTEXT MANAGER
-    Extends PatternStructure by indexing
-    attribute representations as well
+    Extends PatternStructure by indexing attribute representations as well
     """
     def __init__(self, **params):
         super(FormalContextManager, self).__init__(**params)
@@ -338,10 +469,18 @@ class FormalContextManager(PatternStructureManager):
         '''
         return sorted(self.m_prime.keys())
 
+    def intent_prime(self, intent):
+        '''
+        Implements B' given B subseteq M
+        '''
+        if not bool(intent):
+            return self.g_prime.keys()
+        return reduce(lambda x, y: x.intersection(y),
+                      [self.m_prime[m] for m in intent])
+
 #****************************************
 # Deprecated methods
 #****************************************
-
 def read_object_list(path):
     with open(path, 'r') as f:
         lines = f.read().split('\n')

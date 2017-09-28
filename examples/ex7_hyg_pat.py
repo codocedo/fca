@@ -1,3 +1,9 @@
+# uncompyle6 version 2.12.0
+# Python bytecode 2.7 (62211)
+# Decompiled from: Python 2.7.13 |Continuum Analytics, Inc.| (default, Dec 20 2016, 23:05:08) 
+# [GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.57)]
+# Embedded file name: /Users/victorcodocedo/Work/kyori_lab/github/fca/examples/ex7_hyg_pat.py
+# Compiled at: 2017-09-28 11:05:42
 """
 FCA - Python libraries to support FCA tasks
 Copyright (C) 2017  Victor Codocedo
@@ -15,12 +21,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-# Kyori code.
 from __future__ import print_function
-import sys
+import argparse
 from fca.defs.patterns.hypergraphs import PartitionPattern
 from fca.reader import List2IntervalsTransformer
-
 from fca.reader import read_representations
 from fca.algorithms.addIntent import AddIntent
 from ex2_fc import dict_printer
@@ -30,35 +34,28 @@ class List2PartitionsTransformer(List2IntervalsTransformer):
     Transforms a list of values to a partition containing equivalence classes of indices
     [0,1,0,1,1] -> [set([0,2]), set([1,3,4])]
     """
+
     def parse(self, lst):
         hashes = {}
         for i, j in enumerate(lst):
             hashes.setdefault(j, []).append(i)
-        return [set(i) for i in hashes.values()]
+
+        return [ set(i) for i in hashes.values() ]
+
 
 def exec_ex7(filepath):
     """
-    Execute CbO over pattern structures
-
-    Notice that the algorithm is different and it also works differently
-    PSCbO lists objects one by one, in a bottom-up way
+    Example 7 - Partition Pattern Structures with AddIntent
+    Generates partitions based on equivalence classes,
+    using a custom Transformer (List2PartitionsTransformer)
     """
-    # the formal context should be said how to read the input file
-
-    dict_printer(
-        AddIntent(
-            read_representations(
-                filepath,
-                transformer=List2PartitionsTransformer(int),
-                transposed=True,
-                fmgr='tab'
-            ),
-            pattern=PartitionPattern,
-            lazy=False,
-            silent=False,
-        ).lat
-    )
+    dict_printer(AddIntent(read_representations(filepath, transformer=List2PartitionsTransformer(int), transposed=True, file_manager_params={'style': 'tab'
+       }), pattern=PartitionPattern, lazy=False, silent=False).lat)
 
 
-if __name__ == "__main__":
-    exec_ex7(sys.argv[1])
+if __name__ == '__main__':
+    __parser__ = argparse.ArgumentParser(description='Example 7 - Partition Pattern Structures with AddIntent:\n                       Generates partitions based on equivalence classes,\n                       using a custom Transformer (List2PartitionsTransformer)\n                    ')
+    __parser__.add_argument('context_path', metavar='context_path', type=str, help='path to the formal context')
+    __args__ = __parser__.parse_args()
+    exec_ex7(__args__.context_path)
+# okay decompiling ex7_hyg_pat.pyc

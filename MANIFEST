@@ -5,6 +5,9 @@ fca/__init__.py
 fca/algorithms/__init__.py
 fca/algorithms/addIntent/__init__.py
 fca/algorithms/cbo/__init__.py
+fca/algorithms/next_closure/__init__.py
+fca/algorithms/canonical_base/__init__.py
 fca/defs/__init__.py
 fca/defs/patterns/__init__.py
+fca/defs/patterns/hypergraphs/__init__.py
 fca/reader/__init__.py

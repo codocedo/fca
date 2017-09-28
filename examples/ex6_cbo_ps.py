@@ -1,3 +1,9 @@
+# uncompyle6 version 2.12.0
+# Python bytecode 2.7 (62211)
+# Decompiled from: Python 2.7.13 |Continuum Analytics, Inc.| (default, Dec 20 2016, 23:05:08) 
+# [GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.57)]
+# Embedded file name: /Users/victorcodocedo/Work/kyori_lab/github/fca/examples/ex6_cbo_ps.py
+# Compiled at: 2017-09-27 11:41:31
 """
 FCA - Python libraries to support FCA tasks
 Copyright (C) 2017  Victor Codocedo
@@ -15,32 +21,30 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-# Kyori code.
 from __future__ import print_function
-import sys
+import argparse
 from fca.defs.patterns import DistanceIntervalPattern
 from fca.reader import List2IntervalsTransformer
-
 from fca.reader import FormalContextManager
 from fca.algorithms.cbo import PSCbO
-from ex2_fc import dict_printer, read_int_input
+from ex2_fc import dict_printer
 
 def exec_ex6(filepath, theta):
     """
     Execute CbO over pattern structures
-
+    
     Notice that the algorithm is different and it also works differently
     PSCbO lists objects one by one, in a bottom-up way
     """
-    # the formal context should be said how to read the input file
     fctx = FormalContextManager(filepath=filepath, transformer=List2IntervalsTransformer(int))
-
-    # Configure the pattern structure
     DistanceIntervalPattern.THETA = theta
-
-    # Execute the pattern structure and print
     dict_printer(PSCbO(fctx, pattern=DistanceIntervalPattern, lazy=False).poset)
 
-if __name__ == "__main__":
-    __msg__ = "Insert maximal length for intervals [0,inf]: "
-    exec_ex6(sys.argv[1], read_int_input(__msg__))
+
+if __name__ == '__main__':
+    __parser__ = argparse.ArgumentParser(description='Example 6 - Interval with theta value with CbO')
+    __parser__.add_argument('context_path', metavar='context_path', type=str, help='path to the formal context')
+    __parser__.add_argument('-t', '--theta', metavar='theta', type=int, help='Maximal length for intervals [0,inf]', default=0)
+    __args__ = __parser__.parse_args()
+    exec_ex6(__args__.context_path, __args__.theta)
+# okay decompiling ex6_cbo_ps.pyc

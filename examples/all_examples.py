@@ -24,6 +24,10 @@ from ex3_ps_intervals import exec_ex3
 from ex4_ps_custom import exec_ex4
 from ex5_cbo import exec_ex5
 from ex6_cbo_ps import exec_ex6
+from ex7_hyg_pat import exec_ex7
+from ex8_hyg_pat_cbo import exec_ex8
+from ex9_next_closure import exec_ex9
+from ex10_dg_imp_base_nc import exec_ex10
 
 __fctx_path__ = '../data/example.txt'
 __ps_path__ = '../data/numerical_data.txt'
@@ -59,15 +63,41 @@ if __name__ == "__main__":
     exec_ex4(__ps_path__, __a_min_sup__)
 
     print("*"*__nasterisks__)
-    print("Example 5: Using Close-by-one to build formal concepts")
+    print("Example 5: FCA with Close-by-One (CbO)")
     print("Input File: {}".format(__ps_path__))
     print("Min. Sup.: {}".format(__r_min_sup__))
     print("*"*__nasterisks__)
     exec_ex5(__fctx_path__, __r_min_sup__)
 
     print("*"*__nasterisks__)
-    print("Example 6: Using Close-by-one to mine pattern structures")
+    print("Example 6: Interval Pattern Structures with CbO")
     print("Input File: {}".format(__ps_path__))
     print("THETA: {}".format(__a_min_sup__))
     print("*"*__nasterisks__)
     exec_ex6(__ps_path__, __a_min_sup__)
+
+    print("*"*__nasterisks__)
+    print("Example 7: Partiton Pattern Structures with AddIntent")
+    print("Input File: {}".format(__ps_path__))
+    print("*"*__nasterisks__)
+    exec_ex7(__ps_path__)
+
+    print("*"*__nasterisks__)
+    print("Example 8: Partiton Pattern Structures with CbO")
+    print("Input File: {}".format(__ps_path__))
+    print("*"*__nasterisks__)
+    exec_ex8(__ps_path__)
+
+    print("*"*__nasterisks__)
+    print("Example 9: FCA with NextClosure")
+    print("Input File: {}".format(__ps_path__))
+    print("Min. Sup.: {}".format(__r_min_sup__))
+    print("*"*__nasterisks__)
+    exec_ex9(__fctx_path__, __r_min_sup__)
+
+    print("*"*__nasterisks__)
+    print("Example 10: Duquenne-Guigues Canonical Basis of Implication Rules with NextClosure")
+    print("Input File: {}".format(__ps_path__))
+    print("Min. Sup.: {}".format(__r_min_sup__))
+    print("*"*__nasterisks__)
+    exec_ex10(__fctx_path__, __r_min_sup__)

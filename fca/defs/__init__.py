@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import hashlib
+import copy
 
 class DiGraph(object):
     """
@@ -370,6 +371,12 @@ class Intent(object):
         Implements the string representation
         """
         return str(self.repr())
+    def copy(self):
+        """
+        Returns a copy of self
+        """
+        return copy.copy(self)
+
     # IMPLEMENTATIONS: THESE NEXT METHODS SHOULD BE IMPLEMENTED BY ANY NEW REPRESENTATION
     @classmethod
     def bottom(cls, bot_rep=None):
@@ -444,14 +451,20 @@ class SetPattern(Intent):
     Implements the set intent representation
     This is, standard FCA
     """
+    _bottom = None
+    _top = None
     @classmethod
     def bottom(cls, bot_rep=None):
-        return cls(set([]))
+        if SetPattern._bottom is None:
+            SetPattern._bottom = cls(set([]))
+        return SetPattern._bottom
     @classmethod
     def top(cls, top_rep=None):
         if top_rep is None:
-            top_rep = []
-        return cls(set(top_rep))
+            top_rep = set([])
+        if SetPattern._top is None:
+            SetPattern._top = cls(top_rep)
+        return SetPattern._top
     def repr(self):
         return sorted(self.desc)
     # IMPLEMENTATIONS
@@ -469,8 +482,6 @@ class SetPattern(Intent):
         return len(self.desc)
     def __i_contains__(self, key):
         return key in self.desc
-
     def __i_iter__(self):
         for i in sorted(self.desc):
             yield i
-

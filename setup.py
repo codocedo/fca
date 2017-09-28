@@ -24,6 +24,8 @@ setup(
         'fca.algorithms',
         'fca.algorithms.addIntent',
         'fca.algorithms.cbo',
+        'fca.algorithms.next_closure',
+        'fca.algorithms.canonical_base',
         'fca.defs.patterns',
         'fca.defs.patterns.hypergraphs',
         'fca.defs',

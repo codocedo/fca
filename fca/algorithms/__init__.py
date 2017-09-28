@@ -15,6 +15,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+def lexo(set_a, set_b):
+    """
+    LEXICAL COMPARISON BETWEEN TWO SETS OF INTEGERS
+    """
+    return tuple(sorted(set_a)) <= tuple(sorted(set_b))
+
 
 class Algorithm(object):
     """
@@ -40,5 +46,3 @@ class Algorithm(object):
         Executes the algorithm
         """
         raise NotImplementedError
-
-    

@@ -20,7 +20,6 @@ import copy
 import sys
 import os
 from fca.defs import ConceptLattice, SetPattern
-from fca.reader import PARSERS
 from fca.algorithms import Algorithm
 
 def silence():

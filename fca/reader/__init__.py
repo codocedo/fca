@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+# Kyori code.
 import os
 from itertools import chain
 
@@ -95,7 +96,7 @@ class List2SetTransformer(Transformer):
         return atts
 
     def parse(self, lst):
-        return set([self.attributes.setdefault(att, len(self.attributes)) for att in lst])
+        return frozenset([self.attributes.setdefault(att, len(self.attributes)) for att in lst])
 
     def g_map(self):
         return {j:i for i, j in self.objects.items()}
@@ -146,7 +147,7 @@ class List2PartitionsTransformer(List2IntervalsTransformer):
         hashes = {}
         for i, j in enumerate(lst):
             hashes.setdefault(j, []).append(i)
-        return [set(i) for i in hashes.values()]
+        return [frozenset(i) for i in hashes.values()]
 #****************************************
 # File Syntax Managers
 #****************************************
@@ -242,7 +243,8 @@ class ParseableManager(FileManager):
     
     def __init__(self, filepath, **params):
         super(ParseableManager, self).__init__(filepath, **params)
-        self.parser = params.get('parser', ParseableManager.PARSERS['txt'])
+        ext = params.get('extension', 'txt')
+        self.parser = params.get('parser', ParseableManager.PARSERS[ext])
         # EXTENSION TO BE REGISTERED
 
     def entries(self):
@@ -274,7 +276,7 @@ class CXTManager(ParseableManager):
     """
     _cfgs = [('oa','cxt')]
     def __init__(self, filepath, **params):
-        super(CXTManager, self).__init__(self, filepath)
+        super(CXTManager, self).__init__(filepath)
     
     def entries(self):
         """
@@ -327,7 +329,7 @@ class TableManager(ParseableManager):
     """
     _cfgs = [('tab', 'txt'), ('tab', 'csv')]
     def __init__(self, filepath, **params):
-        super(TableManager, self).__init__(filepath, parser=ParseableManager.PARSERS[params['extension']])
+        super(TableManager, self).__init__(filepath, **params)
 
     def entries_transposed(self):
         """
@@ -372,7 +374,7 @@ class FileManagerFactory(object):
         if kwargs.get('style', False):
             # If the user has specified a file-style, we'll treat the file using it
             self._style = kwargs['style']
-        assert (self._style, self._extension) in self._extensions, 'File should be one in {}'.format(self._extensions)
+        assert (self._style, self._extension) in self._extensions, 'Style and Extension {} should be one in {}'.format((self._style, self._extension), self._extensions)
         self.filename = filename
         self.kwargs = kwargs
 

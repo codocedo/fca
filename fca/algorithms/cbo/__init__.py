@@ -22,23 +22,26 @@ from fca.defs import POSET, SetPattern
 from fca.reader import FormalContextManager
 from fca.algorithms import Algorithm, lexo
 
+
 class CbO(Algorithm):
     """
     Implementation of Close-by-One
     """
-    def __init__(self, ctx, pattern=SetPattern, **params):
+
+    def __init__(self, ctx, **kwargs):
         self.ctx = ctx
         self.poset = None
-        self.pattern = pattern
-        self.cache = params.get('cache', [])
-        self.min_sup = params.get('min_sup', 0)
-        self.printer = params.get('printer', lambda a, b, c: None)
-        self.conditions = params.get('conditions', [])
+        self.pattern = SetPattern
+        self.cache = kwargs.get('cache', [])
+        self.min_sup = kwargs.get('min_sup', 0)
+        self.printer = kwargs.get('printer', lambda a, b, c: None)
+        self.conditions = kwargs.get('conditions', [])
         self.calls = 0
 
         self.config()
 
-        super(CbO, self).__init__(**params)
+        super(CbO, self).__init__(**kwargs)
+        print (self.calls)
 
     def config(self):
         """
@@ -49,9 +52,11 @@ class CbO(Algorithm):
             set(self.ctx.g_prime.keys()),
             self.pattern.bottom(),
             self.poset.supremum
-            )
+        )
+        self.pattern.top(frozenset(self.ctx.m_prime.keys()))
         self.conditions.append(
-            lambda new_extent: len(new_extent) > self.min_sup * self.ctx.n_objects
+            lambda new_extent: len(
+                new_extent) >= self.min_sup * self.ctx.n_objects
         )
 
     def evaluate_conditions(self, new_extent):
@@ -66,34 +71,44 @@ class CbO(Algorithm):
                 return False
         return True
 
-    def canonical_test(self, current_element, pointer, description):
+    def canonical_test(self, *args):
         """
         Applies canonical test to a description
         """
-        mask = self.pattern(set(range(pointer+1)))
-        #return lexo(mask.desc, description.intersection(mask).desc)
+
+        current_element, pointer, description = args
+        mask = self.pattern(frozenset(range(pointer + 1)))
+        # return lexo(mask.desc, description.intersection(mask).desc)
         return lexo(current_element.intersection(mask).desc, description.intersection(mask).desc)
 
-    def meet_concepts(self, extent1, intent1, extent2, intent2):
+    def derive_extent(self, *args):
         """
-        Meet Concepts 
+        Obtain next iteration extent
         """
-        new_extent = extent1.intersection(extent2)
-        if self.evaluate_conditions(new_extent):
-            new_intent = reduce(
-                lambda x, y: x.intersection(y),
-                [self.pattern(self.ctx.g_prime[i]) for i in new_extent]
-            )
-            return new_extent, new_intent
-        return False, self.pattern.bottom()
+        # extent1, extent2 = args
+        # return extent1.intersection(extent2)
+        return reduce(
+            lambda x, y: x.intersection(y),
+            args
+        )
 
-    def run(self, concept_id=None, current_element=0, depth=0):
+    def derive_intent(self, *args):
         """
-        extent: SET OF INTEGERS
-        intent: SET OF INTEGERS
-        current_attribute: indicates the new attribute to add to the intent
-        ctx: context manager
+        Obtain next iteration intent
+        """
+        new_extent = args[0]
+        if not bool(new_extent):
+            return self.pattern.top()
+        return reduce(
+            lambda x, y: x.intersection(y),
+            [self.pattern(self.ctx.g_prime[g]) for g in new_extent]
+        )
 
+    def cbo(self, concept_id=None, current_element=0, depth=0):
+        """
+        concept_id: int current concept id
+        current_element: int current element in the intent enumeration
+        depth: int depth in the recursion
         BASIC CLOSE BY ONE ITERATION
         """
         self.calls += 1
@@ -110,79 +125,60 @@ class CbO(Algorithm):
 
         for j in range(current_element, self.ctx.n_attributes):
             if j not in intent.desc:
-                new_extent, new_intent = self.meet_concepts(
-                    extent, #EXTENT1
-                    intent, #INTENT1
-                    self.ctx.m_prime[j], #EXTENT2
-                    None, #INTENT2
-                    )
+                new_extent = self.derive_extent(extent, self.ctx.m_prime[j])
+                if self.evaluate_conditions(new_extent):
+                    new_intent = self.derive_intent(new_extent)
+                    # CANONICAL TEST
+                    if not self.canonical_test(intent, j, new_intent) or \
+                            new_intent.hash() in self.cache:
+                        pass
+                    else:
+                        self.cache.append(new_intent.hash())
+                        new_concept = self.poset.new_formal_concept(
+                            new_extent, new_intent)
+                        self.poset.add_edge(concept_id, new_concept)
+                        self.cbo(new_concept, j + 1, depth + 1)
 
-                # CANONICAL TEST
-                if bool(new_extent) and self.canonical_test(intent, j, new_intent) and \
-                    new_intent.hash() not in self.cache:
-                    self.cache.append(new_intent.hash())
-                    new_concept = self.poset.new_formal_concept(new_extent, new_intent)
-                    self.poset.add_edge(concept_id, new_concept)
-                    self.run(new_concept, j+1, depth+1)
+    def run(self, *args, **kwargs):
+        self.cbo()
+
 
 class PSCbO(CbO):
     """
     Implementation of Close-by-One for pattern structures,
-    It is just a bottom-up enumeration
+    It is just a bottom-up enumeration and pattern structures
+    are contained by extents, not intents
     """
-    def __init__(self, ctx, pattern=SetPattern, **params):
-        self.e_pattern = SetPattern
-        super(PSCbO, self).__init__(ctx, pattern, **params)
+
+    def __init__(self, ctx, **kwargs):
+        self.e_pattern = kwargs.get('pattern', SetPattern)  # extent pattern
+        super(PSCbO, self).__init__(ctx, **kwargs)
+
+    def derive_intent(self, *args):
+        new_extent = args[0]
+        result = self.pattern(
+            set([m for m, desc in self.ctx.m_prime.items() if new_extent <= desc])
+        )
+        return result
 
     def config(self):
         self.poset = POSET(transformer=self.ctx.transformer)
+        # self.evaluate_conditions = lambda s: True
         self.poset.new_formal_concept(
-            self.e_pattern.bottom(),
-            self.pattern.top(self.ctx.g_prime.values()),
-            self.poset.infimum
-            )
-        self.ctx.g_prime = {g: self.pattern(desc) for g, desc in self.ctx.g_prime.items()}
+            self.e_pattern.top(self.ctx.g_prime.values()),
+            self.pattern.bottom(),
+            self.poset.supremum
+        )
 
-    def canonical_test(self, pointer, description):
-        """
-        Applies canonical test to a new_intent
-        """
-        mask = self.e_pattern(set(range(pointer+1)))
-        if lexo(mask.desc, description.intersection(mask).desc):
-            if description.hash() not in self.cache:
-                self.cache.append(description.hash())
-                return True
-        return False
-
-    def run(self, concept_id=None, current_element=0, depth=0):
-        """
-        extent: SET OF INTEGERS
-        intent: SET OF INTEGERS
-        current_attribute: indicates the new attribute to add to the intent
-        ctx: context manager
-
-        BASIC CLOSE BY ONE ITERATION
-        """
-        if concept_id is None:
-            concept_id = self.poset.infimum
-
-        intent = self.poset.concept[concept_id][POSET.INTENT_MARK]
-        extent = self.poset.concept[concept_id][POSET.EXTENT_MARK]
-
-        if len(extent) == self.ctx.n_objects or current_element >= self.ctx.n_objects:
-            return
-
-        for j in range(current_element, self.ctx.n_objects):
-            if j not in extent.desc:
-                new_intent = intent.intersection(self.ctx.g_prime[j])
-                if self.evaluate_conditions(new_intent):
-                    # OBTAIN THE EXTENT OF THE NEW INTENT
-                    # notice that this comparison is with respect to every representation
-                    new_extent = self.e_pattern(
-                        set([g for g, desc in self.ctx.g_prime.items() if new_intent <= desc])
-                    )
-                    # CANONICAL TEST
-                    if self.canonical_test(j, new_extent):
-                        new_concept = self.poset.new_formal_concept(new_extent, new_intent)
-                        self.poset.add_edge(new_concept, concept_id)
-                        self.run(new_concept, j+1, depth+1)
+        self.ctx.m_prime = {g: self.e_pattern(
+            desc) for g, desc in self.ctx.g_prime.items()}
+        self.ctx.n_attributes = len(self.ctx.g_prime)
+        # THE NOTION OF MINIMUM SUPPORT SHOULD NOT BE APPLIED
+        # DIRECTLY TO PATTERN STRUCTURE EXTENTS, SINCE THEY APPLY
+        # ONLY TO SetPattern PATTERN STRUCTURES
+        # IF YOU WANT TO FORCE THEM, UNCOMMENT NEXT LINES
+        '''
+        self.conditions.append(
+            lambda new_extent: len(new_extent) >= self.min_sup * self.ctx.n_objects
+        )
+        '''

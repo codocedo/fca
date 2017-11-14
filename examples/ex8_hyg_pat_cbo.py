@@ -1,9 +1,3 @@
-# uncompyle6 version 2.12.0
-# Python bytecode 2.7 (62211)
-# Decompiled from: Python 2.7.13 |Continuum Analytics, Inc.| (default, Dec 20 2016, 23:05:08) 
-# [GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.57)]
-# Embedded file name: /Users/victorcodocedo/Work/kyori_lab/github/fca/examples/ex8_hyg_pat_cbo.py
-# Compiled at: 2017-09-28 11:13:47
 """
 FCA - Python libraries to support FCA tasks
 Copyright (C) 2017  Victor Codocedo
@@ -21,12 +15,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+# Kyori code.
 from __future__ import print_function
 import argparse
 from fca.defs.patterns.hypergraphs import PartitionPattern
 from fca.reader import PatternStructureManager, List2PartitionsTransformer
 from fca.algorithms.cbo import PSCbO
 from ex2_fc import dict_printer
+
+
 
 def exec_ex8(filepath):
     """
@@ -35,8 +32,20 @@ def exec_ex8(filepath):
     Generates partitions based on equivalence classes,
     using a custom Transformer (List2PartitionsTransformer)
     """
-    fctx = PatternStructureManager(filepath=filepath, transformer=List2PartitionsTransformer(int), transposed=True, file_manager_params={'style': 'tab'
-       })
+    # PATTERNS HAVE SINGLETONS THAT NEED TO BE RESETED 
+    # WHEN REUSING THEM, WHENEVER YOU CALCULATE PATTERN STRUCTURES
+    # MULTIPLE TIMES, YOU NEED TO RESET THEM BEFORE RE-USING
+    # THEM, NOT DOING THIS MAY LEAD TO INCONSISTENCIES
+    PartitionPattern.reset()
+
+    fctx = PatternStructureManager(
+        filepath=filepath,
+        transformer=List2PartitionsTransformer(int),
+        transposed=True,
+        file_manager_params={
+            'style': 'tab'
+        }
+    )
     dict_printer(PSCbO(fctx, pattern=PartitionPattern, lazy=False).poset)
 
 

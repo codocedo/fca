@@ -1,3 +1,9 @@
+# uncompyle6 version 2.12.0
+# Python bytecode 2.7 (62211)
+# Decompiled from: Python 2.7.13 |Continuum Analytics, Inc.| (default, Dec 20 2016, 23:05:08) 
+# [GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.57)]
+# Embedded file name: /Users/victorcodocedo/Work/kyori_lab/github/fca/examples/ex9_next_closure.py
+# Compiled at: 2017-09-27 11:43:36
 """
 FCA - Python libraries to support FCA tasks
 Copyright (C) 2017  Victor Codocedo
@@ -15,24 +21,24 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-# Kyori code.
 from __future__ import print_function
 import argparse
 from fca.reader import FormalContextManager
-from fca.algorithms.next_closure import NextClosure
+from fca.algorithms.previous_closure import PreviousClosure
+
 from ex2_fc import dict_printer
 
-def exec_ex9(filepath, min_sup=0):
+def exec_ex11(filepath, min_sup=0):
     """
-    Executes NextClosure in a single line
+    Executes PreviousClosure in a single line
     """
-    dict_printer(NextClosure(FormalContextManager(filepath=filepath), min_sup=min_sup, lazy=False).poset)
+    dict_printer(PreviousClosure(FormalContextManager(filepath=filepath), min_sup=min_sup, lazy=False).poset)
 
 
 if __name__ == '__main__':
-    __parser__ = argparse.ArgumentParser(description='Example 9 - FCA with NextClosure')
+    __parser__ = argparse.ArgumentParser(description='Example 11 - FCA with PreviousClosure')
     __parser__.add_argument('context_path', metavar='context_path', type=str, help='path to the formal context in txt, space separated values, one object representation per line', action='store')
     __parser__.add_argument('-m', '--min_sup', metavar='min_sup', type=float, help='Relative minimum support [0,1]', default=0.0)
     __args__ = __parser__.parse_args()
-    exec_ex9(__args__.context_path, __args__.min_sup)
-# okay decompiling ex9_next_closure.pyc
+    exec_ex11(__args__.context_path, __args__.min_sup)
+

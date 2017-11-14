@@ -1,9 +1,3 @@
-# uncompyle6 version 2.12.0
-# Python bytecode 2.7 (62211)
-# Decompiled from: Python 2.7.13 |Continuum Analytics, Inc.| (default, Dec 20 2016, 23:05:08) 
-# [GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.57)]
-# Embedded file name: /Users/victorcodocedo/Work/kyori_lab/github/fca/examples/ex6_cbo_ps.py
-# Compiled at: 2017-09-27 11:41:31
 """
 FCA - Python libraries to support FCA tasks
 Copyright (C) 2017  Victor Codocedo
@@ -23,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from __future__ import print_function
 import argparse
-from fca.defs.patterns import DistanceIntervalPattern
+from fca.defs.patterns import  MaxLenghtIntervalPattern
 from fca.reader import List2IntervalsTransformer
 from fca.reader import FormalContextManager
 from fca.algorithms.cbo import PSCbO
@@ -32,13 +26,13 @@ from ex2_fc import dict_printer
 def exec_ex6(filepath, theta):
     """
     Execute CbO over pattern structures
-    
+
     Notice that the algorithm is different and it also works differently
     PSCbO lists objects one by one, in a bottom-up way
     """
     fctx = FormalContextManager(filepath=filepath, transformer=List2IntervalsTransformer(int))
-    DistanceIntervalPattern.THETA = theta
-    dict_printer(PSCbO(fctx, pattern=DistanceIntervalPattern, lazy=False).poset)
+    MaxLenghtIntervalPattern.THETA = theta
+    dict_printer(PSCbO(fctx, pattern=MaxLenghtIntervalPattern, lazy=False).poset)
 
 
 if __name__ == '__main__':

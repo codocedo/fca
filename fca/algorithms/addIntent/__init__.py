@@ -50,22 +50,30 @@ class AddIntent(Algorithm):
 
         super(AddIntent, self).__init__(**params)
 
+    @property
+    def lattice(self):
+        """
+        Returns the calculated lattice
+        """
+        return self.lat
+
     def config(self):
         """
         Configure the algorithm parameters
         """
         # Infimum
+        self.lat.supremum = self.lat.infimum
         self.lat.new_concept(
             self.lat.infimum,
             {self.lat.INTENT_MARK:self.pattern.top(), self.lat.EXTENT_MARK:[]}
             )
-        # Supremum
-        self.lat.new_concept(
-            self.lat.supremum,
-            {self.lat.INTENT_MARK:self.pattern.bottom(), self.lat.EXTENT_MARK:[]}
-            )
-        # Create the simplest lattice
-        self.lat.add_edge(self.lat.infimum, self.lat.supremum)
+        # # Supremum
+        # self.lat.new_concept(
+        #     self.lat.supremum,
+        #     {self.lat.INTENT_MARK:self.pattern.bottom(), self.lat.EXTENT_MARK:[]}
+        #     )
+        # # Create the simplest lattice
+        # self.lat.add_edge(self.lat.infimum, self.lat.supremum)
 
     def run(self):
         """
@@ -86,9 +94,10 @@ class AddIntent(Algorithm):
             print('\r -> EXECUTING OBJECT:{}'.format(obj), end='')
             sys.stdout.flush()
             intent = self.pattern(intent)
-            self.lat[self.lat.infimum].intent.join(intent)
 
-            #to_bottom(g,intent)
+            self.lat[self.lat.infimum].intent.join(intent)
+            #self.to_bottom(intent)
+
             aid = self.add_intent_iteration(intent, self.lat.infimum)
             self.add_object(aid, obj)
             self.lat.reset_parcour()
@@ -99,14 +108,14 @@ class AddIntent(Algorithm):
             talk(oloss)
 
 
-    # These marks are used to represent extent and intent in dicts
-    def to_bottom(self, atts):
-        """
-        Adds a set of attributes to the infimum of the lattice
-        lattice: ConceptLattice(DiGraph)
-        atts: list of attributes
-        """
-        self.lat[self.lat.infimum].intent.update(atts)
+    # # These marks are used to represent extent and intent in dicts
+    # def to_bottom(self, atts):
+    #     """
+    #     Adds a set of attributes to the infimum of the lattice
+    #     lattice: ConceptLattice(DiGraph)
+    #     atts: list of attributes
+    #     """
+    #     self.lat[self.lat.supremum].intent.meet(atts)
 
 
     def add_object(self, concept, obj, depth=1):
@@ -156,12 +165,11 @@ class AddIntent(Algorithm):
         generator: current concept
         depth: internal
         """
-
         generator = self.get_maximal_concept(intent, self.lat.infimum)
 
         if generator != self.lat.infimum and self.lat[generator].intent == intent:
             return generator
-
+        # print ('FOUND GEN',generator)
         new_parents = []
         for candidate in self.lat.upper_neighbors(generator):
             if not self.lat[candidate].intent <= intent:
@@ -188,6 +196,8 @@ class AddIntent(Algorithm):
             self.lat.add_edge(new_id, parent)
 
         self.lat.add_edge(generator, new_id)
+        if self.lat.supremum == generator:
+            self.lat.supremum = new_id
         return new_id
 
 

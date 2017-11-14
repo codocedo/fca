@@ -1,9 +1,3 @@
-# uncompyle6 version 2.12.0
-# Python bytecode 2.7 (62211)
-# Decompiled from: Python 2.7.13 |Continuum Analytics, Inc.| (default, Dec 20 2016, 23:05:08) 
-# [GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.57)]
-# Embedded file name: /Users/victorcodocedo/Work/kyori_lab/github/fca/examples/ex4_ps_custom.py
-# Compiled at: 2017-09-27 10:37:50
 """
 FCA - Python libraries to support FCA tasks
 Copyright (C) 2017  Victor Codocedo
@@ -21,13 +15,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+# Kyori code.
 import argparse
 from fca.algorithms.addIntent import AddIntent
 from fca.defs.patterns import IntervalPattern
 from fca.reader import read_representations, List2IntervalsTransformer
 from ex2_fc import dict_printer
 
-class DistanceIntervalPattern(IntervalPattern):
+class MaxLengthIntervalPattern(IntervalPattern):
     """
     In this example we make a custom pattern structure by modifying
     an existing one
@@ -43,20 +38,20 @@ class DistanceIntervalPattern(IntervalPattern):
         """
         new_interval = []
         for i, j in zip(self.desc, other.desc):
-            if max(i[1], j[1]) - min(i[0], j[0]) <= DistanceIntervalPattern.THETA:
+            if max(i[1], j[1]) - min(i[0], j[0]) <= MaxLengthIntervalPattern.THETA:
                 new_interval.append((min(i[0], j[0]), max(i[1], j[1])))
             else:
                 return self.bottom()
 
-        return DistanceIntervalPattern(new_interval)
+        return MaxLengthIntervalPattern(new_interval)
 
 
 def exec_ex4(filepath, theta_value):
     """
     Execute this example
     """
-    DistanceIntervalPattern.THETA = int(theta_value)
-    dict_printer(AddIntent(read_representations(filepath, transformer=List2IntervalsTransformer(int)), pattern=DistanceIntervalPattern, lazy=False).lat)
+    MaxLengthIntervalPattern.THETA = int(theta_value)
+    dict_printer(AddIntent(read_representations(filepath, transformer=List2IntervalsTransformer(int)), pattern=MaxLengthIntervalPattern, lazy=False, silent=False).lat)
 
 
 if __name__ == '__main__':

@@ -15,8 +15,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+# Kyori code.
 import hashlib
 import copy
+from enum import Enum
+
 
 class DiGraph(object):
     """
@@ -25,6 +28,7 @@ class DiGraph(object):
     We do not need the rest of the library.
     This is done for the sake of performance and self containment.
     """
+
     def __init__(self):
         """
         Reimplementation of Networkx DiGraph's
@@ -36,12 +40,11 @@ class DiGraph(object):
         self.__successors__ = {}
         self.__predecessors__ = {}
 
-
     def __getitem__(self, source):
         """
         Overwrites the [] operator. Returns a dict of successors' data given a source
         """
-        return {target:self.node[target] for target in self.__successors__[source]}
+        return {target: self.node[target] for target in self.__successors__[source]}
 
     def add_node(self, node, params=False):
         """
@@ -84,8 +87,8 @@ class DiGraph(object):
         """
         self.add_node(source)
         self.add_node(target)
-        #if (source, target) not in self.__edges__:
-            #self.__edges__.append((source, target))
+        # if (source, target) not in self.__edges__:
+        #self.__edges__.append((source, target))
         self.__successors__.setdefault(source, set([])).add(target)
         self.__predecessors__.setdefault(target, set([])).add(source)
         if isinstance(params, dict):
@@ -100,7 +103,7 @@ class DiGraph(object):
         edge = (source, target)
         if edge in self.__edges_data__:
             del self.__edges_data__[edge]
-        #self.__edges__.remove(edge)
+        # self.__edges__.remove(edge)
         self.__successors__[source].remove(target)
         self.__predecessors__[target].remove(source)
 
@@ -123,6 +126,7 @@ class DiGraph(object):
         Returns the set of successors nodes given a node
         """
         return self.__successors__.get(node, set([]))
+
     def predecessors(self, node):
         """
         Returns the set of predecessors nodes given a node
@@ -143,12 +147,14 @@ class Concept(dict):
     """
     EMARK = '0'
     IMARK = '1'
+
     @property
     def extent(self):
         """
         access extent
         """
         return self[self.EMARK]
+
     @property
     def intent(self):
         """
@@ -167,8 +173,8 @@ class POSET(DiGraph):
 
     def __init__(self, transformer=None):
         super(POSET, self).__init__()
-        self.infimum = -1
-        self.supremum = -2
+        self.infimum = 0
+        self.supremum = -1
         Concept.EMARK = self.EXTENT_MARK
         Concept.IMARK = self.INTENT_MARK
 
@@ -244,13 +250,14 @@ class POSET(DiGraph):
 
         for concept in self.concepts():
             concept_data = {
-                ema: sorted([g_map.get(i, i) for i in concept[1][ema]]),
-                ima: sorted([m_map.get(i, i) for i in concept[1][ima].repr()]),
+                ema: [g_map.get(i, i) for i in concept[1][ema]],
+                ima: [m_map.get(i, i) for i in concept[1][ima].repr()],
                 'sup': sorted(self.successors(concept[0])),
                 'sub': sorted(self.predecessors(concept[0]))
-                }
+            }
             concepts[concept[0]] = concept_data
         return concepts
+
 
 class ConceptLattice(POSET):
     """
@@ -273,7 +280,8 @@ class ConceptLattice(POSET):
         Adds a new concept to the lattice
         Wraps add_node
         """
-        cid = super(ConceptLattice, self).new_formal_concept(extent, intent, concept_id)
+        cid = super(ConceptLattice, self).new_formal_concept(
+            extent, intent, concept_id)
         self.concept[cid]['not_visited'] = True
         return cid
 
@@ -302,13 +310,20 @@ class ConceptLattice(POSET):
 """
     Abstract class
 """
+
+
 class Intent(object):
     """
     Abstract class for a formal concept intent
     """
+    _bottom = None
+    _top = None
+    TYPES = Enum("TYPES", "MIDDLE BOTTOM TOP")
+
     def __init__(self, desc):
         self.desc = desc
-        self.__type__ = 0 # 1: top, -1: bottom, 0: non-top-bottom concepts
+        # 1: top, -1: bottom, 0: non-top-bottom concepts
+        self.__type__ = Intent.TYPES.MIDDLE
 
     def repr(self):
         """
@@ -335,6 +350,7 @@ class Intent(object):
         Returns a string representation of the intent
         """
         return self.__i_str__()
+
     def __le__(self, other):
         """
         overrides the < operator
@@ -349,33 +365,49 @@ class Intent(object):
         Tests if this intent is the same as another
         """
         return self.__i_eq__(other)
+
     def __len__(self):
         """
         overrides the len operator
         returns a measure of the size of the representation if applicable
         """
         return self.__i_len__()
+
     def __contains__(self, key):
         """
         overrides the "in" operator
         return boolean
         """
         return self.__i_contains__(key)
+
     def __iter__(self):
         """
         overrides iterator over the description
         """
         return self.__i_iter__()
+
     def __i_str__(self):
         """
         Implements the string representation
         """
         return str(self.repr())
+
     def copy(self):
         """
         Returns a copy of self
         """
         return copy.copy(self)
+
+    @classmethod
+    def reset(cls):
+        """
+        PATTERNS HAVE SINGLETONS THAT NEED TO BE RESETED
+        WHEN REUSING THEM, WHENEVER YOU CALCULATE PATTERN STRUCTURES
+        MULTIPLE TIMES, YOU NEED TO RESET THEM BEFORE RE-USING
+        THEM, NOT DOING THIS MAY LEAD TO INCONSISTENCIES
+        """
+        cls._top = None
+        cls._bottom = None
 
     # IMPLEMENTATIONS: THESE NEXT METHODS SHOULD BE IMPLEMENTED BY ANY NEW REPRESENTATION
     @classmethod
@@ -386,6 +418,7 @@ class Intent(object):
         Returns Intent type
         """
         raise NotImplementedError
+
     @classmethod
     def top(cls, top_rep=None):
         """
@@ -394,11 +427,24 @@ class Intent(object):
         Returns Intent type
         """
         raise NotImplementedError
+
     def __i_iter__(self):
         """
         Implements iterable over the description
         """
         raise NotImplementedError
+
+    def union(self, other):
+        """
+        Returns the union of two representations
+        Be aware that the union of two closed representations is not closed!
+        This method should not care about closing the new representation
+
+        For the case of sets, this is actually set union
+        Returns a new united intent
+        """
+        raise NotImplementedError
+
     def intersection(self, other):
         """
         Intersects two intent representations
@@ -406,6 +452,7 @@ class Intent(object):
         Returns a new intersected intent
         """
         raise NotImplementedError
+
     def join(self, other):
         """
         Joins two representations from the perspective of the lattice
@@ -415,17 +462,30 @@ class Intent(object):
         The other should remain unchanged
         """
         raise NotImplementedError
+
+    def meet(self, other):
+        """
+        Meets two representations from the perspective of the lattice
+        For the case of sets, this is actually set intersection
+        Instead of returning a new intent, this modifies this intent
+        by joining it with the other
+        The other should remain unchanged
+        """
+        raise NotImplementedError
+
     def is_empty(self):
         """
         Tests the notion of empty representation
         In the case of sets, this is if the cardinality is zero
         """
         raise NotImplementedError
+
     def __i_eq__(self, other):
         """
         Implements the == operator
         """
         raise NotImplementedError
+
     def __i_le__(self, other):
         """
         Implements the < operator
@@ -437,15 +497,19 @@ class Intent(object):
         Implements the len operator
         """
         raise NotImplementedError
+
     def __i_contains__(self, key):
         """
         Implements "in" operator
         """
         raise NotImplementedError
 
+
 """
     Set pattern, classic FCA
 """
+
+
 class SetPattern(Intent):
     """
     Implements the set intent representation
@@ -453,35 +517,52 @@ class SetPattern(Intent):
     """
     _bottom = None
     _top = None
+
     @classmethod
     def bottom(cls, bot_rep=None):
-        if SetPattern._bottom is None:
-            SetPattern._bottom = cls(set([]))
-        return SetPattern._bottom
+        if cls._bottom is None:
+            cls._bottom = cls(frozenset([]))
+        return cls._bottom
+
     @classmethod
     def top(cls, top_rep=None):
         if top_rep is None:
-            top_rep = set([])
-        if SetPattern._top is None:
-            SetPattern._top = cls(top_rep)
-        return SetPattern._top
+            top_rep = frozenset([])
+        if cls._top is None:
+            cls._top = cls(top_rep)
+        return cls._top
+
     def repr(self):
         return sorted(self.desc)
     # IMPLEMENTATIONS
+
+    def union(self, other):
+        return SetPattern(self.desc.union(other.desc))
+
     def intersection(self, other):
         return SetPattern(self.desc.intersection(other.desc))
+
     def join(self, other):
         self.desc = self.desc.union(other.desc)
+
+    def meet(self, other):
+        self.desc = self.desc.intersection(other.desc)
+
     def is_empty(self):
         return len(self.desc) == 0
+
     def __i_eq__(self, other):
         return self.desc == other.desc
+
     def __i_le__(self, other):
         return self.desc.issubset(other.desc)
+
     def __i_len__(self):
         return len(self.desc)
+
     def __i_contains__(self, key):
         return key in self.desc
+
     def __i_iter__(self):
         for i in sorted(self.desc):
             yield i

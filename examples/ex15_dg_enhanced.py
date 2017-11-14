@@ -19,23 +19,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 import argparse
 from fca.reader import FormalContextManager
-from fca.algorithms.canonical_base import CanonicalBase
+from fca.algorithms.canonical_base import EnhancedDG
 
-def exec_ex10(filepath, min_sup=0):
+
+def exec_ex15(filepath):
     """
-    Example 10 - Obtains the Duquenne-Guigues Canonical Base
-    of Implications Rules with NextClosure
+    Example 15 - Obtains the Duquenne-Guigues Canonical Base
+    of Implications Rules using the improved algorithm 17
+    in chapter 3 of Conceptual Exploration
     """
-    canonical_base = CanonicalBase(FormalContextManager(filepath=filepath), min_sup=min_sup, lazy=False)
+    canonical_base = EnhancedDG(
+        FormalContextManager(filepath=filepath), lazy=False)
     for rule, support in canonical_base.get_implications():
         ant, con = rule
         print('{}=>{}'.format(ant, con), support)
 
 
 if __name__ == '__main__':
-    __parser__ = argparse.ArgumentParser(description='Example 10 - Obtains the Duquenne-Guigues Canonical Base\n                       of Implications Rules with NextClosure\n                    ')
-    __parser__.add_argument('context_path', metavar='context_path', type=str, help='path to the formal context in txt, space separated values, one object representation per line')
-    __parser__.add_argument('-m', '--min_sup', metavar='min_sup', type=float, help='Relative minimum support [0,1]', default=0.0)
+    __parser__ = argparse.ArgumentParser(description="""
+    Example 15 - Obtains the Duquenne-Guigues Canonical Base
+    of Implications Rules using the improved algorithm 17
+    in chapter 3 of Conceptual Exploration
+    """)
+    __parser__.add_argument('context_path', metavar='context_path', type=str,
+                            help='path to the formal context in txt, space separated values, one object representation per line')
     __args__ = __parser__.parse_args()
-    exec_ex10(__args__.context_path, __args__.min_sup)
-# okay decompiling ex10_dg_imp_base_nc.pyc
+    exec_ex15(__args__.context_path)

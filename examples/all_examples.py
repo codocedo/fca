@@ -18,22 +18,30 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Kyori code.
 
 from __future__ import print_function
+import sys
 from ex1_fca import exec_ex1
 from ex2_fc import exec_ex2
 from ex3_ps_intervals import exec_ex3
 from ex4_ps_custom import exec_ex4
 from ex5_cbo import exec_ex5
-from ex6_cbo_ps import exec_ex6
+from ex6_ps_cbo import exec_ex6
 from ex7_hyg_pat import exec_ex7
 from ex8_hyg_pat_cbo import exec_ex8
 from ex9_next_closure import exec_ex9
 from ex10_dg_imp_base_nc import exec_ex10
+from ex11_previous_closure import exec_ex11
+from ex12_ps_previous_closure import exec_ex12
+from ex13_ps_canonical_basis import exec_ex13
+from ex14_ps_next_closure import exec_ex14
+from ex15_dg_enhanced import exec_ex15
 
 __fctx_path__ = '../data/example.txt'
 __ps_path__ = '../data/numerical_data.txt'
+__part_ps_path__ = '../data/xyzw.csv'
 __a_min_sup__ = 2
 __r_min_sup__ = 0.25
 __nasterisks__ = 100
+__max_parts__ = 3
 
 if __name__ == "__main__":
     print("*"*__nasterisks__)
@@ -58,7 +66,7 @@ if __name__ == "__main__":
     print("*"*__nasterisks__)
     print("Example 4: Custom Pattern Structures, setting a threshold for mining interval patterns")
     print("Input File: {}".format(__ps_path__))
-    print("Min. Sup.: {}".format(__a_min_sup__))
+    print("THETA: {}".format(__a_min_sup__))
     print("*"*__nasterisks__)
     exec_ex4(__ps_path__, __a_min_sup__)
 
@@ -86,7 +94,9 @@ if __name__ == "__main__":
     print("Example 8: Partiton Pattern Structures with CbO")
     print("Input File: {}".format(__ps_path__))
     print("*"*__nasterisks__)
+    print (__ps_path__)
     exec_ex8(__ps_path__)
+    
 
     print("*"*__nasterisks__)
     print("Example 9: FCA with NextClosure")
@@ -101,3 +111,37 @@ if __name__ == "__main__":
     print("Min. Sup.: {}".format(__r_min_sup__))
     print("*"*__nasterisks__)
     exec_ex10(__fctx_path__, __r_min_sup__)
+
+    print("*"*__nasterisks__)
+    print("Example 11: FCA with PreviousClosure")
+    print("Input File: {}".format(__ps_path__))
+    print("Min. Sup.: {}".format(__r_min_sup__))
+    print("*"*__nasterisks__)
+    exec_ex11(__fctx_path__, __r_min_sup__)
+
+    print("*"*__nasterisks__)
+    print("Example 12 - Partition Pattern Structure Mining with PreviousClosure")
+    print("Input File: {}".format(__part_ps_path__))
+    print("Maximum Parts: INF")
+    print("*"*__nasterisks__)
+    exec_ex12(__part_ps_path__, sys.maxint)
+
+    print("*"*__nasterisks__)
+    print("Example 13 - Canonical Base when extents are Partition Pattern Structures")
+    print("Input File: {}".format(__part_ps_path__))
+    print("Maximum Parts: INF")
+    print("*"*__nasterisks__)
+    exec_ex13(__part_ps_path__, sys.maxint)
+
+    print("*"*__nasterisks__)
+    print("Example 14 - Partition Pattern StructureS with NexClosure")
+    print("Input File: {}".format(__part_ps_path__))
+    print("Maximum Parts: {}".format(__max_parts__))
+    print("*"*__nasterisks__)
+    exec_ex14(__part_ps_path__, __max_parts__)
+
+    print("*"*__nasterisks__)
+    print("Example 15 - Duquenne Guiges base with EnhanceDG")
+    print("Input File: {}".format(__fctx_path__))
+    print("*"*__nasterisks__)
+    exec_ex15(__fctx_path__)

@@ -41,7 +41,7 @@ class Algorithm(object):
         """
         raise NotImplementedError
 
-    def run(self):
+    def run(self, *args, **kwargs):
         """
         Executes the algorithm
         """

@@ -21,10 +21,11 @@ from fca.defs import Intent
 
 class PartitionPattern(Intent):
     """
-    Description is a list of sets
+    Description is a list of frozensets
     """
     # the bottom will be a singleton
-    __bottom = None
+    _top = None
+    _bottom = None
 
     def __init__(self, desc):
         super(PartitionPattern, self).__init__(PartitionPattern.sort_desc(desc))
@@ -68,6 +69,9 @@ class PartitionPattern(Intent):
     def join(self, other):
         self.desc = [self.desc[0].union(chain(*other.desc))]
 
+    def meet(self, other):
+        raise NotImplementedError
+
     def __i_len__(self):
         return len([i for i in self.desc if len(i) > 0])
 
@@ -83,34 +87,38 @@ class PartitionPattern(Intent):
 
     @classmethod
     def top(cls, top_rep=None):
-        if top_rep is None:
-            top = cls([set([])])
-        else:
-            top = cls([set(chain(*top_rep[0]))])
+        if cls._top is None:
+            if top_rep is None:
+                cls._top = cls([frozenset([])])
+            else:
+                cls._top = cls([frozenset(chain(*top_rep[0]))])
 
-        top.__i_le__ = lambda s: False
-        top.__type__ = 1
-        top.__i_eq__ = lambda s: s.__type__ == 1
-        return top
+            cls._top.__i_le__ = lambda s: False
+            cls._top.__type__ = Intent.TYPES.TOP
+            cls._top.__i_eq__ = lambda s: s.__type__ == Intent.TYPES.TOP
+        else:
+            if top_rep is not None:
+                cls._top.desc = top_rep
+        return cls._top
 
     @classmethod
     def bottom(cls, bot_rep=None):
         """
         The bottom is a singleton
         """
-        if cls.__bottom is None:
+        if cls._bottom is None:
             if bot_rep is None:
-                bot_rep = [set([])]
-            cls.__bottom = cls(bot_rep)
-            cls.__bottom.__i_le__ = lambda s: True
-            cls.__bottom.is_empty = lambda: True
-            cls.__bottom.__type__ = -1
-            cls.__bottom.__i_eq__ = lambda s: s.__type__ == -1 or s.desc == cls.__bottom.desc
-            cls.__bottom.intersection = lambda s: cls.__bottom
-            return cls.__bottom
+                bot_rep = [frozenset([])]
+            cls._bottom = cls(bot_rep)
+            cls._bottom.__i_le__ = lambda s: True
+            cls._bottom.is_empty = lambda: True
+            cls._bottom.__type__ = Intent.TYPES.BOTTOM
+            cls._bottom.__i_eq__ = lambda s: s.__type__ == Intent.TYPES.BOTTOM or s.desc == cls._bottom.desc
+            cls._bottom.intersection = lambda s: cls._bottom
+            return cls._bottom
         else:
-            cls.__bottom.desc = bot_rep
-            return cls.__bottom
+            cls._bottom.desc = bot_rep
+            return cls._bottom
 
 
     @staticmethod
@@ -119,4 +127,3 @@ class PartitionPattern(Intent):
         Sort desc, necessary to ensure optimized comparisons
         """
         return sorted(desc, key=lambda x: sorted(x))
-

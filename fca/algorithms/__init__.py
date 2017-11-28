@@ -15,11 +15,36 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
+lst2str = lambda lst: reduce(lambda x, y: str(x)+', '+str(y), lst+['']) if len(lst) > 0 else "[]"
+
 def lexo(set_a, set_b):
     """
     LEXICAL COMPARISON BETWEEN TWO SETS OF INTEGERS
     """
     return tuple(sorted(set_a)) <= tuple(sorted(set_b))
+
+
+def dict_printer(poset, transposed=False, indices=False):
+    """
+    Nicely print the concepts in the poset
+    """
+    ema = poset.EXTENT_MARK
+    ima = poset.INTENT_MARK
+    if transposed:
+        ema = poset.INTENT_MARK
+        ima = poset.EXTENT_MARK
+
+    order = lambda s: (
+        len(s[1][ema]), s[1][ima]
+    )
+
+    for i, (concept_id, concept) in enumerate(sorted(poset.as_dict(indices).items(), key=order)):
+        print '{}\t{}\t\t{}'.format(
+            i+1,
+            lst2str(concept[ema]),
+            lst2str(concept[ima])
+        )
 
 
 class Algorithm(object):

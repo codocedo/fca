@@ -57,5 +57,5 @@ class PreClosure(object):
             old_len = len(pattern)
             for ant, con in self.imp_base:
                 if ant <= pattern and len(ant) != len(pattern):
-                    pattern.join(con)
+                    pattern.update(con)
         return pattern

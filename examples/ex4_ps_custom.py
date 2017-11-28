@@ -17,10 +17,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
 import argparse
+from fca.algorithms import dict_printer
 from fca.algorithms.addIntent import AddIntent
 from fca.defs.patterns import IntervalPattern
 from fca.reader import read_representations, List2IntervalsTransformer
-from ex2_fc import dict_printer
+
+
 
 class MaxLengthIntervalPattern(IntervalPattern):
     """
@@ -31,19 +33,22 @@ class MaxLengthIntervalPattern(IntervalPattern):
     """
     THETA = 0
 
-    def intersection(self, other):
+    @classmethod
+    def intersection(cls, desc1, desc2):
         """
         Each interval should be at most of length THETA
         if not, the intersection is the bottom
         """
         new_interval = []
-        for i, j in zip(self.desc, other.desc):
-            if max(i[1], j[1]) - min(i[0], j[0]) <= MaxLengthIntervalPattern.THETA:
-                new_interval.append((min(i[0], j[0]), max(i[1], j[1])))
-            else:
-                return self.bottom()
-
-        return MaxLengthIntervalPattern(new_interval)
+        bottom = False
+        for i, j in zip(desc1, desc2):
+            new_interval.append((min(i[0], j[0]), max(i[1], j[1])))
+            if max(i[1], j[1]) - min(i[0], j[0]) > cls.THETA:
+                bottom = True
+        if bottom:
+            bot = MaxLengthIntervalPattern.bottom(new_interval)
+            return bot
+        return new_interval
 
 
 def exec_ex4(filepath, theta_value):
@@ -51,6 +56,7 @@ def exec_ex4(filepath, theta_value):
     Execute this example
     """
     MaxLengthIntervalPattern.THETA = int(theta_value)
+    # AddIntent(read_representations(filepath, transformer=List2IntervalsTransformer(int)), pattern=MaxLengthIntervalPattern, lazy=False, silent=False)
     dict_printer(AddIntent(read_representations(filepath, transformer=List2IntervalsTransformer(int)), pattern=MaxLengthIntervalPattern, lazy=False, silent=False).lat)
 
 

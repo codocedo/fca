@@ -18,20 +18,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Kyori code.
 import argparse
 import re
+from fca.algorithms import dict_printer
 from fca.algorithms.addIntent import AddIntent
 from fca.defs.patterns import IcebergSetPattern
 from fca.reader import read_representations
-
-def dict_printer(poset):
-    """
-    Nicely print the concepts in the poset
-    """
-    order = lambda s: (
-     len(s[1][poset.EXTENT_MARK]), s[1][poset.EXTENT_MARK])
-    for concept_id, concept in sorted(poset.as_dict().items(), key=order):
-        if concept_id >= -2:
-            print '{} {} {}'.format('', concept[poset.EXTENT_MARK], concept[poset.INTENT_MARK])
-
 
 def read_int_input(msg):
     """
@@ -49,9 +39,15 @@ def exec_ex2(filepath, min_sup):
     Notice that we have imported a different kind of pattern
     IcebergSetPattern allows setting a min sup value
     """
+    IcebergSetPattern.reset()
     IcebergSetPattern.MIN_SUP = min_sup
-    lattice = AddIntent(read_representations(filepath, transposed=True), pattern=IcebergSetPattern, lazy=False, silent=False).lat
-    dict_printer(lattice)
+    fctx = read_representations(filepath, transposed=True)
+    lattice = AddIntent(fctx, pattern=IcebergSetPattern, lazy=False, silent=False).lat
+    dict_printer(lattice, transposed=False, indices=False)
+    fctx = read_representations(filepath, transposed=True)
+    print [fctx.transformer.real_attributes(*i) for i in fctx.representations]
+    print fctx.transformer.object_index
+    print fctx.transformer.attribute_index
 
 
 if __name__ == '__main__':

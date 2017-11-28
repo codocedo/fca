@@ -21,20 +21,22 @@ import argparse
 from fca.defs.patterns.hypergraphs import PartitionPattern
 from fca.reader import List2IntervalsTransformer
 from fca.reader import read_representations
+from fca.algorithms import dict_printer
 from fca.algorithms.addIntent import AddIntent
-from ex2_fc import dict_printer
+
 
 class List2PartitionsTransformer(List2IntervalsTransformer):
     """
     Transforms a list of values to a partition containing equivalence classes of indices
     [0,1,0,1,1] -> [set([0,2]), set([1,3,4])]
     """
+    def real_attributes(self, *args):
+        return list([tuple(sorted(i)) for i in args])
 
     def parse(self, lst):
         hashes = {}
         for i, j in enumerate(lst):
             hashes.setdefault(j, []).append(i)
-
         return [ set(i) for i in hashes.values() ]
 
 
@@ -44,8 +46,19 @@ def exec_ex7(filepath):
     Generates partitions based on equivalence classes,
     using a custom Transformer (List2PartitionsTransformer)
     """
-    dict_printer(AddIntent(read_representations(filepath, transformer=List2PartitionsTransformer(int), transposed=True, file_manager_params={'style': 'tab'
-       }), pattern=PartitionPattern, lazy=False, silent=False).lat)
+    dict_printer(
+        AddIntent(
+            read_representations(
+                filepath,
+                transformer=List2PartitionsTransformer(int),
+                transposed=True,
+                file_manager_params={'style': 'tab'}
+            ),
+            pattern=PartitionPattern,
+            lazy=False,
+            silent=False
+        ).lat
+    )
 
 
 if __name__ == '__main__':

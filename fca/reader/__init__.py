@@ -44,7 +44,52 @@ class Transformer(object):
     a pattern
     """
     def __init__(self):
-        pass
+        # OBJECTS AND INDEX (INVERTED MAP)
+        self.objects = {}
+        self.object_index = {}
+        # ATTRIBUTES AND INDEX (INVERTED MAP)
+        self.attributes = {}
+        self.attribute_index = {}
+
+    def register_object(self, obj):
+        """
+        Registers object generating an inverted map for recovery
+        
+        obj: real object
+        return object index
+        """
+        self.object_index[self.objects.setdefault(obj, len(self.objects))] = obj
+        return self.objects[obj]
+
+    def register_attribute(self, att):
+        """
+        Registers attribute generating an inverted map for recovery
+        att: real attribute
+        return attribute index
+        """
+        self.attribute_index[self.attributes.setdefault(att, len(self.attributes))] = att
+        return self.attributes[att]
+
+    def real_objects(self, *args):
+        """
+        Returns the real objects behind the indexed representation
+        args: list of object indices
+        return list of objects
+        """
+        if not bool(args):
+            return args
+        return [self.object_index.get(i, i) for i in args]
+
+    def real_attributes(self, *args):
+        """
+        Returns the real attributes behind the indexed representation
+        args: list of attribute indices
+        return list of attributes
+        """
+        if not bool(args):
+            return args
+        return [self.attribute_index.get(i, i) for i in args]
+
     def transform(self, entry):
         """
         transform an entry into a suitable format for a pattern implementation
@@ -62,13 +107,13 @@ class Transformer(object):
         Returns a map to transform objects symbols back to their
         original representation in the file
         """
-        return {}
+        return self.object_index
     def m_map(self):
         """
         Returns a map to transform attributes symbols back to their
         original representation in the file
         """
-        return {}
+        return self.attribute_index
 
 class List2SetTransformer(Transformer):
     """
@@ -91,22 +136,12 @@ class List2SetTransformer(Transformer):
         It registers each symbol to the corresponding index
         entry: (object, list)
         """
-        self.objects.setdefault(entry[0], len(self.objects))
+        self.register_object(entry[0])
         atts = self.parse(entry[1])
         return atts
 
     def parse(self, lst):
-        return frozenset([self.attributes.setdefault(att, len(self.attributes)) for att in lst])
-
-    def g_map(self):
-        return {j:i for i, j in self.objects.items()}
-
-    def m_map(self):
-        return {j:i for i, j in self.attributes.items()}
-
-    def original_intent(self, intent):
-        m_map = self.m_map()
-        return [m_map[i] for i in intent]
+        return set([self.register_attribute(att) for att in lst])
 
 class List2IntervalsTransformer(Transformer):
     """
@@ -119,7 +154,6 @@ class List2IntervalsTransformer(Transformer):
         """
         super(List2IntervalsTransformer, self).__init__()
         self.data_type = data_type
-        self.objects = {}
 
     def transform(self, entry):
         """
@@ -135,14 +169,32 @@ class List2IntervalsTransformer(Transformer):
             interval.append((self.data_type(i), self.data_type(i)))
         return interval
 
-    def g_map(self):
-        return {j:i for i, j in self.objects.items()}
 
 class List2PartitionsTransformer(List2IntervalsTransformer):
     """
     Transforms a list of values to a partition containing equivalence classes of indices
     [0,1,0,1,1] -> [set([0,2]), set([1,3,4])]
     """
+
+    def __init__(self, transposed=False):
+        """
+        Configures a data type to cast interval values
+        """
+        super(List2PartitionsTransformer, self).__init__(int)
+        if transposed:
+            self.real_objects = self.real_partition
+        else:
+            self.real_attributes = self.real_partition
+
+    def real_partition(self, *args):
+        """
+        Outputs the partition the partition
+        args: list of sets that represents the partition
+
+        return list of tuples
+        """
+        return list([tuple(sorted(i)) for i in args])
+
     def parse(self, lst):
         hashes = {}
         for i, j in enumerate(lst):

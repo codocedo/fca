@@ -16,15 +16,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
-import sys
-from fca.algorithms.next_closure import NextClosure
+from fca.algorithms.previous_closure import PreviousClosure
 from fca.algorithms.cbo import PSCbO
 from fca.algorithms import lexo
 # import objgraph
 
-
-
-class PreviousClosure(NextClosure):
+class StaticPreviousClosure(PreviousClosure):
     """
     Same as NextClosure
     but enumerates backwards
@@ -50,7 +47,6 @@ class PreviousClosure(NextClosure):
     have already been enumerated
     This is particularly needed for calculating pre-closure and implications
     """
-
     def config(self):
         """
         Configure the stacks
@@ -59,23 +55,56 @@ class PreviousClosure(NextClosure):
         stack_enum: stack with the enumerators used for in the stack
         stack_cid: stack witht the mappings to the poset of formal concepts
         """
-        super(PreviousClosure, self).config()
+        super(StaticPreviousClosure, self).config()
 
-        # self.stack = [self.pattern(set([]))] # Stack of patterns
-        self.stack = [set([])]#self.pattern.bottom()] # Stack of patterns
+        self.stack = [self.pattern(set([]))] # Stack of patterns
         self.stack_enum = [-2, self.ctx.n_attributes-1] # Stack of enumerators
         self.stack_supports = [self.ctx.n_objects]
         self.stack_cid = [self.poset.supremum] # Stack of concept ids mapping the stack to the poset
-
 
     def canonical_test(self, *args):
         """
         Applies canonical test to a description
         """
         current_element, pointer, description = args
-        mask = frozenset([pointer])
-        return lexo(current_element.union(mask), description)
-    
+        mask = self.pattern.static_union(frozenset([pointer]), current_element)
+        return lexo(mask, description)
+
+    def derive_extent(self, *args):
+        """
+        Obtain next iteration extent
+        """
+        # extent1, extent2 = args
+        # return extent1.intersection(extent2)
+        return reduce(
+            lambda x, y: x.intersection(y),
+            args
+        )
+
+
+    def derive_intent(self, *args):
+        """
+        Obtain next iteration intent
+        """
+        new_extent = args[0]
+        if not bool(new_extent):
+            return self.pattern.top().desc
+        return reduce(
+            lambda x, y: self.pattern.static_intersection(x, y),
+            [self.ctx.g_prime[g] for g in new_extent]
+        )
+
+    def meet_concepts(self, *args):
+        """
+        Meet Concepts
+        """
+        new_extent = self.derive_extent(args[0], args[2])
+        if self.evaluate_conditions(new_extent):
+            new_intent = self.derive_intent(new_extent)
+            return new_extent, new_intent
+        del new_extent
+        return None, self.pattern.bottom().desc
+
     def next_closure(self):
         """
         Computes the next closure in the stack
@@ -103,7 +132,8 @@ class PreviousClosure(NextClosure):
 
             # CLOSURE
             self.calls += 1
-            # sys.stdout.flush()
+
+            # print self.translate(self.pattern(frozenset([j])).union(self.stack[-1]))
             auxiliar_pattern = set([j])
 
             new_extent, new_intent = self.meet_concepts(
@@ -112,9 +142,10 @@ class PreviousClosure(NextClosure):
                 self.poset.concept[self.stack_cid[-1]].extent, #EXTENT2
                 self.stack[-1], #INTENT2
             )
+
             if new_extent is None or \
             not self.canonical_test(self.stack[-1], j, new_intent) \
-            or self.pattern.hash(new_intent) in self.cache:
+            or self.pattern.static_hash(new_intent) in self.cache:
                 self.stack_enum[-1] = j-1
             else:
                 found_closure = True
@@ -127,7 +158,8 @@ class PreviousClosure(NextClosure):
         self.poset.add_edge(self.stack_cid[-1], cid)
         self.stack_cid.append(cid)
         self.stack_supports.append(len(new_extent))
-        self.cache.append(self.pattern.hash(new_intent))
+        self.cache.append(self.pattern.static_hash(new_intent))
+        
         # tr.print_diff()
         # print 'NC::Extent:', id(new_extent), new_extent
         # print 'NC::Intent:', id(new_intent), new_intent
@@ -137,13 +169,3 @@ class PreviousClosure(NextClosure):
         
         # objgraph.show_backrefs(auxiliar_desc, filename='auxiliar_desc.png')
         return cid
-
-
-
-
-class PSPreviousClosure(PreviousClosure, PSCbO):
-    """
-    NextClosure with support for pattern structure at extent level
-    """
-    def __init__(self, ctx, **kwargs):
-        super(PSPreviousClosure, self).__init__(ctx, **kwargs)

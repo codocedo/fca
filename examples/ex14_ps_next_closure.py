@@ -18,24 +18,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Kyori code.
 import sys
 import argparse
+from fca.algorithms import dict_printer
 from fca.algorithms.next_closure import PSNextClosure
 from fca.reader import PatternStructureManager, List2PartitionsTransformer
 from fca.defs.patterns.hypergraphs import PartitionPattern
-
-def dict_printer(poset):
-    """
-    Nicely print the concepts in the poset
-    """
-    order = lambda s: (
-        len(s[1][poset.EXTENT_MARK]), s[1][poset.EXTENT_MARK]
-    )
-    for concept_id, concept in sorted(poset.as_dict().items(), key=order):
-        if concept_id >= -2:
-            print '{} {} || {}'.format(
-                '',
-                [sorted(set(sorted(i)[:2]+sorted(i)[-3:])) for i in concept[poset.EXTENT_MARK]],
-                concept[poset.INTENT_MARK]
-            )
 
 
 
@@ -53,6 +39,8 @@ def exec_ex14(filepath, max_parts):
     # WHEN REUSING THEM, WHENEVER YOU CALCULATE PATTERN STRUCTURES
     # MULTIPLE TIMES, YOU NEED TO RESET THEM BEFORE RE-USING
     # THEM, NOT DOING THIS MAY LEAD TO INCONSISTENCIES
+
+    transposed = True
     PartitionPattern.reset()
 
     conditions = [
@@ -60,8 +48,8 @@ def exec_ex14(filepath, max_parts):
     ]
     fctx = PatternStructureManager(
         filepath=filepath,
-        transformer=List2PartitionsTransformer(int),
-        transposed=True,
+        transformer=List2PartitionsTransformer(transposed=transposed),
+        transposed=transposed,
         file_manager_params={
             'style': 'tab'
         }
@@ -73,7 +61,8 @@ def exec_ex14(filepath, max_parts):
             conditions=conditions,
             pattern=PartitionPattern,
             lazy=False
-        ).poset
+        ).poset,
+        transposed=transposed
     )
 
 

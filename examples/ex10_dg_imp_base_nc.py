@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 import argparse
 from fca.reader import FormalContextManager
+from fca.algorithms import lst2str
 from fca.algorithms.canonical_base import CanonicalBase
 
 def exec_ex10(filepath, min_sup=0):
@@ -26,10 +27,11 @@ def exec_ex10(filepath, min_sup=0):
     Example 10 - Obtains the Duquenne-Guigues Canonical Base
     of Implications Rules with NextClosure
     """
+    
     canonical_base = CanonicalBase(FormalContextManager(filepath=filepath), min_sup=min_sup, lazy=False)
     for rule, support in canonical_base.get_implications():
         ant, con = rule
-        print('{}=>{}'.format(ant, con), support)
+        print('{:>10s} => {:10s}'.format(lst2str(ant),lst2str(con)), support)
 
 
 if __name__ == '__main__':

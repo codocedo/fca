@@ -231,27 +231,28 @@ class POSET(DiGraph):
         """
         return self.nodes(data=True)
 
-    def as_dict(self):
+    def as_dict(self, indices=False):
         """
         Returns a dict serializable version of the lattice
         latice: Lattice to serialize
         g_map: Maps objects' indices to labels
         m_map: Maps attributes' indices to labels
         """
-        if self.__transformer is None:
-            g_map = {}
-            m_map = {}
+        if indices or self.__transformer is None:
+            object_translator = lambda *x: x
+            attribute_translator = lambda *x: x
         else:
-            g_map = self.__transformer.g_map()
-            m_map = self.__transformer.m_map()
+            object_translator = self.__transformer.real_objects
+            attribute_translator = self.__transformer.real_attributes
+
         concepts = {}
         ema = self.EXTENT_MARK
         ima = self.INTENT_MARK
 
         for concept in self.concepts():
             concept_data = {
-                ema: [g_map.get(i, i) for i in concept[1][ema]],
-                ima: [m_map.get(i, i) for i in concept[1][ima].repr()],
+                ema: object_translator(*concept[1][ema]),
+                ima: attribute_translator(*concept[1][ima]),
                 'sup': sorted(self.successors(concept[0])),
                 'sub': sorted(self.predecessors(concept[0]))
             }
@@ -310,8 +311,6 @@ class ConceptLattice(POSET):
 """
     Abstract class
 """
-
-
 class Intent(object):
     """
     Abstract class for a formal concept intent
@@ -542,8 +541,10 @@ class SetPattern(Intent):
     def intersection(self, other):
         return SetPattern(self.desc.intersection(other.desc))
 
+    
+
     def join(self, other):
-        self.desc = self.desc.union(other.desc)
+        self.desc.update(other.desc)
 
     def meet(self, other):
         self.desc = self.desc.intersection(other.desc)
@@ -565,4 +566,236 @@ class SetPattern(Intent):
 
     def __i_iter__(self):
         for i in sorted(self.desc):
+            yield i
+
+################
+"""
+    Abstract class
+"""
+class SIntent(object):
+    """
+    Shell Intent or Static Intent, it provides a shell for the 
+    intent behavior, while the descriptions is stored somewhere else
+    This avoids creating one object per actual intent
+    However, this may require to make the description somehow more complex
+    than it is now
+    """
+    _bottom = None
+    _top = None
+    TYPES = Enum("TYPES", "MIDDLE BOTTOM TOP")
+
+    @classmethod
+    def fix_desc(cls, desc):
+        return desc
+
+    @classmethod
+    def to_string(cls, desc):
+        """
+        Returns a suitable representation
+        If not, returns the actual representation
+        """
+        return str("{}({})".format(cls, desc))
+
+    @classmethod
+    def hash(cls, desc):
+        """
+        Hash pattern to index them
+        """
+        if desc == cls._bottom:
+            return id(cls._bottom)
+        if desc == cls._top:
+            return id(cls._top)
+        return hashlib.sha224(str(desc).encode('utf8')).hexdigest()
+
+    @classmethod
+    def copy(cls, desc):
+        """
+        Returns a copy of self
+        """
+        return copy.copy(desc)
+
+    @classmethod
+    def reset(cls):
+        """
+        PATTERNS HAVE SINGLETONS THAT NEED TO BE RESETED
+        WHEN REUSING THEM, WHENEVER YOU CALCULATE PATTERN STRUCTURES
+        MULTIPLE TIMES, YOU NEED TO RESET THEM BEFORE RE-USING
+        THEM, NOT DOING THIS MAY LEAD TO INCONSISTENCIES
+        """
+        cls._top = None
+        cls._bottom = None
+
+    # IMPLEMENTATIONS: THESE NEXT METHODS SHOULD BE IMPLEMENTED BY ANY NEW REPRESENTATION
+    @classmethod
+    def bottom(cls, bot_rep=None):
+        """
+        returns the bottom of the intent representation.
+        It may not exists in certain spaces.
+        Returns Intent type
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def top(cls, top_rep=None):
+        """
+        returns the top of the intent representation.
+        It may not exists in certain spaces.
+        Returns Intent type
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def get_iterator(cls, desc):
+        """
+        Implements iterable over the description
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def union(cls, desc1, desc2):
+        """
+        Returns the union of two representations
+        Be aware that the union of two closed representations is not closed!
+        This method should not care about closing the new representation
+
+        For the case of sets, this is actually set union
+        Returns a new united intent
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def intersection(cls, desc1, desc2):
+        """
+        Intersects two intent representations
+        For the case of sets, this is actually set intersection
+        Returns a new intersected intent
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def join(cls, desc1, desc2):
+        """
+        Joins two representations from the perspective of the lattice
+        For the case of sets, this is actually set union
+        Instead of returning a new intent, this modifies this intent
+        by joining it with the other
+        The other should remain unchanged
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def meet(cls, desc1, desc2):
+        """
+        Meets two representations from the perspective of the lattice
+        For the case of sets, this is actually set intersection
+        Instead of returning a new intent, this modifies this intent
+        by joining it with the other
+        The other should remain unchanged
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def is_empty(cls, desc):
+        """
+        Tests the notion of empty representation
+        In the case of sets, this is if the cardinality is zero
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def is_equal(cls, desc1, desc2):
+        """
+        Implements the == operator
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def leq(cls, desc1, desc2):
+        """
+        Implements the < operator
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def length(cls, desc):
+        """
+        Implements the len operator
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def contains(cls, desc, key):
+        """
+        Implements "in" operator
+        """
+        raise NotImplementedError
+
+
+class SSetPattern(SIntent):
+    """
+    Implements the shell set intent representation
+    This is, standard FCA
+    """
+    _bottom = None
+    _top = None
+
+    @classmethod
+    def bottom(cls, bot_rep=None):
+        if cls._bottom is None:
+            cls._bottom = frozenset([])
+        return cls._bottom
+
+    @classmethod
+    def top(cls, top_rep=None):
+        if cls._top is None:
+            cls._top = set([])
+        if top_rep is not None:
+            cls._top.update(top_rep)
+        return cls._top
+
+    @classmethod
+    def to_string(cls, desc):
+        return str(sorted(desc))
+    # IMPLEMENTATIONS
+
+    @classmethod
+    def union(cls, desc1, desc2):
+        return desc1.union(desc2)
+
+    @classmethod
+    def intersection(cls, desc1, desc2):
+        return desc1.intersection(desc2)
+
+    @classmethod
+    def leq(cls, desc1, desc2):
+        return desc1.issubset(desc2)
+
+    @classmethod
+    def meet(cls, desc1, desc2):
+        desc1 = desc1.intersection(desc2)
+
+    @classmethod
+    def join(cls, desc1, desc2):
+        desc1.update(desc2)
+
+
+    @classmethod
+    def is_empty(cls, desc):
+        return len(desc) == 0
+
+    @classmethod
+    def is_equal(cls, desc1, desc2):
+        return desc1 == desc2
+
+    @classmethod
+    def length(cls, desc):
+        return len(desc)
+
+    @classmethod
+    def contains(cls, desc, key):
+        return key in desc
+
+    @classmethod
+    def get_iterator(cls, desc):
+        for i in sorted(desc):
             yield i

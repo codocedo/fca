@@ -100,24 +100,24 @@ if __name__ == "__main__":
 
     print("*"*__nasterisks__)
     print("Example 9: FCA with NextClosure")
-    print("Input File: {}".format(__ps_path__))
+    print("Input File: {}".format(__fctx_path__))
     print("Min. Sup.: {}".format(__r_min_sup__))
     print("*"*__nasterisks__)
     exec_ex9(__fctx_path__, __r_min_sup__)
 
     print("*"*__nasterisks__)
     print("Example 10: Duquenne-Guigues Canonical Basis of Implication Rules with NextClosure")
-    print("Input File: {}".format(__ps_path__))
+    print("Input File: {}".format(__fctx_path__))
     print("Min. Sup.: {}".format(__r_min_sup__))
     print("*"*__nasterisks__)
     exec_ex10(__fctx_path__, __r_min_sup__)
 
     print("*"*__nasterisks__)
     print("Example 11: FCA with PreviousClosure")
-    print("Input File: {}".format(__ps_path__))
-    print("Min. Sup.: {}".format(__r_min_sup__))
+    print("Input File: {}".format(__fctx_path__))
+    # print("Min. Sup.: {}".format(__r_min_sup__))
     print("*"*__nasterisks__)
-    exec_ex11(__fctx_path__, __r_min_sup__)
+    exec_ex11(__fctx_path__, 0)
 
     print("*"*__nasterisks__)
     print("Example 12 - Partition Pattern Structure Mining with PreviousClosure")
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     exec_ex13(__part_ps_path__, sys.maxint)
 
     print("*"*__nasterisks__)
-    print("Example 14 - Partition Pattern StructureS with NexClosure")
+    print("Example 14 - Partition Pattern Structures with NexClosure")
     print("Input File: {}".format(__part_ps_path__))
     print("Maximum Parts: {}".format(__max_parts__))
     print("*"*__nasterisks__)

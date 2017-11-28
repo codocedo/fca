@@ -18,9 +18,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Kyori code.
 from __future__ import print_function
 import argparse
+from fca.algorithms import dict_printer
 from fca.reader import FormalContextManager
 from fca.algorithms.cbo import CbO
-from ex2_fc import dict_printer
+
 
 def read_float_input(msg):
     """

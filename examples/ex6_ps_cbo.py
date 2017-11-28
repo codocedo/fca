@@ -17,11 +17,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from __future__ import print_function
 import argparse
-from fca.defs.patterns import  MaxLenghtIntervalPattern
+from fca.defs.patterns import  MaxLengthIntervalPattern
 from fca.reader import List2IntervalsTransformer
 from fca.reader import FormalContextManager
+from fca.algorithms import dict_printer
 from fca.algorithms.cbo import PSCbO
-from ex2_fc import dict_printer
+
 
 def exec_ex6(filepath, theta):
     """
@@ -31,8 +32,8 @@ def exec_ex6(filepath, theta):
     PSCbO lists objects one by one, in a bottom-up way
     """
     fctx = FormalContextManager(filepath=filepath, transformer=List2IntervalsTransformer(int))
-    MaxLenghtIntervalPattern.THETA = theta
-    dict_printer(PSCbO(fctx, pattern=MaxLenghtIntervalPattern, lazy=False).poset)
+    MaxLengthIntervalPattern.THETA = theta
+    dict_printer(PSCbO(fctx, pattern=MaxLengthIntervalPattern, lazy=False).poset, transposed=True)
 
 
 if __name__ == '__main__':

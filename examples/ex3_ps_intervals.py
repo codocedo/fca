@@ -17,10 +17,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
 import argparse
+from fca.algorithms import dict_printer
 from fca.algorithms.addIntent import AddIntent
 from fca.defs.patterns import IntervalPattern
 from fca.reader import read_representations, List2IntervalsTransformer
-from ex2_fc import dict_printer
+
 
 def exec_ex3(filepath):
     """
@@ -33,7 +34,7 @@ def exec_ex3(filepath):
     suitable for IntervalPatterns. It can be configured to use int or floats
     as a base for value
     """
-    dict_printer(AddIntent(read_representations(filepath, transformer=List2IntervalsTransformer(int)), pattern=IntervalPattern, lazy=False).lat)
+    dict_printer(AddIntent(read_representations(filepath, transformer=List2IntervalsTransformer(int)), pattern=IntervalPattern, lazy=False, silent=False).lat)
 
 
 if __name__ == '__main__':

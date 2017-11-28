@@ -19,11 +19,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 import argparse
 from fca.defs.patterns.hypergraphs import PartitionPattern
-from fca.reader import PatternStructureManager, List2PartitionsTransformer
+from fca.reader import PatternStructureManager, List2IntervalsTransformer
+from fca.algorithms import dict_printer
 from fca.algorithms.cbo import PSCbO
-from ex2_fc import dict_printer
 
 
+class List2PartitionsTransformer(List2IntervalsTransformer):
+    """
+    Transforms a list of values to a partition containing equivalence classes of indices
+    [0,1,0,1,1] -> [set([0,2]), set([1,3,4])]
+    """
+    def real_objects(self, *args):
+        return list([tuple(sorted(i)) for i in args])
+
+    def parse(self, lst):
+        hashes = {}
+        for i, j in enumerate(lst):
+            hashes.setdefault(j, []).append(i)
+        return [ set(i) for i in hashes.values() ]
 
 def exec_ex8(filepath):
     """
@@ -46,7 +59,7 @@ def exec_ex8(filepath):
             'style': 'tab'
         }
     )
-    dict_printer(PSCbO(fctx, pattern=PartitionPattern, lazy=False).poset)
+    dict_printer(PSCbO(fctx, pattern=PartitionPattern, lazy=False, silent=False).poset, transposed=True)
 
 
 if __name__ == '__main__':

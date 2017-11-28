@@ -19,8 +19,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 import argparse
 from fca.reader import FormalContextManager
+from fca.algorithms import dict_printer
 from fca.algorithms.next_closure import NextClosure
-from ex2_fc import dict_printer
+
 
 def exec_ex9(filepath, min_sup=0):
     """

@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Kyori code.
 from __future__ import print_function
 import argparse
+from fca.algorithms import lst2str
 from fca.reader import FormalContextManager
 from fca.algorithms.canonical_base import EnhancedDG
 
@@ -29,10 +30,12 @@ def exec_ex15(filepath):
     in chapter 3 of Conceptual Exploration
     """
     canonical_base = EnhancedDG(
-        FormalContextManager(filepath=filepath), lazy=False)
+        FormalContextManager(filepath=filepath), lazy=False
+    )
+    
     for rule, support in canonical_base.get_implications():
         ant, con = rule
-        print('{}=>{}'.format(ant, con), support)
+        print('{:>10s} => {:10s}'.format(lst2str(ant),lst2str(con)), support)
 
 
 if __name__ == '__main__':

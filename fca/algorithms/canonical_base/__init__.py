@@ -16,11 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
-from fca.defs import POSET, SetPattern
+import sys
+from fca.defs import POSET
 from fca.algorithms import lexo
 from fca.algorithms.previous_closure import PreviousClosure, PSPreviousClosure
 from fca.algorithms.pre_closure import PreClosure
-
 
 class CanonicalBase(PreviousClosure):
     """
@@ -35,41 +35,68 @@ class CanonicalBase(PreviousClosure):
 
     def derive_extent(self, *args):
         if not bool(args):
-            return frozenset(self.ctx.g_prime.keys())
+            return set(self.ctx.g_prime.keys())
         return super(CanonicalBase, self).derive_extent(*[self.ctx.m_prime[s] for s in args])
 
+    
     def meet_concepts(self, *args):
-        intent1 = args[1]
-        intent2 = args[3]
-        pattern = intent1.copy()
-        pattern.join(intent2)
-        closed_pattern = self.preclos.preclose_pattern(pattern)
+        self.pattern.join(args[1], args[3])
+        closed_pattern = self.preclos.preclose_pattern(args[1])
         if closed_pattern is None:
+            del closed_pattern
             return None, self.pattern.bottom()
+
         extent = self.derive_extent(*closed_pattern)
 
         if self.evaluate_conditions(extent):
             return extent, closed_pattern
+        del closed_pattern, extent
         return None, self.pattern.bottom()
 
+
     def run(self, *args, **kwargs):
-        pattern = SetPattern([])
+        cid = self.poset.supremum #self.pattern.bottom()
+        # counter=0
+        # tr = tracker.SummaryTracker()
+        while cid is not None:
+            print '\r',self.stack_enum,'%1s' % str(' '),
+            # print len(self.poset.concepts()),
+            # print float(sum([sys.getsizeof(self.poset.concept[cid].extent) for cid in self.poset.concept.keys()]))/1024,
+            # print '%10s' % str(' ')
 
-        while pattern is not None:
-
-            extent = self.derive_extent(*pattern)
+            sys.stdout.flush()
+            # tr.print_diff()
+            extent = self.poset.concept[cid].extent #self.derive_extent(*pattern)
+            pattern = self.poset.concept[cid].intent
+            # print extent, pattern
+            # tr.print_diff()
+            # print '::Extent:', id(extent), extent
+            # print '::Intent:', id(pattern), pattern
+            # raw_input()
             c_pattern = self.derive_intent(extent)
 
             if len(pattern) != len(c_pattern):
                 self.preclos.register_implication(pattern, c_pattern, extent)
                 # ENHANCEMENT: Applying proposition 22 in Conceptual Exploration Chapter 3
-                if min(c_pattern.desc - pattern.desc) > max(pattern.desc):
-                    self.stack[-1] = c_pattern
-                    self.stack_enum[-1] = self.ctx.n_attributes - 1
-                else:
-                    self.stack_enum[-1] = self.stack_enum[-2]
+                try:
+                    if min(c_pattern - pattern) > max(pattern):
+                        self.stack[-1] = c_pattern
+                        self.stack_enum[-1] = self.ctx.n_attributes - 1
+                    else:
+                        self.stack_enum[-1] = self.stack_enum[-2]
 
-            pattern = self.next_closure()
+                except ValueError as e:
+                    print ""
+                    print "VALUE ERROR"
+                    print "EXTENT:", extent
+                    print "PATTERN:",pattern
+                    print "CLOSED_PATTERN:",c_pattern
+                    print "DIFFERENCE:",c_pattern.desc - pattern.desc
+                    exit()
+            
+            cid = self.next_closure()
+            
+            # gc.collect()
 
     def get_implications(self):
         """
@@ -80,13 +107,12 @@ class CanonicalBase(PreviousClosure):
         def translate(lst): return [m_map.get(m, m) for m in lst]
         base = [
             (
-                (sorted(translate(ant)), sorted(translate(con.desc-ant.desc))),
+                (sorted(translate(ant)), sorted(translate(con-ant))),
                 len(objects)
             )
             for (ant, con), objects in self.preclos.get_implication_base()
         ]
         return sorted(base, key=lambda s: (len(s[0][0]), tuple(sorted(s[0][0]))))
-
 
 class PSCanonicalBase(PSPreviousClosure, CanonicalBase):
     """
@@ -100,7 +126,6 @@ class PSCanonicalBase(PSPreviousClosure, CanonicalBase):
             return self.e_pattern.top()  # frozenset(self.ctx.g_prime.keys())
         return super(PSCanonicalBase, self).derive_extent(*args)
 
-
 class EnhancedDG(CanonicalBase):
     """
     Calculates the Canonical Base using NextClosure
@@ -108,15 +133,13 @@ class EnhancedDG(CanonicalBase):
     Chapter 3. The canonical basis
     Algorithm 17
     """
-
     def run(self, *args, **kwargs):
         """
         This enumeration works with a sort of relay of attributes
         """
-        pattern = frozenset(
-            [])  # START WITH EMPTY SET (A IN ALGORITHM DESCRIPTION)
+        pattern = set([])  # START WITH EMPTY SET (A IN ALGORITHM DESCRIPTION)
         extent = self.derive_extent(*pattern)
-        c_pattern = self.derive_intent(extent).desc
+        c_pattern = self.derive_intent(extent)
         self.calls += 1
 
         if len(pattern) < len(c_pattern):  # CHECK THAT EMPTY SET IS NOT CLOSED
@@ -124,43 +147,42 @@ class EnhancedDG(CanonicalBase):
 
         # BACKWARDS ENUMERATION
         i = max(self.ctx.m_prime.keys())
-
+        
         # ENUMERATE UNTIL WE GET THE TOP INTENT
         while len(pattern) < len(self.ctx.m_prime.keys()):
             # BACKWARDS ENUMERATION
             for j in range(i, -1, -1):
-
                 if j in pattern:
-                    pattern = pattern - frozenset([j])
+                    pattern = pattern - set([j])
                 else:
                     self.calls += 1
                     B = self.preclos.preclose_pattern(
-                        self.pattern(
-                            pattern.union(
-                                frozenset([j])
+                        pattern.union(
+                            set([j])
                             )
                         )
-                    ).desc
+                    
                     C = B - pattern
                     # THE FOLLOWING IS A SORT OF CANONICAL TEST
-                    if not bool(C.intersection(frozenset(range(j)))):
+                    if not bool(self.pattern.intersection(C, set(range(j)))):
                         pattern = B
                         i = j
                         break
-
             extent = self.derive_extent(*pattern)
-            c_pattern = self.derive_intent(extent).desc
+            c_pattern = self.derive_intent(extent)
+
             if len(pattern) != len(c_pattern):
                 self.preclos.register_implication(
-                    self.pattern(pattern),
-                    self.pattern(c_pattern),
+                    pattern,
+                    c_pattern,
                     extent
                 )
+
             C = c_pattern - pattern
 
             # CANONICAL TEST FOR THE CONSEQUENCE OF THE IMPLICATION
-            if not bool(C.intersection(frozenset(range(i)))):
+            if not bool(C.intersection(set(range(i)))):
                 pattern = c_pattern
                 i = max(self.ctx.m_prime.keys())
             else:
-                pattern = frozenset([m for m in range(i + 1) if m in pattern])
+                pattern = set([m for m in range(i + 1) if m in pattern])

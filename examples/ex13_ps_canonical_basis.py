@@ -16,11 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
+from __future__ import print_function
 import sys
 import argparse
+from fca.algorithms import lst2str
 from fca.algorithms.canonical_base import PSCanonicalBase
 from fca.reader import PatternStructureManager, List2PartitionsTransformer
-from fca.defs.patterns.hypergraphs import PartitionPattern
+from fca.defs.patterns.hypergraphs import TrimmedPartitionPattern
 
 
 def exec_ex13(filepath, max_parts):
@@ -37,7 +39,7 @@ def exec_ex13(filepath, max_parts):
     # WHEN REUSING THEM, WHENEVER YOU CALCULATE PATTERN STRUCTURES
     # MULTIPLE TIMES, YOU NEED TO RESET THEM BEFORE RE-USING
     # THEM, NOT DOING THIS MAY LEAD TO INCONSISTENCIES
-    PartitionPattern.reset()
+    TrimmedPartitionPattern.reset()
 
     conditions = [
         lambda pattern: len(pattern) <= max_parts
@@ -53,14 +55,14 @@ def exec_ex13(filepath, max_parts):
 
     canonical_base = PSCanonicalBase(
         fctx,
-        pattern=PartitionPattern,
+        pattern=TrimmedPartitionPattern,
         conditions=conditions,
         lazy=False
     )
 
     for rule, support in canonical_base.get_implications():
         ant, con = rule
-        print('{}=>{}'.format(ant, con))
+        print('{:>10s} => {:10s}'.format(lst2str(ant),lst2str(con)), support)
 
 
 if __name__ == "__main__":

@@ -55,8 +55,7 @@ class NextClosure(CbO):
         self.calls = 0
 
         super(NextClosure, self).__init__(ctx, **kwargs)
-        
-    
+
     def config(self):
         """
         Configure the stacks
@@ -67,7 +66,7 @@ class NextClosure(CbO):
         """
         super(NextClosure, self).config()
 
-        self.stack = [self.pattern(set([]))] # Stack of patterns
+        self.stack = [self.pattern.bottom()] # Stack of patterns
         self.stack_enum = [0] # Stack of enumerators
         self.stack_supports = [self.ctx.n_objects]
         self.stack_cid = [self.poset.supremum] # Stack of concept ids mapping the stack to the poset
@@ -76,12 +75,11 @@ class NextClosure(CbO):
         """
         Meet Concepts
         """
-        extent1 = args[0]
-        extent2 = args[2]
-        new_extent = self.derive_extent(extent1, extent2)
+        new_extent = self.derive_extent(args[0], args[2])
         if self.evaluate_conditions(new_extent):
             new_intent = self.derive_intent(new_extent)
             return new_extent, new_intent
+        del new_extent
         return None, self.pattern.bottom()
 
     def next_closure(self):
@@ -111,13 +109,13 @@ class NextClosure(CbO):
                 self.ctx.m_prime[j], #EXTENT1,
                 self.stack[-1], #INTENT1
                 self.poset.concept[self.stack_cid[-1]].extent, #EXTENT2
-                self.pattern([j]) #INTENT2
+                set([j]) #INTENT2
             )
             # END CLOSURE
 
             if new_extent is None or \
             not self.canonical_test(self.stack[-1], j, new_intent) \
-            or new_intent.hash() in self.cache:
+            or self.pattern.hash(new_intent) in self.cache:
                 self.stack_enum[-1] = j+1
             else:
                 found_closure = True
@@ -130,7 +128,7 @@ class NextClosure(CbO):
         self.poset.add_edge(self.stack_cid[-1], cid)
         self.stack_cid.append(cid)
         self.stack_supports.append(len(new_extent))
-        self.cache.append(new_intent.hash())
+        self.cache.append(self.pattern.hash(new_intent))
         return new_intent
 
     def run(self, *args, **kwargs):

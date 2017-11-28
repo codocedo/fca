@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Kyori code.
 from __future__ import print_function
 import argparse
+from fca.algorithms import dict_printer
 from fca.algorithms.addIntent import AddIntent
 from fca.reader import read_representations
 
@@ -25,7 +26,7 @@ def exec_ex1(filepath):
     """
     In this example we mine formal concepts in a single line
     """
-    print(AddIntent(read_representations(filepath), lazy=False, silent=False).lat.as_dict())
+    dict_printer(AddIntent(read_representations(filepath), lazy=False, silent=False).lat)
 
 
 if __name__ == '__main__':

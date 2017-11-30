@@ -42,7 +42,7 @@ def dict_printer(poset, transposed=False, indices=False):
     for i, (concept_id, concept) in enumerate(sorted(poset.as_dict(indices).items(), key=order)):
         print '{}\t{}\t\t{}'.format(
             i+1,
-            lst2str(concept[ema]),
+            len(concept[ema]),
             lst2str(concept[ima])
         )
 

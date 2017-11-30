@@ -37,7 +37,7 @@ class List2PartitionsTransformer(List2IntervalsTransformer):
         hashes = {}
         for i, j in enumerate(lst):
             hashes.setdefault(j, []).append(i)
-        return [ set(i) for i in hashes.values() ]
+        return [set(i) for i in hashes.values()]
 
 
 def exec_ex7(filepath):

@@ -86,7 +86,7 @@ class PreviousClosure(NextClosure):
         found_closure = False
 
         while not found_closure:
-
+            print '\r',self.stack_enum,'%1s' % str(' '),
             make_j = True
             while make_j:
                 if not bool(self.stack):
@@ -126,7 +126,7 @@ class PreviousClosure(NextClosure):
         cid = self.poset.new_formal_concept(new_extent, new_intent)
         self.poset.add_edge(self.stack_cid[-1], cid)
         self.stack_cid.append(cid)
-        self.stack_supports.append(len(new_extent))
+        self.stack_supports.append(self.e_pattern.length(new_extent))
         self.cache.append(self.pattern.hash(new_intent))
         # tr.print_diff()
         # print 'NC::Extent:', id(new_extent), new_extent

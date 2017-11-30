@@ -20,7 +20,6 @@ import hashlib
 import copy
 from enum import Enum
 
-
 class DiGraph(object):
     """
     Reimplementation of Networkx DiGraph's
@@ -239,8 +238,8 @@ class POSET(DiGraph):
         m_map: Maps attributes' indices to labels
         """
         if indices or self.__transformer is None:
-            object_translator = lambda *x: x
-            attribute_translator = lambda *x: x
+            object_translator = lambda x: x
+            attribute_translator = lambda x: x
         else:
             object_translator = self.__transformer.real_objects
             attribute_translator = self.__transformer.real_attributes
@@ -251,8 +250,8 @@ class POSET(DiGraph):
 
         for concept in self.concepts():
             concept_data = {
-                ema: object_translator(*concept[1][ema]),
-                ima: attribute_translator(*concept[1][ima]),
+                ema: object_translator(concept[1][ema]),
+                ima: attribute_translator(concept[1][ima]),
                 'sup': sorted(self.successors(concept[0])),
                 'sub': sorted(self.predecessors(concept[0]))
             }

@@ -17,10 +17,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
 from __future__ import print_function
+import re
 import argparse
 from fca.algorithms import dict_printer
-from fca.reader import FormalContextManager
 from fca.algorithms.cbo import CbO
+from fca.reader import FormalContextManager
 
 
 def read_float_input(msg):
@@ -38,7 +39,15 @@ def exec_ex5(filepath, min_sup=0):
     """
     Executes CbO in a single line
     """
-    dict_printer(CbO(FormalContextManager(filepath=filepath), min_sup=min_sup, lazy=False).poset)
+    dict_printer(
+        CbO(
+            FormalContextManager(
+                filepath=filepath
+            ),
+            min_sup=min_sup,
+            lazy=False
+        ).poset
+    )
 
 
 if __name__ == '__main__':

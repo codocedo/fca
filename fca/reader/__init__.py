@@ -70,7 +70,7 @@ class Transformer(object):
         self.attribute_index[self.attributes.setdefault(att, len(self.attributes))] = att
         return self.attributes[att]
 
-    def real_objects(self, *args):
+    def real_objects(self, args):
         """
         Returns the real objects behind the indexed representation
         args: list of object indices
@@ -78,9 +78,9 @@ class Transformer(object):
         """
         if not bool(args):
             return args
-        return [self.object_index.get(i, i) for i in args]
+        return sorted([self.object_index.get(i, i) for i in args])
 
-    def real_attributes(self, *args):
+    def real_attributes(self, args):
         """
         Returns the real attributes behind the indexed representation
         args: list of attribute indices
@@ -88,7 +88,7 @@ class Transformer(object):
         """
         if not bool(args):
             return args
-        return [self.attribute_index.get(i, i) for i in args]
+        return sorted([self.attribute_index.get(i, i) for i in args])
 
     def transform(self, entry):
         """
@@ -509,9 +509,14 @@ class FormalContextManager(PatternStructureManager):
         self.m_prime = {}
         # Calculate m_prime
         for object_id, attributes in self.g_prime.items():
+            print self.transformer.real_attributes(attributes)
             for att in attributes:
-                self.m_prime.setdefault(att, set([])).add(object_id)
-
+                self.m_prime.setdefault(
+                    att,
+                    set([])
+                ).add(
+                    object_id
+                )
         # ATT COUNTER
         self.n_attributes = len(self.m_prime)
 

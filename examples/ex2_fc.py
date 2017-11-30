@@ -42,13 +42,14 @@ def exec_ex2(filepath, min_sup):
     IcebergSetPattern.reset()
     IcebergSetPattern.MIN_SUP = min_sup
     fctx = read_representations(filepath, transposed=True)
-    lattice = AddIntent(fctx, pattern=IcebergSetPattern, lazy=False, silent=False).lat
+    lattice = AddIntent(
+        fctx,
+        pattern=IcebergSetPattern,
+        lazy=False,
+        silent=False
+    ).lat
     dict_printer(lattice, transposed=False, indices=False)
     fctx = read_representations(filepath, transposed=True)
-    print [fctx.transformer.real_attributes(*i) for i in fctx.representations]
-    print fctx.transformer.object_index
-    print fctx.transformer.attribute_index
-
 
 if __name__ == '__main__':
     __parser__ = argparse.ArgumentParser(description='Example 2 - IcebergSetPattern with AddIntent')

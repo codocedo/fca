@@ -130,7 +130,7 @@ class PreviousClosure(NextClosure):
         cid = self.poset.new_formal_concept(new_extent, new_intent)
         self.poset.add_edge(self.stack_cid[-1], cid)
         self.stack_cid.append(cid)
-        self.stack_supports.append(self.e_pattern.length(new_extent))
+        self.stack_supports.append(len(new_extent))
         self.cache.append(self.pattern.hash(new_intent))
 
         return new_intent

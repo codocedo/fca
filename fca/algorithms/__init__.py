@@ -38,7 +38,7 @@ def dict_printer(poset, transposed=False, indices=False):
     order = lambda s: (
         len(s[1][ema]), s[1][ima]
     )
-
+    print ("ID\tExtent\t\tIntent")
     for i, (concept_id, concept) in enumerate(sorted(poset.as_dict(indices).items(), key=order)):
         print '{}\t{}\t\t{}'.format(
             i+1,

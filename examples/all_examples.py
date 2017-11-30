@@ -134,7 +134,7 @@ if __name__ == "__main__":
     exec_ex13(__part_ps_path__, sys.maxint)
 
     print("*"*__nasterisks__)
-    print("Example 14 - Partition Pattern Structures with NexClosure")
+    print("Example 14 - Partition Pattern Structures with NextClosure")
     print("Input File: {}".format(__part_ps_path__))
     print("Maximum Parts: {}".format(__max_parts__))
     print("*"*__nasterisks__)

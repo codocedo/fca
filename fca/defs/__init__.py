@@ -22,7 +22,6 @@ from enum import Enum
 import csv
 import uuid
 
-
 class DiGraph(object):
     """
     Reimplementation of Networkx DiGraph's

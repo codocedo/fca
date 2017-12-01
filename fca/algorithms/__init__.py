@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-lst2str = lambda lst: reduce(lambda x, y: str(x)+', '+str(y), lst+['']) if len(lst) > 0 else "[]"
+lst2str = lambda lst: reduce(lambda x, y: str(x)+', '+str(y), lst+['']).strip()[:-1] if len(lst) > 0 else "[]"
 
 def lexo(set_a, set_b):
     """
@@ -25,25 +25,32 @@ def lexo(set_a, set_b):
     return tuple(sorted(set_a)) <= tuple(sorted(set_b))
 
 
-def dict_printer(poset, transposed=False, indices=False):
+def dict_printer(poset, **kwargs): #print_support=False, transposed=False, indices=False):
     """
     Nicely print the concepts in the poset
     """
+    template = kwargs.get('template', '{:4s}\t{:20s}\t{:20s}')
+    transposed = kwargs.get('transposed', False)
+    indices = kwargs.get('indices', False)
+    extent_postproc = kwargs.get('extent_postproc', lst2str)
+    intent_postproc = kwargs.get('intent_postproc', lst2str)
+
     ema = poset.EXTENT_MARK
     ima = poset.INTENT_MARK
     if transposed:
         ema = poset.INTENT_MARK
         ima = poset.EXTENT_MARK
 
+    
+
     order = lambda s: (
         len(s[1][ema]), s[1][ima]
     )
-
     for i, (concept_id, concept) in enumerate(sorted(poset.as_dict(indices).items(), key=order)):
-        print '{}\t{}\t\t{}'.format(
-            i+1,
-            len(concept[ema]),
-            lst2str(concept[ima])
+        print template.format(
+            str(i+1),
+            str(extent_postproc(concept[ema])),
+            str(intent_postproc(concept[ima]))
         )
 
 

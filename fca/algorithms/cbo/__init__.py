@@ -31,7 +31,7 @@ class CbO(Algorithm):
     def __init__(self, ctx, **kwargs):
         self.ctx = ctx
         self.poset = None
-        self.pattern = SSetPattern
+        self.pattern = kwargs.get('pattern', SSetPattern)
         self.cache = kwargs.get('cache', [])
         self.min_sup = kwargs.get('min_sup', 0)
         self.printer = kwargs.get('printer', lambda a, b, c: None)
@@ -53,7 +53,7 @@ class CbO(Algorithm):
             self.pattern.bottom(),
             self.poset.supremum
         )
-        self.pattern.top(frozenset(self.ctx.m_prime.keys()))
+        self.pattern.top(set(self.ctx.m_prime.keys()))
         self.conditions.append(
             lambda new_extent: len(
                 new_extent) >= self.min_sup * self.ctx.n_objects
@@ -76,7 +76,7 @@ class CbO(Algorithm):
         Applies canonical test to a description
         """
         current_element, pointer, description = args
-        mask = frozenset(range(pointer + 1))
+        mask = set(range(pointer + 1))
         # return lexo(mask.desc, description.intersection(mask).desc)
         desc1 = self.pattern.intersection(current_element, mask)
         desc2 = self.pattern.intersection(description, mask)
@@ -153,6 +153,7 @@ class PSCbO(CbO):
 
     def __init__(self, ctx, **kwargs):
         self.e_pattern = kwargs.get('pattern', SSetPattern)  # extent pattern
+        kwargs['pattern'] = SSetPattern
         super(PSCbO, self).__init__(ctx, **kwargs)
 
     def derive_extent(self, *args):

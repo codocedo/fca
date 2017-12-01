@@ -133,6 +133,28 @@ class PartitionPattern(SIntent):
         desc.sort(key=lambda x: (len(x), sorted(x)), reverse=True)
         return desc
 
+class FixedOrderPartitionPattern(PartitionPattern):
+    @classmethod
+    def sort_description(cls, desc):
+        desc.sort(key=sorted)
+        return desc
+    @classmethod
+    def leq(cls, desc1, desc2):
+        if desc1 == cls._bottom:
+            return True
+        if cls.length(desc1) < cls.length(desc2):
+            return False
+        for i in desc1:
+            check = False
+            for j in desc2:
+                if i.issubset(j):
+                    check = True
+                    break
+            if not check:
+                return False
+        return True
+
+
 class TrimmedPartitionPattern(PartitionPattern):
     """
     Description is a list of frozensets

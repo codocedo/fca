@@ -199,7 +199,7 @@ class List2PartitionsTransformer(List2IntervalsTransformer):
         hashes = {}
         for i, j in enumerate(lst):
             hashes.setdefault(j, []).append(i)
-        return [frozenset(i) for i in hashes.values()]
+        return [set(i) for i in hashes.values()]
 #****************************************
 # File Syntax Managers
 #****************************************
@@ -509,7 +509,6 @@ class FormalContextManager(PatternStructureManager):
         self.m_prime = {}
         # Calculate m_prime
         for object_id, attributes in self.g_prime.items():
-            print self.transformer.real_attributes(attributes)
             for att in attributes:
                 self.m_prime.setdefault(
                     att,

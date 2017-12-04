@@ -67,15 +67,6 @@ class PreviousClosure(NextClosure):
         self.stack_supports = [self.ctx.n_objects]
         self.stack_cid = [self.poset.supremum] # Stack of concept ids mapping the stack to the poset
 
-
-    def canonical_test(self, *args):
-        """
-        Applies canonical test to a description
-        """
-        current_element, pointer, description = args
-        mask = frozenset([pointer])
-        return lexo(current_element.union(mask), description)
-    
     def next_closure(self):
         """
         Computes the next closure in the stack

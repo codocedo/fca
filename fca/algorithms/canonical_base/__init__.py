@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
-
 from fca.defs import POSET
 from fca.algorithms import lexo
 from fca.algorithms.previous_closure import PreviousClosure, PSPreviousClosure

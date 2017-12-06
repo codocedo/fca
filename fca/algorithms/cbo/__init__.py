@@ -39,7 +39,6 @@ class CbO(Algorithm):
         self.conditions = kwargs.get('conditions', [])
         self.ondisk = kwargs.get('ondisk', False)
         self.ondisk_kwargs = kwargs.get('ondisk_kwargs', {})
-
         self.calls = 0
 
         self.config()

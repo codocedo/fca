@@ -77,7 +77,11 @@ class NextClosure(CbO):
         Meet Concepts
         """
         # print args
+<<<<<<< HEAD
         new_extent = self.derive_extent([args[0], args[2]])
+=======
+        new_extent = self.derive_extent(args[0], args[2])
+>>>>>>> Several performance improvements
         if self.evaluate_conditions(new_extent):
             new_intent = self.derive_intent(new_extent, args[3])
             return new_extent, new_intent

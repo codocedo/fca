@@ -393,10 +393,11 @@ class MultiSetObjectEnumerator(PatternEnumerator):
         self.signatures = [] # Keeps an object_table of dimensions->Values->Objects
         self.reps = {}
         self.len_rep = 0
+        print self.ctx.g_prime
         for desc in ctx.g_prime.values():
             # self.bot_rep = sorted([set([i]) for i in chain(*desc)])
             desc.sort()
-            for i, atts in enumerate(sorted(desc, key=lambda s: min(s))):
+            for i, atts in enumerate(sorted(desc, key=min)):
                 for att in atts:
                     self.reps.setdefault(att, []).append(i)
             # print sorted(desc, key=lambda s: min(s))
@@ -406,7 +407,18 @@ class MultiSetObjectEnumerator(PatternEnumerator):
         part = {}
         for k, v in self.reps.items():
             part.setdefault(tuple(v), []).append(k)
-        # print self.reps
+        self.row_sets = {}
+        for desc in ctx.g_prime.values():
+            # self.bot_rep = sorted([set([i]) for i in chain(*desc)])
+            desc.sort()
+            for i, atts in enumerate(sorted(desc, key=min)):
+                for att in atts:
+                    self.row_sets.setdefault(att, set([]))
+                    self.row_sets[att].add((len(self.row_sets[att]),i))
+
+
+        print self.row_sets
+        print self.reps
         # print()
         # print part
         # exit()
@@ -420,6 +432,7 @@ class MultiSetObjectEnumerator(PatternEnumerator):
         self.tally.append(self.first) # Starts with a dummy element in the tally
         self.g_prime = ctx.g_prime
         self.cache = {}
+        self.last_discarted = [[None, None]]
         # self.signatures.append([copy.copy(self.reps[0]), copy.copy(self.reps[0])])
 
     def bottom(self, pattern):
@@ -432,15 +445,17 @@ class MultiSetObjectEnumerator(PatternEnumerator):
         """
         old_j = self.tally[old_ticket]
         self.tally.append((old_j[0], old_j[0]+1))
+        self.last_discarted.append([self.last_discarted[old_ticket][1], None])
         # self.signatures.append([copy.copy(self.signatures[old_ticket][1]), None])
         return super(MultiSetObjectEnumerator, self).new_ticket(old_ticket, depth)
 
-    def index(self, desc):
+    def index(self, desc, extent=None):
         key = tuple(sorted(desc))
         if self.cache.get(key,False):
             return self.cache[key]
         index = copy.copy(desc)
-        for partition in self.g_prime.values():
+        for obj in self.g_prime.keys() if extent is None else extent:
+            partition = self.g_prime[obj]
             for part in partition:
                 if desc.issubset(part):
                     index.update(part)
@@ -469,7 +484,7 @@ class MultiSetObjectEnumerator(PatternEnumerator):
         # return out
         # exit()
 
-    def next(self, ticket, current_description, depth=0):
+    def next(self, ticket, current_description, depth=0, extent=None):
         """
         Gets the new element in the enumeration
         We return an element that is already tested that it does not appear in
@@ -482,68 +497,51 @@ class MultiSetObjectEnumerator(PatternEnumerator):
 
         sys.stdout.flush()
         current_position, current_element = self.tally[ticket]
-        # print "\tNEXT", current_description
-        current_signature = self.make_signature(current_description[current_position])
-        
+        eliminate = self.last_discarted[ticket][0]
+        # print ''
+        # print current_description
+        # print ticket, current_position, current_element, self.last_discarted[ticket]
+        if eliminate is not None:
+            for j in range(current_element, len(current_description)):
+                # print "::", current_description
+                # print "::", eliminate, current_description[j]
+                if max(eliminate) < min (current_description[j]):
+                    current_element = j
+                    break
+        self.last_discarted[ticket][0] = None
+        # current_signature = self.make_signature(current_description[current_position])
+        # print extent, self.tally
         for i in range(current_position, len(current_description) - 1):
             # current_signature = self.make_signature(current_description[i])
-            index = self.index(current_description[i])
-            # print '=>',current_description[i], index
+            # last_element = max(current_description[current_position])
+            # j = 0
+            # # print ''
+            # # print 'LE', current_element, last_element
+            # for j in range(current_element, len(current_description)):
+            #     # print '\t::>', j, current_description[j], min(current_description[j])
+            #     if last_element < min(current_description[j]):
+            #         current_element = j
+            #         break
+            # # print 'E', current_element, last_element
+
+            index = self.index(current_description[i], extent)
+
+            print '\r=>',current_description[i],
+            # sys.stdout.flush()
+
             for j in range(current_element, len(current_description)):
+                print "{:100s}".format(str(current_description[j])),
+                sys.stdout.flush()
                 if not current_description[j].issubset(index):
-                    # print current_description[j], index
                     continue
                 self.trials +=1
-                # next_description = copy.deepcopy(current_description)
-                # next_description[i].update(next_description[j])
-                # del next_description[j]
-                # print next_description
-                # # current_signature = self.make_signature(current_description[i])
-                # # compared_signature = self.make_signature(current_description[j])
-                # combined_signature = self.make_signature(current_description[i].union(current_description[j]))
-                # go_on = False
-                # for k in combined_signature:
-                #     if k >=0:
-                #         go_on = True
-                #         break
-                #     # if s1==s2 and s1>=0:
-                #     #     go_on = True
-                #     #     break
-                
-                # # combined_signature = self.make_signature(current_description[i].union(current_description[j]))
-                # # falsetrue = [k>=0 for k in combined_signature]
-                # # combined_signature = self.make_signature(current_description[i].union(current_description[j]))
-                
-                # # joint_signature = [s1==s2 and s1>=0 for s1, s2 in zip(current_signature, compared_signature)]
-                # # current_signature = self.make_signature(current_description[i])
-                # # compared_signature = self.make_signature(current_description[j])
-                # # # print '\t\t', current_signature
-                # # if falsetrue != joint_signature:
-                # #     print ''
-                # #     print current_description[i], current_description[j]
-                # #     print self.reps
-                # #     print 'CURRENT', list(current_signature)
-                # #     print 'COMPARED', list(compared_signature)
-                # #     print 'COMBINED',list(combined_signature)
-                # #     print 'JOINT', joint_signature
-                # #     print 'COMBINED', falsetrue
-                # if not go_on:
-                #     continue
-                # print ''
-                # print '\t'*depth+'->', 'Ticket:{}, Depth:{}, Length:{}'.format(ticket, depth, len(current_description)), current_description
-                # print '\t'*depth+'-> SIGNATURES',current_signature, compared_signature
-                # print '\t'*depth+'->', 'Merge {} with {}'.format(i,j) ,joint_signature
-                # if next_description[i].union(next_description[j]).issubset(a):
-                #     print 'Ticket', ticket
-                #     print joint_signature
-                #     print current_description
-                #     print next_description[i].union(next_description[j])
-                #     print '--'*50
-                # if not sum(joint_signature):
-                #     continue
-                next_description = copy.deepcopy(current_description)
-                next_description[i].update(next_description[j])
-                del next_description[j]
+                next_description = current_description[:i] + [current_description[i].union(current_description[j])] + current_description[i+1:j] + current_description[j+1:]
+
+                # for ki, k in enumerate(current_description):
+                #     if ki == i:
+                #         next_description.append(current_description[i].union(current_description[j]))
+                #     elif ki != j:
+                #         next_description.append(current_description[i])
                 # print '\t'*depth+'=>', next_description
                 self.tally[ticket] = (i, j+1)
                 # self.signatures[ticket][1] = copy.copy(current_signature)
@@ -556,10 +554,13 @@ class MultiSetObjectEnumerator(PatternEnumerator):
                 # print "NEXT DESCRIPTION", next_description
                 # exit()
                 # print self.trials
+                # print '.', 
+                # sys.stdout.flush()
+                self.last_discarted[ticket][1] = current_description[j]
                 return next_description
 
             current_element = i+2
-            current_signature = [a if a == -1 else b for a,b in zip(current_signature, self.make_signature(current_description[i+1]))]
+            # current_signature = [a if a == -1 else b for a,b in zip(current_signature, self.make_signature(current_description[i+1]))]
 
             # TODO: WE CAN PUT SOME KIND OF MIN SUP THRESHOLD HERE
             # if sum([a >= 0 for a in current_signature]) < 6:
@@ -577,12 +578,17 @@ class MultiSetObjectEnumerator(PatternEnumerator):
         in the enumeration
         """
         current_position, current_element = self.tally[ticket]
-        current_signature = self.make_signature(current_description[current_position])
+        nobjects = [i[0] for i in reduce(lambda x, y: x.intersection(y), [self.row_sets[i] for i in current_description[current_position]])]
+        return current_objects.intersection(nobjects)#, current_objects, out
 
-        out = current_objects.intersection(
-            set([i for i, j in enumerate(current_signature) if j != -1])
-        )
-        return out
+        # current_position, current_element = self.tally[ticket]
+        # current_signature = self.make_signature(current_description[current_position])
+
+        # out = current_objects.intersection(
+        #     set([i for i, j in enumerate(current_signature) if j != -1])
+        # )
+        
+        # return out
 
 
     def canonical_test(self, ticket, current_element, new_element, depth=0):

@@ -56,7 +56,7 @@ def exec_ex12(filepath):
         lazy=False,
         silent=False
     ).poset
-    # print len(poset.concept)
+
     dict_printer(
         poset,
         transposed=transposed

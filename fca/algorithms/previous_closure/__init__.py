@@ -64,13 +64,18 @@ class PreviousClosure(NextClosure):
         self.stack_enum = [-2, self.ctx.n_attributes-1] # Stack of enumerators
         self.stack_supports = [self.ctx.n_objects]
         self.stack_cid = [self.poset.supremum] # Stack of concept ids mapping the stack to the poset
+<<<<<<< HEAD
         self.stack_extents = [self.all_objects]
+=======
+        self.stack_extents = [set(self.ctx.g_prime.keys())]
+>>>>>>> Several performance improvements
 
     def canonical_test(self, *args):
         """
         Applies canonical test to a description
         """
         current_element, pointer, description = args
+<<<<<<< HEAD
         # print '\t=>', current_element, pointer, description
         if not bool(current_element):
             return True
@@ -79,6 +84,10 @@ class PreviousClosure(NextClosure):
             return False
 
         return pointer <= min(description.difference(current_element))
+=======
+        mask = set([pointer]).union(current_element)
+        return lexo(mask, description)
+>>>>>>> Several performance improvements
 
     def next_closure(self):
         """
@@ -86,9 +95,9 @@ class PreviousClosure(NextClosure):
         Can be used externally or in a batch with self.run()
         """
         found_closure = False
-
+        
         while not found_closure:
-            print '\r',self.stack_enum,'%1s' % str(' '),
+            
             make_j = True
             while make_j:
                 if not bool(self.stack):
@@ -100,22 +109,45 @@ class PreviousClosure(NextClosure):
                     self.stack.pop()
                     self.stack_enum.pop()
                     self.stack_extents.pop()
+<<<<<<< HEAD
                     self.stack_cid.pop()
+=======
+                    # self.stack_cid.pop()
+>>>>>>> Several performance improvements
                 else:
                     make_j = False
 
             # CLOSURE
             self.calls += 1
+<<<<<<< HEAD
             print '\r', "{:100s}".format(str(self.stack_enum)),
             sys.stdout.flush()
+=======
+            print '\r',"{:100s}".format(str(self.stack_enum)),# str(len(self.poset.concept[self.stack_cid[-1]].extent))),'%1s' % str(' '),
+            # sys.stdout.flush()
+>>>>>>> Several performance improvements
             auxiliar_pattern = set([j])
-
+            # print '=',
+            # sys.stdout.flush()
+            # print '**'*50
+            # print auxiliar_pattern
+            # print self.stack[-1],auxiliar_pattern,'::',
             new_extent, new_intent = self.meet_concepts(
+<<<<<<< HEAD
                 self.ctx.m_prime[j], #EXTENT1
                 auxiliar_pattern, #INTENT1
+=======
+                self.ctx.m_prime[j], #EXTENT1,
+                auxiliar_pattern, #INTENT1
+                # self.poset.concept[self.stack_cid[-1]].extent, #EXTENT2
+>>>>>>> Several performance improvements
                 self.stack_extents[-1], #EXTENT2
                 self.stack[-1], #INTENT2
             )
+            # print '**'*50
+            # print '=',
+            # sys.stdout.flush()
+            # print new_intent
             if new_extent is None or \
             not self.canonical_test(self.stack[-1], j, new_intent) \
             or self.pattern.hash(new_intent) in self.cache:
@@ -127,11 +159,26 @@ class PreviousClosure(NextClosure):
 
         self.stack.append(new_intent)
         self.stack_enum.append(self.ctx.n_attributes-1)
-        cid = self.poset.new_formal_concept(new_extent, new_intent)
-        self.poset.add_edge(self.stack_cid[-1], cid)
-        self.stack_cid.append(cid)
+        self.poset.new_formal_concept(new_extent, new_intent)
+        # self.poset.add_edge(self.stack_cid[-1], cid)
+        # self.stack_cid.append(cid)
+        self.stack_extents.append(new_extent)
         self.stack_supports.append(len(new_extent))
         self.cache.append(self.pattern.hash(new_intent))
+<<<<<<< HEAD
+=======
+        # tr.print_diff()
+        # print 'NC::Extent:', id(new_extent), new_extent
+        # print 'NC::Intent:', id(new_intent), new_intent
+        # print id(new_intent), id(auxiliar_pattern)
+        # print id(new_intent.desc), id(auxiliar_pattern.desc)
+        # raw_input()
+        
+        # objgraph.show_backrefs(auxiliar_desc, filename='auxiliar_desc.png')
+        return new_intent
+
+
+>>>>>>> Several performance improvements
 
         return new_intent
 
@@ -139,6 +186,12 @@ class PSPreviousClosure(PreviousClosure, PSCbO):
     """
     NextClosure with support for pattern structure at extent level
     """
+<<<<<<< HEAD
+=======
+    def __init__(self, ctx, **kwargs):
+        super(PSPreviousClosure, self).__init__(ctx, **kwargs)
+
+>>>>>>> Several performance improvements
     def config(self):
         """
         Configure the stacks

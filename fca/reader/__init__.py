@@ -186,14 +186,15 @@ class List2PartitionsTransformer(List2IntervalsTransformer):
         else:
             self.real_attributes = self.real_partition
 
-    def real_partition(self, *args):
+    def real_partition(self, args):
         """
         Outputs the partition the partition
         args: list of sets that represents the partition
 
         return list of tuples
         """
-        return list([tuple(sorted(i)) for i in args])
+        
+        return sorted([tuple(sorted(i)) for i in args])
 
     def parse(self, lst):
         hashes = {}

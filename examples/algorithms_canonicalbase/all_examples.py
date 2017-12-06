@@ -23,8 +23,11 @@ import sys
 from ex10_duquenneguigues_previousclosure import exec_ex10
 from ex13_ps_duquenneguigues_previousclosure_trimmedpartitions import exec_ex13
 from ex15_duquenneguigues_enhanced import exec_ex15
+<<<<<<< HEAD
 from ex20_duquenneguigues_previousclosure_ondisk import exec_ex20
 from ex21_ps_duquenneguigues_previousclosure_trimmedpartitions_ondisk import exec_ex21
+=======
+>>>>>>> Fixed problems with previous closure canonical test
 
 __fctx_path__ = 'data/example.txt'
 __ps_path__ = 'data/numerical_data.txt'
@@ -55,6 +58,7 @@ if __name__ == "__main__":
     print("Input File: {}".format(__fctx_path__))
     print("*"*__nasterisks__)
     exec_ex15(__fctx_path__)
+<<<<<<< HEAD
 
     print("*"*__nasterisks__)
     print("Example 20: Obtains the Duquenne-Guigues Canonical Base OnDisk - Streaming pattern to disk")
@@ -68,3 +72,5 @@ if __name__ == "__main__":
     print("Input File: {}".format(__part_ps_path__))
     print("*"*__nasterisks__)
     exec_ex21(__part_ps_path__, None)
+=======
+>>>>>>> Fixed problems with previous closure canonical test

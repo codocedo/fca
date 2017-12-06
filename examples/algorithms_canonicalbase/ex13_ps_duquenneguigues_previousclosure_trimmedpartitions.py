@@ -21,9 +21,15 @@ import sys
 import argparse
 from fca.algorithms import lst2str
 from fca.algorithms.canonical_base import PSCanonicalBase
+<<<<<<< HEAD:examples/algorithms_canonicalbase/ex13_ps_duquenneguigues_previousclosure_trimmedpartitions.py
 from fca.defs.patterns.hypergraphs import TrimmedPartitionPattern, PartitionPattern
 from fca.io.transformers import List2PartitionsTransformer
 from fca.io.input_models import PatternStructureModel
+=======
+from fca.reader import PatternStructureManager, List2PartitionsTransformer
+from fca.defs.patterns.hypergraphs import TrimmedPartitionPattern, PartitionPattern
+
+>>>>>>> Fixed problems with previous closure canonical test:examples/algorithms_canonicalbase/ex13_ps_duquenneguigues_previousclosure_trimmedpartitions.py
 
 def exec_ex13(filepath, max_parts):
     """

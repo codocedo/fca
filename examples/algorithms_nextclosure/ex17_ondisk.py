@@ -19,13 +19,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 import argparse
 from fca.algorithms.next_closure import NextClosure
+<<<<<<< HEAD
 from fca.io.input_models import FormalContextModel
 
 def exec_ex17(filepath, min_sup=0, output_fname=None):
+=======
+from fca.reader import FormalContextManager
+
+def exec_ex17(filepath, min_sup=0, output_path=None):
+>>>>>>> Fixed problems with previous closure canonical test
     """
     Example 17: NextClosure OnDisk - Streaming patterns to disk
     """
     ondisk_poset = NextClosure(
+<<<<<<< HEAD
         FormalContextModel(
             filepath=filepath
         ),
@@ -34,6 +41,15 @@ def exec_ex17(filepath, min_sup=0, output_fname=None):
         ondisk_kwargs={
             'output_path':'/tmp',
             'output_fname':output_fname
+=======
+        FormalContextManager(
+            filepath=filepath
+        ),
+        min_sup=min_sup,
+        ondisk = True,
+        ondisk_kwargs = {
+            'output_path':output_path
+>>>>>>> Fixed problems with previous closure canonical test
         },
         silent=False
     ).poset
@@ -53,8 +69,13 @@ if __name__ == '__main__':
     )
     __parser__.add_argument(
         '-o',
+<<<<<<< HEAD
         '--output_fname',
         metavar='output_fname',
+=======
+        '--output_path',
+        metavar='output_path',
+>>>>>>> Fixed problems with previous closure canonical test
         type=str,
         help='Output file to save formal concepts',
         default=None
@@ -69,4 +90,9 @@ if __name__ == '__main__':
     )
 
     __args__ = __parser__.parse_args()
+<<<<<<< HEAD
     exec_ex17(__args__.context_path, __args__.min_sup, __args__.output_fname)
+=======
+    exec_ex17(__args__.context_path, __args__.min_sup, __args__.output_path)
+# okay decompiling ex5_cbo.pyc
+>>>>>>> Fixed problems with previous closure canonical test

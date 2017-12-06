@@ -18,6 +18,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Kyori code.
 
 from __future__ import print_function
+<<<<<<< HEAD
+=======
+import sys
+>>>>>>> Fixed problems with previous closure canonical test
 from ex1_fca import exec_ex1
 from ex2_iceberg_lattice import exec_ex2
 from ex3_ps_intervals import exec_ex3

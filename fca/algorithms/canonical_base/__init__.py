@@ -92,7 +92,6 @@ class CanonicalBase(PreviousClosure):
                         This effectively means, skip calculations on the next level (right of i)
                         """
                         self.stack_enum[-1] = self.stack_enum[-2]
-
                 # THIS ERROR HAPPENED BECAUSE OF SOMETHING, I DON'T REMEMBER :P
                 except ValueError as err:
                     print ""
@@ -194,3 +193,4 @@ class EnhancedDG(CanonicalBase):
                 i = max(self.ctx.m_prime.keys())
             else:
                 pattern = set([m for m in range(i + 1) if m in pattern])
+        

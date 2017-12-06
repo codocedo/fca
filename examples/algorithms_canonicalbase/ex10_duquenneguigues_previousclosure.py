@@ -28,7 +28,11 @@ def exec_ex10(filepath, min_sup=0):
     of Implications Rules with NextClosure
     """
     
+<<<<<<< HEAD:examples/algorithms_canonicalbase/ex10_duquenneguigues_previousclosure.py
     canonical_base = CanonicalBase(FormalContextModel(filepath=filepath), min_sup=min_sup, lazy=False, silent=False)
+=======
+    canonical_base = CanonicalBase(FormalContextManager(filepath=filepath), min_sup=min_sup, lazy=False, silent=False)
+>>>>>>> Fixed problems with previous closure canonical test:examples/algorithms_canonicalbase/ex10_duquenneguigues_previousclosure.py
     for rule, support in canonical_base.get_implications():
         ant, con = rule
         print('{:>10s} => {:10s}'.format(lst2str(ant),lst2str(con)), support)

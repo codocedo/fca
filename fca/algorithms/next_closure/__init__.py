@@ -78,10 +78,14 @@ class NextClosure(CbO):
         """
         # print args
 <<<<<<< HEAD
+<<<<<<< HEAD
         new_extent = self.derive_extent([args[0], args[2]])
 =======
         new_extent = self.derive_extent(args[0], args[2])
 >>>>>>> Several performance improvements
+=======
+        new_extent = self.derive_extent([args[0], args[2]])
+>>>>>>> Fixed problems with previous closure canonical test
         if self.evaluate_conditions(new_extent):
             new_intent = self.derive_intent(new_extent, args[3])
             return new_extent, new_intent

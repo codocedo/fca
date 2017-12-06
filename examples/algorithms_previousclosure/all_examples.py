@@ -26,7 +26,6 @@ from ex19_ps_ondisk import exec_ex19
 __fctx_path__ = 'data/example.txt'
 __ps_path__ = 'data/numerical_data.txt'
 __part_ps_path__ = 'data/xyzw.csv'
-
 __a_min_sup__ = 2
 __r_min_sup__ = 0.25
 __nasterisks__ = 100

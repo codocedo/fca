@@ -54,17 +54,16 @@ def exec_ex14(filepath, max_parts):
             'style': 'tab'
         }
     )
-
+    poset = PSNextClosure(
+        fctx,
+        conditions=conditions,
+        pattern=PartitionPattern,
+        lazy=False
+    ).poset
     dict_printer(
-        PSNextClosure(
-            fctx,
-            conditions=conditions,
-            pattern=PartitionPattern,
-            lazy=False
-        ).poset,
+        poset,
         transposed=transposed
     )
-
 
 if __name__ == "__main__":
     __parser__ = argparse.ArgumentParser(

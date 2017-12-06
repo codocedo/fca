@@ -41,10 +41,15 @@ class PartitionPattern(SIntent):
         new_desc = []
         counter = 0
         for i, j in product(desc1, desc2):
-            intx = i.intersection(j)
-            if bool(intx): # instead of len(x) > 0
-                new_desc.append(intx)
-                counter += len(intx)
+            x, y = (i, j) if len(i) < len(j) else (j, i)
+            if x.issubset(y):
+                new_desc.append(x)
+                counter += len(x)
+            else:
+                intx = x.intersection(y)
+                if bool(intx): # instead of len(x) > 0
+                    new_desc.append(intx)
+                    counter += len(intx)
         # print len(new_desc)
         if len(new_desc) == counter:
             return PartitionPattern.bottom(new_desc)
@@ -133,28 +138,6 @@ class PartitionPattern(SIntent):
         desc.sort(key=lambda x: (len(x), sorted(x)), reverse=True)
         return desc
 
-class FixedOrderPartitionPattern(PartitionPattern):
-    @classmethod
-    def sort_description(cls, desc):
-        desc.sort(key=sorted)
-        return desc
-    @classmethod
-    def leq(cls, desc1, desc2):
-        if desc1 == cls._bottom:
-            return True
-        if cls.length(desc1) < cls.length(desc2):
-            return False
-        for i in desc1:
-            check = False
-            for j in desc2:
-                if i.issubset(j):
-                    check = True
-                    break
-            if not check:
-                return False
-        return True
-
-
 class TrimmedPartitionPattern(PartitionPattern):
     """
     Description is a list of frozensets
@@ -206,10 +189,15 @@ class TrimmedPartitionPattern(PartitionPattern):
         new_desc = []
         counter = 0
         for i, j in product(desc1, desc2):
-            intx = i.intersection(j)
-            if len(intx) > 1: # instead of len(x) > 0
-                new_desc.append(intx)
-                counter += len(intx)
+            x, y = (i, j) if len(i) < len(j) else (j, i)
+            if x.issubset(y):
+                new_desc.append(x)
+                counter += len(x)
+            else:
+                intx = i.intersection(j)
+                if len(intx) > 1: # instead of len(x) > 0
+                    new_desc.append(intx)
+                    counter += len(intx)
 
         if len(new_desc) == counter:
             return cls.bottom()

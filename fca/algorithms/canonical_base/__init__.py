@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
-import sys
 from fca.defs import POSET
 from fca.algorithms import lexo
 from fca.algorithms.previous_closure import PreviousClosure, PSPreviousClosure
@@ -33,6 +32,10 @@ class CanonicalBase(PreviousClosure):
         self.preclos = PreClosure()
         super(CanonicalBase, self).__init__(ctx, **kwargs)
 
+    # def config(self):
+    #     super(CanonicalBase, self).config()
+    #     self.preclos.translate = lambda s: self.ctx.transformer.real_attributes(s)
+
     def derive_extent(self, *args):
         if not bool(args):
             return set(self.ctx.g_prime.keys())
@@ -40,13 +43,22 @@ class CanonicalBase(PreviousClosure):
 
     
     def meet_concepts(self, *args):
-        self.pattern.join(args[1], args[3])
-        closed_pattern = self.preclos.preclose_pattern(args[1])
+        new_attribute, old_extent, old_intent = args[1:]
+        self.pattern.join(new_attribute, old_intent)
+        closed_pattern = self.preclos.preclose_pattern(new_attribute)
         if closed_pattern is None:
             del closed_pattern
             return None, self.pattern.bottom()
 
-        extent = self.derive_extent(*closed_pattern)
+        # THE FOLLOWING IS A LITTLE MESSY BUT IT CORRESPONDS TO A PERFORMANCE IMPROVEMENT:
+        # INSTEAD OF CALCULATING THE EXTENSION INTERSECTION FOR THE ENTIRE NEW INTENT
+        # WE CALCULATE IT FOR THOSE NEW ELEMENTS IN IT (closed_pattern - args[3])
+        # AND THEN WE CALCULATE THE INTERSECTION BETWEEN THAT EXTENT WITH THE 
+        # OLD ONE CONTAINED IN args[2]
+        extent = self.e_pattern.intersection(
+            old_extent,
+            self.derive_extent(*(closed_pattern-old_intent))
+        )
 
         if self.evaluate_conditions(extent):
             return extent, closed_pattern
@@ -55,28 +67,13 @@ class CanonicalBase(PreviousClosure):
 
 
     def run(self, *args, **kwargs):
-        cid = self.poset.supremum #self.pattern.bottom()
-        # counter=0
-        # tr = tracker.SummaryTracker()
-        while cid is not None:
-            print '\r',self.stack_enum,'%1s' % str(' '),
-            # print len(self.poset.concepts()),
-            # print float(sum([sys.getsizeof(self.poset.concept[cid].extent) for cid in self.poset.concept.keys()]))/1024,
-            # print '%10s' % str(' ')
-
-            sys.stdout.flush()
-            # tr.print_diff()
-            extent = self.poset.concept[cid].extent #self.derive_extent(*pattern)
-            pattern = self.poset.concept[cid].intent
-            # print extent, pattern
-            # tr.print_diff()
-            # print '::Extent:', id(extent), extent
-            # print '::Intent:', id(pattern), pattern
-            # raw_input()
-            c_pattern = self.derive_intent(extent)
+        pattern = self.pattern.bottom()
+        while pattern is not None:
+            extent = self.stack_extents[-1]
+            c_pattern = self.derive_intent(extent, pattern)
 
             if len(pattern) != len(c_pattern):
-                self.preclos.register_implication(pattern, c_pattern, extent)
+                self.preclos.register_implication(pattern, c_pattern, len(extent))
                 # ENHANCEMENT: Applying proposition 22 in Conceptual Exploration Chapter 3
                 try:
                     if min(c_pattern - pattern) > max(pattern):
@@ -85,7 +82,7 @@ class CanonicalBase(PreviousClosure):
                     else:
                         self.stack_enum[-1] = self.stack_enum[-2]
 
-                except ValueError as e:
+                except ValueError as err:
                     print ""
                     print "VALUE ERROR"
                     print "EXTENT:", extent
@@ -93,10 +90,7 @@ class CanonicalBase(PreviousClosure):
                     print "CLOSED_PATTERN:",c_pattern
                     print "DIFFERENCE:",c_pattern.desc - pattern.desc
                     exit()
-            
-            cid = self.next_closure()
-            
-            # gc.collect()
+            pattern = self.next_closure()
 
     def get_implications(self):
         """
@@ -108,9 +102,9 @@ class CanonicalBase(PreviousClosure):
         base = [
             (
                 (sorted(translate(ant)), sorted(translate(con-ant))),
-                len(objects)
+                support
             )
-            for (ant, con), objects in self.preclos.get_implication_base()
+            for (ant, con), support in self.preclos.get_implication_base()
         ]
         return sorted(base, key=lambda s: (len(s[0][0]), tuple(sorted(s[0][0]))))
 

@@ -71,7 +71,7 @@ class CbOPS(CbO):
 
         ticket = self.enumerator.new_ticket(current_element, depth)
         
-        j = self.enumerator.next(ticket, intent, depth)
+        j = self.enumerator.next(ticket, intent, depth, extent=extent)
 
         while j is not None:
             new_extent = self.enumerator.next_objects(ticket, j, extent, depth)
@@ -86,7 +86,8 @@ class CbOPS(CbO):
                 else:
                     self.cache.append(self.pattern.hash(new_intent))
                     new_concept = self.poset.new_formal_concept(new_extent, new_intent)
+                    # print '\n',new_extent
                     self.poset.add_edge(concept_id, new_concept)
                     self.run(new_concept, ticket, depth+1)
                 
-            j = self.enumerator.next(ticket, intent, depth)
+            j = self.enumerator.next(ticket, intent, depth, extent=extent)

@@ -62,20 +62,20 @@ class PreviousClosure(NextClosure):
         super(PreviousClosure, self).config()
 
         # self.stack = [self.pattern(set([]))] # Stack of patterns
-        self.stack = [set([])]#self.pattern.bottom()] # Stack of patterns
+        self.stack = [self.pattern.bottom()] # Stack of patterns
         self.stack_enum = [-2, self.ctx.n_attributes-1] # Stack of enumerators
         self.stack_supports = [self.ctx.n_objects]
         self.stack_cid = [self.poset.supremum] # Stack of concept ids mapping the stack to the poset
-
+        self.stack_extents = [set(self.ctx.g_prime.keys())]
 
     def canonical_test(self, *args):
         """
         Applies canonical test to a description
         """
         current_element, pointer, description = args
-        mask = frozenset([pointer])
-        return lexo(current_element.union(mask), description)
-    
+        mask = set([pointer]).union(current_element)
+        return lexo(mask, description)
+
     def next_closure(self):
         """
         Computes the next closure in the stack
@@ -84,9 +84,9 @@ class PreviousClosure(NextClosure):
         # tr = tracker.SummaryTracker()
         # tr.print_diff()
         found_closure = False
-
+        
         while not found_closure:
-            print '\r',self.stack_enum,'%1s' % str(' '),
+            
             make_j = True
             while make_j:
                 if not bool(self.stack):
@@ -97,21 +97,32 @@ class PreviousClosure(NextClosure):
                 if j <= self.stack_enum[-2]+1:
                     self.stack.pop()
                     self.stack_enum.pop()
-                    self.stack_cid.pop()
+                    self.stack_extents.pop()
+                    # self.stack_cid.pop()
                 else:
                     make_j = False
 
             # CLOSURE
             self.calls += 1
+            print '\r',"{:100s}".format(str(self.stack_enum)),# str(len(self.poset.concept[self.stack_cid[-1]].extent))),'%1s' % str(' '),
             # sys.stdout.flush()
             auxiliar_pattern = set([j])
-
+            # print '=',
+            # sys.stdout.flush()
+            # print '**'*50
+            # print auxiliar_pattern
+            # print self.stack[-1],auxiliar_pattern,'::',
             new_extent, new_intent = self.meet_concepts(
                 self.ctx.m_prime[j], #EXTENT1,
-                auxiliar_pattern, #INTENT2
-                self.poset.concept[self.stack_cid[-1]].extent, #EXTENT2
+                auxiliar_pattern, #INTENT1
+                # self.poset.concept[self.stack_cid[-1]].extent, #EXTENT2
+                self.stack_extents[-1], #EXTENT2
                 self.stack[-1], #INTENT2
             )
+            # print '**'*50
+            # print '=',
+            # sys.stdout.flush()
+            # print new_intent
             if new_extent is None or \
             not self.canonical_test(self.stack[-1], j, new_intent) \
             or self.pattern.hash(new_intent) in self.cache:
@@ -123,9 +134,10 @@ class PreviousClosure(NextClosure):
 
         self.stack.append(new_intent)
         self.stack_enum.append(self.ctx.n_attributes-1)
-        cid = self.poset.new_formal_concept(new_extent, new_intent)
-        self.poset.add_edge(self.stack_cid[-1], cid)
-        self.stack_cid.append(cid)
+        self.poset.new_formal_concept(new_extent, new_intent)
+        # self.poset.add_edge(self.stack_cid[-1], cid)
+        # self.stack_cid.append(cid)
+        self.stack_extents.append(new_extent)
         self.stack_supports.append(len(new_extent))
         self.cache.append(self.pattern.hash(new_intent))
         # tr.print_diff()
@@ -136,7 +148,7 @@ class PreviousClosure(NextClosure):
         # raw_input()
         
         # objgraph.show_backrefs(auxiliar_desc, filename='auxiliar_desc.png')
-        return cid
+        return new_intent
 
 
 
@@ -147,3 +159,14 @@ class PSPreviousClosure(PreviousClosure, PSCbO):
     """
     def __init__(self, ctx, **kwargs):
         super(PSPreviousClosure, self).__init__(ctx, **kwargs)
+
+    def config(self):
+        """
+        Configure the stacks
+
+        stack: stack with the patterns
+        stack_enum: stack with the enumerators used for in the stack
+        stack_cid: stack witht the mappings to the poset of formal concepts
+        """
+        super(PSPreviousClosure, self).config()
+        self.stack_extents = [self.e_pattern.top()]

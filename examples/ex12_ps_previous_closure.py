@@ -61,8 +61,11 @@ def exec_ex12(filepath, max_parts):
         pattern=TrimmedPartitionPattern,
         lazy=False
     ).poset
-    dict_printer(poset, transposed=transposed)
     
+    dict_printer(
+        poset,
+        transposed=transposed
+    )
 
 if __name__ == "__main__":
     __parser__ = argparse.ArgumentParser(

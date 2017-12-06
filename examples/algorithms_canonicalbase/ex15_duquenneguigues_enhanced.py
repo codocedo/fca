@@ -30,7 +30,7 @@ def exec_ex15(filepath):
     in chapter 3 of Conceptual Exploration
     """
     canonical_base = EnhancedDG(
-        FormalContextManager(filepath=filepath), lazy=False
+        FormalContextManager(filepath=filepath), lazy=False, silent=False
     )
     
     for rule, support in canonical_base.get_implications():

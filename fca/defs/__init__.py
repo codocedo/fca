@@ -265,7 +265,9 @@ class OnDiskPOSET(POSET):
     def __init__(self, transformer=None, **kwargs):
         super(OnDiskPOSET, self).__init__(transformer)
         
-        self.output_path = kwargs.get('output_path', "{}.csv".format(str(uuid.uuid4())))
+        self.output_path = kwargs.get('output_path', None)
+        if self.output_path is None:
+            self.output_path = "{}.csv".format(str(uuid.uuid4()))
         self.fout = open(self.output_path, 'w')
         self.writer = csv.writer(self.fout, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         self.write_support = kwargs.get('write_support', True)
@@ -320,6 +322,13 @@ class OnDiskPOSET(POSET):
         raise NotImplementedError
     def as_dict(self, indices=False):
         raise NotImplementedError
+    def close(self):
+        """
+        Close output file and returns the path
+        return str output_path
+        """
+        self.fout.close()
+        return self.output_path
     
 
 

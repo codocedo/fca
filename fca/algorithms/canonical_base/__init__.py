@@ -32,14 +32,11 @@ class CanonicalBase(PreviousClosure):
         self.preclos = PreClosure()
         super(CanonicalBase, self).__init__(ctx, **kwargs)
 
-    # def config(self):
-    #     super(CanonicalBase, self).config()
-    #     self.preclos.translate = lambda s: self.ctx.transformer.real_attributes(s)
-
-    def derive_extent(self, *args):
-        if not bool(args):
-            return set(self.ctx.g_prime.keys())
-        return super(CanonicalBase, self).derive_extent(*[self.ctx.m_prime[s] for s in args])
+    def derive_extent(self, new_attributes, old_extent=None):
+        if not bool(new_attributes):
+            return self.all_objects
+        remainder_extent = super(CanonicalBase, self).derive_extent([self.ctx.m_prime[s] for s in new_attributes]+[old_extent])
+        return remainder_extent
 
     
     def meet_concepts(self, *args):
@@ -55,10 +52,8 @@ class CanonicalBase(PreviousClosure):
         # WE CALCULATE IT FOR THOSE NEW ELEMENTS IN IT (closed_pattern - args[3])
         # AND THEN WE CALCULATE THE INTERSECTION BETWEEN THAT EXTENT WITH THE 
         # OLD ONE CONTAINED IN args[2]
-        extent = self.e_pattern.intersection(
-            old_extent,
-            self.derive_extent(*(closed_pattern-old_intent))
-        )
+        # extent = old_extent.intersection(self.derive_extent(*(closed_pattern-old_intent)))
+        extent = self.derive_extent(closed_pattern-old_intent, old_extent)# self.derive_extent(*(closed_pattern-old_intent)))
 
         if self.evaluate_conditions(extent):
             return extent, closed_pattern
@@ -81,7 +76,7 @@ class CanonicalBase(PreviousClosure):
                         self.stack_enum[-1] = self.ctx.n_attributes - 1
                     else:
                         self.stack_enum[-1] = self.stack_enum[-2]
-
+                # THIS ERROR HAPPENED BECAUSE OF SOMETHING, I DON'T REMEMBER :P
                 except ValueError as err:
                     print ""
                     print "VALUE ERROR"
@@ -91,6 +86,7 @@ class CanonicalBase(PreviousClosure):
                     print "DIFFERENCE:",c_pattern.desc - pattern.desc
                     exit()
             pattern = self.next_closure()
+        print ''
 
     def get_implications(self):
         """
@@ -115,10 +111,39 @@ class PSCanonicalBase(PSPreviousClosure, CanonicalBase):
     Chapter 3. The canonical basis
     """
 
-    def derive_extent(self, *args):
-        if not bool(args):
-            return self.e_pattern.top()  # frozenset(self.ctx.g_prime.keys())
-        return super(PSCanonicalBase, self).derive_extent(*args)
+    # def meet_concepts(self, *args):
+    #     new_attribute, old_extent, old_intent = args[1:]
+    #     self.pattern.join(new_attribute, old_intent)
+    #     closed_pattern = self.preclos.preclose_pattern(new_attribute)
+    #     if closed_pattern is None:
+    #         del closed_pattern
+    #         return None, self.pattern.bottom()
+
+    #     # THE FOLLOWING IS A LITTLE MESSY BUT IT CORRESPONDS TO A PERFORMANCE IMPROVEMENT:
+    #     # INSTEAD OF CALCULATING THE EXTENSION INTERSECTION FOR THE ENTIRE NEW INTENT
+    #     # WE CALCULATE IT FOR THOSE NEW ELEMENTS IN IT (closed_pattern - args[3])
+    #     # AND THEN WE CALCULATE THE INTERSECTION BETWEEN THAT EXTENT WITH THE 
+    #     # OLD ONE CONTAINED IN args[2]
+    #     extent = self.e_pattern.intersection(
+    #         old_extent,
+    #         self.derive_extent(*(closed_pattern-old_intent))
+    #     )
+
+    #     if self.evaluate_conditions(extent):
+    #         return extent, closed_pattern
+    #     del closed_pattern, extent
+    #     return None, self.pattern.bottom()
+
+    # def derive_extent(self, *args):
+    #     if not bool(args):
+    #         return self.e_pattern.top()  # frozenset(self.ctx.g_prime.keys())
+    #     return super(PSCanonicalBase, self).derive_extent(*args)
+
+    def derive_extent(self, new_attributes, old_extent=None):
+        if not bool(new_attributes):
+            return self.e_pattern.top()
+        remainder_extent = reduce(self.e_pattern.intersection, [self.ctx.m_prime[i] for i in new_attributes]+[old_extent])#super(PSCanonicalBase, self).derive_extent(new_attributes)
+        return remainder_extent
 
 class EnhancedDG(CanonicalBase):
     """
@@ -127,12 +152,13 @@ class EnhancedDG(CanonicalBase):
     Chapter 3. The canonical basis
     Algorithm 17
     """
+    
     def run(self, *args, **kwargs):
         """
         This enumeration works with a sort of relay of attributes
         """
         pattern = set([])  # START WITH EMPTY SET (A IN ALGORITHM DESCRIPTION)
-        extent = self.derive_extent(*pattern)
+        extent = self.derive_extent(pattern, self.all_objects)
         c_pattern = self.derive_intent(extent)
         self.calls += 1
 
@@ -162,7 +188,7 @@ class EnhancedDG(CanonicalBase):
                         pattern = B
                         i = j
                         break
-            extent = self.derive_extent(*pattern)
+            extent = self.derive_extent(pattern, self.all_objects)
             c_pattern = self.derive_intent(extent)
 
             if len(pattern) != len(c_pattern):
@@ -180,3 +206,4 @@ class EnhancedDG(CanonicalBase):
                 i = max(self.ctx.m_prime.keys())
             else:
                 pattern = set([m for m in range(i + 1) if m in pattern])
+        

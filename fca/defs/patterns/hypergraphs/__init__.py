@@ -88,7 +88,6 @@ class PartitionPattern(SIntent):
 
     @classmethod
     def join(cls, desc1, desc2):
-        print desc1, desc2
         desc1 = cls.fix_desc([desc1[0].union(chain(*desc2))])
 
     @classmethod

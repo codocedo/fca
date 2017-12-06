@@ -16,21 +16,19 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
-from __future__ import print_function
 import sys
 import argparse
-from fca.algorithms import lst2str
-from fca.algorithms.canonical_base import PSCanonicalBase
+from fca.algorithms import dict_printer
+from fca.algorithms.previous_closure import PSPreviousClosure
 from fca.reader import PatternStructureManager, List2PartitionsTransformer
-from fca.defs.patterns.hypergraphs import TrimmedPartitionPattern
+from fca.defs.patterns.hypergraphs import TrimmedPartitionPattern, PartitionPattern
 
-
-def exec_ex13(filepath, max_parts):
+def exec_ex12(filepath):
     """
-    Example 13 - Canonical Base when extents are Partition Pattern Structures
+    Example 12 - Partition Pattern Structure Mining with PreviousClosure
 
-    Calculates the canonical base of implications using partition pattern structures
-    as extents, this actually amounts to calculate functional dependencies
+    Calculates the partition pattern structures based on equivalence classes
+    using PreviousClosure algorithm
 
     We include a maximum parts threshold for mining partitions with at most
     max_parts elements in the partition
@@ -39,35 +37,33 @@ def exec_ex13(filepath, max_parts):
     # WHEN REUSING THEM, WHENEVER YOU CALCULATE PATTERN STRUCTURES
     # MULTIPLE TIMES, YOU NEED TO RESET THEM BEFORE RE-USING
     # THEM, NOT DOING THIS MAY LEAD TO INCONSISTENCIES
-    TrimmedPartitionPattern.reset()
 
-    conditions = [
-        lambda pattern: len(pattern) <= max_parts
-    ]
+    transposed = True
+
     fctx = PatternStructureManager(
         filepath=filepath,
-        transformer=List2PartitionsTransformer(int),
-        transposed=True,
+        transformer=List2PartitionsTransformer(transposed),
+        transposed=transposed,
         file_manager_params={
             'style': 'tab'
         }
     )
 
-    canonical_base = PSCanonicalBase(
+    poset = PSPreviousClosure(
         fctx,
-        pattern=TrimmedPartitionPattern,
-        conditions=conditions,
-        lazy=False
-    )
-
-    for rule, support in canonical_base.get_implications():
-        ant, con = rule
-        print('{:>10s} => {:10s}'.format(lst2str(ant),lst2str(con)), support)
-
+        pattern=PartitionPattern,
+        lazy=False,
+        silent=False
+    ).poset
+    print len(poset.concept)
+    # dict_printer(
+    #     poset,
+    #     transposed=transposed
+    # )
 
 if __name__ == "__main__":
     __parser__ = argparse.ArgumentParser(
-        description='Example 13 - Canonical Base when extents are Partition Pattern Structures'
+        description='Example 12 - Trimmed Partitions PreviousClosure'
     )
     __parser__.add_argument(
         'context_path',
@@ -75,14 +71,5 @@ if __name__ == "__main__":
         type=str,
         help='path to the formal context'
     )
-    __parser__.add_argument(
-        '-m',
-        '--max_parts',
-        metavar='max_parts',
-        type=int,
-        help='Maximum number of parts in a partition, between 0 and the number of rows',
-        default=sys.maxint
-    )
     __args__ = __parser__.parse_args()
-    exec_ex13(__args__.context_path, __args__.max_parts)
-
+    exec_ex12(__args__.context_path)

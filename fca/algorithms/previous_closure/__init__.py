@@ -22,8 +22,6 @@ from fca.algorithms.cbo import PSCbO
 from fca.algorithms import lexo
 # import objgraph
 
-
-
 class PreviousClosure(NextClosure):
     """
     Same as NextClosure
@@ -66,27 +64,28 @@ class PreviousClosure(NextClosure):
         self.stack_enum = [-2, self.ctx.n_attributes-1] # Stack of enumerators
         self.stack_supports = [self.ctx.n_objects]
         self.stack_cid = [self.poset.supremum] # Stack of concept ids mapping the stack to the poset
-        self.stack_extents = [set(self.ctx.g_prime.keys())]
+        self.stack_extents = [self.all_objects]
 
     def canonical_test(self, *args):
         """
         Applies canonical test to a description
         """
         current_element, pointer, description = args
-        mask = set([pointer]).union(current_element)
-        return lexo(mask, description)
+        if not bool(current_element):
+            return True
+        if min(description) < min(current_element):
+            return False
+
+        return pointer <= min(description.difference(current_element))
 
     def next_closure(self):
         """
         Computes the next closure in the stack
         Can be used externally or in a batch with self.run()
         """
-        # tr = tracker.SummaryTracker()
-        # tr.print_diff()
         found_closure = False
-        
+
         while not found_closure:
-            
             make_j = True
             while make_j:
                 if not bool(self.stack):
@@ -98,31 +97,22 @@ class PreviousClosure(NextClosure):
                     self.stack.pop()
                     self.stack_enum.pop()
                     self.stack_extents.pop()
-                    # self.stack_cid.pop()
+                    self.stack_cid.pop()
                 else:
                     make_j = False
 
             # CLOSURE
             self.calls += 1
-            print '\r',"{:100s}".format(str(self.stack_enum)),# str(len(self.poset.concept[self.stack_cid[-1]].extent))),'%1s' % str(' '),
-            # sys.stdout.flush()
+            print '\r', "{:100s}".format(str(self.stack_enum)),
+            sys.stdout.flush()
             auxiliar_pattern = set([j])
-            # print '=',
-            # sys.stdout.flush()
-            # print '**'*50
-            # print auxiliar_pattern
-            # print self.stack[-1],auxiliar_pattern,'::',
+
             new_extent, new_intent = self.meet_concepts(
                 self.ctx.m_prime[j], #EXTENT1,
                 auxiliar_pattern, #INTENT1
-                # self.poset.concept[self.stack_cid[-1]].extent, #EXTENT2
                 self.stack_extents[-1], #EXTENT2
                 self.stack[-1], #INTENT2
             )
-            # print '**'*50
-            # print '=',
-            # sys.stdout.flush()
-            # print new_intent
             if new_extent is None or \
             not self.canonical_test(self.stack[-1], j, new_intent) \
             or self.pattern.hash(new_intent) in self.cache:
@@ -134,20 +124,13 @@ class PreviousClosure(NextClosure):
 
         self.stack.append(new_intent)
         self.stack_enum.append(self.ctx.n_attributes-1)
-        self.poset.new_formal_concept(new_extent, new_intent)
-        # self.poset.add_edge(self.stack_cid[-1], cid)
-        # self.stack_cid.append(cid)
+        cid = self.poset.new_formal_concept(new_extent, new_intent)
+        self.poset.add_edge(self.stack_cid[-1], cid)
+        self.stack_cid.append(cid)
         self.stack_extents.append(new_extent)
         self.stack_supports.append(len(new_extent))
         self.cache.append(self.pattern.hash(new_intent))
-        # tr.print_diff()
-        # print 'NC::Extent:', id(new_extent), new_extent
-        # print 'NC::Intent:', id(new_intent), new_intent
-        # print id(new_intent), id(auxiliar_pattern)
-        # print id(new_intent.desc), id(auxiliar_pattern.desc)
-        # raw_input()
-        
-        # objgraph.show_backrefs(auxiliar_desc, filename='auxiliar_desc.png')
+
         return new_intent
 
 

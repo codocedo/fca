@@ -31,7 +31,7 @@ class CbO(Algorithm):
     def __init__(self, ctx, **kwargs):
         self.ctx = ctx
         self.poset = None
-        self.e_pattern = SSetPattern
+        # self.e_pattern = SSetPattern
         self.pattern = kwargs.get('pattern', SSetPattern)
         self.cache = kwargs.get('cache', [])
         self.min_sup = kwargs.get('min_sup', 0)
@@ -39,12 +39,12 @@ class CbO(Algorithm):
         self.conditions = kwargs.get('conditions', [])
         self.ondisk = kwargs.get('ondisk', False)
         self.ondisk_kwargs = kwargs.get('ondisk_kwargs', {})
+        
         self.calls = 0
 
         self.config()
 
         super(CbO, self).__init__(**kwargs)
-        print (self.calls)
 
     def config(self):
         """
@@ -55,8 +55,10 @@ class CbO(Algorithm):
         else:
             self.poset = OnDiskPOSET(transformer=self.ctx.transformer, **self.ondisk_kwargs)
 
+        self.all_objects = set(self.ctx.g_prime.keys())
+
         self.poset.new_formal_concept(
-            set(self.ctx.g_prime.keys()),
+            self.all_objects,
             self.pattern.bottom(),
             self.poset.supremum
         )
@@ -89,15 +91,13 @@ class CbO(Algorithm):
         desc2 = self.pattern.intersection(description, mask)
         return lexo(desc1, desc2)
 
-    def derive_extent(self, *args):
+    def derive_extent(self, descriptions):
         """
         Obtain next iteration extent
         """
-        # extent1, extent2 = args
-        # return extent1.intersection(extent2)
         return reduce(
             lambda x, y: x.intersection(y),
-            args
+            descriptions
         )
 
     def derive_intent(self, *args):
@@ -125,9 +125,9 @@ class CbO(Algorithm):
 
         if concept_id is None:
             concept_id = self.poset.supremum
-            extent = self.poset.concept[self.poset.supremum][POSET.EXTENT_MARK]
-            intent = self.poset.concept[self.poset.supremum][POSET.INTENT_MARK]
-
+            extent = set(self.ctx.g_prime.keys())# self.poset.concept[self.poset.supremum][POSET.EXTENT_MARK]
+            intent = self.pattern.bottom()#self.poset.concept[self.poset.supremum][POSET.INTENT_MARK]
+        # print (extent, intent)
         if self.pattern.length(intent) == self.ctx.n_attributes or current_element >= self.ctx.n_attributes:
             return
 
@@ -136,7 +136,7 @@ class CbO(Algorithm):
         for j in range(current_element, self.ctx.n_attributes):
             if not self.pattern.contains(intent, j):
                 self.calls += 1
-                new_extent = self.derive_extent(extent, self.ctx.m_prime[j])
+                new_extent = self.derive_extent([extent, self.ctx.m_prime[j]])
                 if self.evaluate_conditions(new_extent):
                     new_intent = self.derive_intent(new_extent, intent)
                     # CANONICAL TEST
@@ -153,7 +153,7 @@ class CbO(Algorithm):
                         self.cbo(new_concept, new_extent, new_intent, j + 1, depth + 1)
 
     def run(self, *args, **kwargs):
-        self.cbo()
+        self.cbo(self.poset.supremum, self.all_objects, self.pattern.bottom())
 
 
 class PSCbO(CbO):
@@ -162,7 +162,7 @@ class PSCbO(CbO):
     It is just a bottom-up enumeration and pattern structures
     are contained by extents, not intents
     """
-    def derive_extent(self, *args):
+    def derive_extent(self, args):
         """
         Obtain next iteration extent
         """
@@ -176,9 +176,10 @@ class PSCbO(CbO):
         return result
 
     def config(self):
-        aux_pat = self.pattern
-        self.pattern = self.e_pattern
-        self.e_pattern = aux_pat
+        self.e_pattern = self.pattern
+        self.pattern = SSetPattern
+
+        
 
         if not self.ondisk:
             self.poset = POSET(transformer=self.ctx.transformer)
@@ -186,6 +187,7 @@ class PSCbO(CbO):
             self.poset = OnDiskPOSET(transformer=self.ctx.transformer, **self.ondisk_kwargs)
 
         map(self.e_pattern.top, self.ctx.g_prime.values())
+        self.all_objects = self.e_pattern.top()
         self.poset.new_formal_concept(
             self.e_pattern.top(),
             self.pattern.bottom(),
@@ -204,3 +206,5 @@ class PSCbO(CbO):
         )
         '''
 
+    def run(self, *args, **kwargs):
+        self.cbo(self.poset.supremum, self.e_pattern.top(), self.pattern.bottom())

@@ -15,6 +15,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import sys
+import os
 
 lst2str = lambda lst: reduce(lambda x, y: str(x)+', '+str(y), lst+['']).strip()[:-1] if len(lst) > 0 else "[]"
 
@@ -59,13 +61,20 @@ class Algorithm(object):
     Abstract class for algorithm.
     Implemented by AddIntent and PSCbO
     """
-    def __init__(self, lazy=True, **params):
+    def __init__(self, **params):
         """
         if not lazy it should run the algorithm as soon as this class
         is instantiated
         """
-        if not lazy:
+        self.stdout = sys.stdout
+        self.lazy = params.get('lazy', False)
+        self.silent = params.get('silent', True)
+        if not self.lazy:
+            if self.silent:
+                self.silence()
             self.run()
+            if self.silent:
+                self.talk()
 
     def config(self):
         """
@@ -78,3 +87,15 @@ class Algorithm(object):
         Executes the algorithm
         """
         raise NotImplementedError
+
+    def silence(self):
+        """
+        Makes printing unavailable
+        """
+        sys.stdout = open(os.devnull, "w")
+
+    def talk(self):
+        """
+        Makes printing available
+        """
+        sys.stdout = self.stdout

@@ -22,8 +22,6 @@ from fca.algorithms.cbo import PSCbO
 from fca.algorithms import lexo
 # import objgraph
 
-
-
 class PreviousClosure(NextClosure):
     """
     Same as NextClosure
@@ -62,30 +60,32 @@ class PreviousClosure(NextClosure):
         super(PreviousClosure, self).config()
 
         # self.stack = [self.pattern(set([]))] # Stack of patterns
-        self.stack = [set([])]#self.pattern.bottom()] # Stack of patterns
+        self.stack = [self.pattern.bottom()] # Stack of patterns
         self.stack_enum = [-2, self.ctx.n_attributes-1] # Stack of enumerators
         self.stack_supports = [self.ctx.n_objects]
         self.stack_cid = [self.poset.supremum] # Stack of concept ids mapping the stack to the poset
+        self.stack_extents = [self.all_objects]
 
     def canonical_test(self, *args):
         """
         Applies canonical test to a description
         """
         current_element, pointer, description = args
-        mask = set([pointer]).union(current_element)
-        return lexo(mask, description)
+        if not bool(current_element):
+            return True
+        if min(description) < min(current_element):
+            return False
+
+        return pointer <= min(description.difference(current_element))
 
     def next_closure(self):
         """
         Computes the next closure in the stack
         Can be used externally or in a batch with self.run()
         """
-        # tr = tracker.SummaryTracker()
-        # tr.print_diff()
         found_closure = False
 
         while not found_closure:
-
             make_j = True
             while make_j:
                 if not bool(self.stack):
@@ -96,19 +96,21 @@ class PreviousClosure(NextClosure):
                 if j <= self.stack_enum[-2]+1:
                     self.stack.pop()
                     self.stack_enum.pop()
+                    self.stack_extents.pop()
                     self.stack_cid.pop()
                 else:
                     make_j = False
 
             # CLOSURE
             self.calls += 1
-            # sys.stdout.flush()
+            print '\r', "{:100s}".format(str(self.stack_enum)),
+            sys.stdout.flush()
             auxiliar_pattern = set([j])
 
             new_extent, new_intent = self.meet_concepts(
                 self.ctx.m_prime[j], #EXTENT1,
-                auxiliar_pattern, #INTENT2
-                self.poset.concept[self.stack_cid[-1]].extent, #EXTENT2
+                auxiliar_pattern, #INTENT1
+                self.stack_extents[-1], #EXTENT2
                 self.stack[-1], #INTENT2
             )
             if new_extent is None or \
@@ -125,17 +127,11 @@ class PreviousClosure(NextClosure):
         cid = self.poset.new_formal_concept(new_extent, new_intent)
         self.poset.add_edge(self.stack_cid[-1], cid)
         self.stack_cid.append(cid)
+        self.stack_extents.append(new_extent)
         self.stack_supports.append(len(new_extent))
         self.cache.append(self.pattern.hash(new_intent))
-        # tr.print_diff()
-        # print 'NC::Extent:', id(new_extent), new_extent
-        # print 'NC::Intent:', id(new_intent), new_intent
-        # print id(new_intent), id(auxiliar_pattern)
-        # print id(new_intent.desc), id(auxiliar_pattern.desc)
-        # raw_input()
-        
-        # objgraph.show_backrefs(auxiliar_desc, filename='auxiliar_desc.png')
-        return cid
+
+        return new_intent
 
 
 
@@ -146,3 +142,14 @@ class PSPreviousClosure(PreviousClosure, PSCbO):
     """
     def __init__(self, ctx, **kwargs):
         super(PSPreviousClosure, self).__init__(ctx, **kwargs)
+
+    def config(self):
+        """
+        Configure the stacks
+
+        stack: stack with the patterns
+        stack_enum: stack with the enumerators used for in the stack
+        stack_cid: stack witht the mappings to the poset of formal concepts
+        """
+        super(PSPreviousClosure, self).config()
+        self.stack_extents = [self.e_pattern.top()]

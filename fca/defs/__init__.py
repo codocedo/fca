@@ -264,12 +264,25 @@ class POSET(DiGraph):
 class OnDiskPOSET(POSET):
     def __init__(self, transformer=None, **kwargs):
         super(OnDiskPOSET, self).__init__(transformer)
-        
         self.output_path = kwargs.get('output_path', None)
+
         if self.output_path is None:
-            self.output_path = "{}.csv".format(str(uuid.uuid4()))
-        self.fout = open(self.output_path, 'w')
-        self.writer = csv.writer(self.fout, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            self.output_path = "./"
+        elif not self.output_path.endswith('/'):
+            self.output_path += "/"
+
+        self.output_fname = kwargs.get('output_fname', None)
+        if self.output_fname is None:
+            self.output_fname = "{}.csv".format(str(uuid.uuid4()))
+        self.path = self.output_path+self.output_fname
+        self.fout = open(self.path, 'w')
+
+        self.writer = csv.writer(
+            self.fout,
+            delimiter='\t',
+            quotechar='|',
+            quoting=csv.QUOTE_MINIMAL
+        )
         self.write_support = kwargs.get('write_support', True)
         self.write_extent = kwargs.get('write_extent', True)
         self.write_intent = kwargs.get('write_intent', True)
@@ -328,7 +341,7 @@ class OnDiskPOSET(POSET):
         return str output_path
         """
         self.fout.close()
-        return self.output_path
+        return self.path
     
 
 

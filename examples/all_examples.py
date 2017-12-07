@@ -19,21 +19,38 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
 import sys
+sys.path.append('./algorithms_addIntent')
+sys.path.append('./algorithms_cbo')
+sys.path.append('./algorithms_previousclosure')
+sys.path.append('./algorithms_nextclosure')
+sys.path.append('./algorithms_canonicalbase')
+
 from ex1_fca import exec_ex1
-from ex2_fc import exec_ex2
+from ex2_iceberg_lattice import exec_ex2
 from ex3_ps_intervals import exec_ex3
-from ex4_ps_custom import exec_ex4
-from ex5_cbo import exec_ex5
-from ex6_ps_cbo import exec_ex6
-from ex7_hyg_pat import exec_ex7
-from ex8_hyg_pat_cbo import exec_ex8
-from ex9_next_closure import exec_ex9
-from ex10_dg_imp_base_nc import exec_ex10
-from ex11_previous_closure import exec_ex11
-from ex12_ps_previous_closure import exec_ex12
-from ex13_ps_canonical_basis import exec_ex13
-from ex14_ps_next_closure import exec_ex14
-from ex15_dg_enhanced import exec_ex15
+from ex4_ps_custom_pattern import exec_ex4
+from ex7_ps_partitions import exec_ex7
+from ex16_ondisk import exec_ex16
+
+from ex5_fca import exec_ex5
+from ex6_ps_intervals import exec_ex6
+from ex8_ps_partitions import exec_ex8
+
+from ex9_fca import exec_ex9
+from ex14_ps_partitions import exec_ex14
+from ex17_ondisk import exec_ex17
+
+from ex10_duquenneguigues_previousclosure import exec_ex10
+from ex13_ps_duquenneguigues_previousclosure_trimmedpartitions import exec_ex13
+from ex15_duquenneguigues_enhanced import exec_ex15
+from ex20_duquenneguigues_previousclosure_ondisk import exec_ex20
+from ex21_ps_duquenneguigues_previousclosure_trimmedpartitions_ondisk import exec_ex21
+
+from ex11_fca import exec_ex11
+from ex12_ps_trimmed_partitions import exec_ex12
+from ex18_ondisk import exec_ex18
+from ex19_ps_ondisk import exec_ex19
+
 
 __fctx_path__ = '../data/example.txt'
 __ps_path__ = '../data/numerical_data.txt'
@@ -124,7 +141,7 @@ if __name__ == "__main__":
     print("Input File: {}".format(__part_ps_path__))
     print("Maximum Parts: INF")
     print("*"*__nasterisks__)
-    exec_ex12(__part_ps_path__, sys.maxint)
+    exec_ex12(__part_ps_path__)
 
     print("*"*__nasterisks__)
     print("Example 13 - Canonical Base when extents are Partition Pattern Structures")
@@ -134,7 +151,7 @@ if __name__ == "__main__":
     exec_ex13(__part_ps_path__, sys.maxint)
 
     print("*"*__nasterisks__)
-    print("Example 14 - Partition Pattern Structures with NextClosure")
+    print("Example 14 - Partition Pattern Structures with NexClosure")
     print("Input File: {}".format(__part_ps_path__))
     print("Maximum Parts: {}".format(__max_parts__))
     print("*"*__nasterisks__)
@@ -145,3 +162,45 @@ if __name__ == "__main__":
     print("Input File: {}".format(__fctx_path__))
     print("*"*__nasterisks__)
     exec_ex15(__fctx_path__)
+
+    print("*"*__nasterisks__)
+    print("Example 16: CbO OnDisk - Streaming patterns to disk")
+    print("Input File: {}".format(__ps_path__))
+    print("Min. Sup.: {}".format(__r_min_sup__))
+    print("*"*__nasterisks__)
+    print (__ps_path__)
+    exec_ex16(__ps_path__, __r_min_sup__, None)
+
+    print("*"*__nasterisks__)
+    print("Example 17: NextClosure OnDisk - Streaming patterns to disk")
+    print("Input File: {}".format(__fctx_path__))
+    # print("Min. Sup.: {}".format(__r_min_sup__))
+    print("*"*__nasterisks__)
+    exec_ex17(__fctx_path__, 0)
+
+    print("*"*__nasterisks__)
+    print("Example 18: PreviousClosure OnDisk - Streaming patterns to disk")
+    print("Input File: {}".format(__fctx_path__))
+    # print("Min. Sup.: {}".format(__r_min_sup__))
+    print("*"*__nasterisks__)
+    exec_ex18(__fctx_path__, 0, None)
+
+    print("*"*__nasterisks__)
+    print("Example 19: TrimmedPartitions with PreviousClosure OnDisk - Streaming patterns to disk")
+    print("Input File: {}".format(__part_ps_path__))
+    # print("Min. Sup.: {}".format(__r_min_sup__))
+    print("*"*__nasterisks__)
+    exec_ex19(__part_ps_path__, None)
+
+    print("*"*__nasterisks__)
+    print("Example 20: Obtains the Duquenne-Guigues Canonical Base OnDisk - Streaming pattern to disk")
+    print("Input File: {}".format(__fctx_path__))
+    print("Min. Sup.: {}".format(__r_min_sup__))
+    print("*"*__nasterisks__)
+    exec_ex20(__fctx_path__, __r_min_sup__, None)
+
+    print("*"*__nasterisks__)
+    print("Example 21: Duquenne Guigues Base using TrimmedPartitions with PreviousClosure OnDisk - Streaming patterns to disk")
+    print("Input File: {}".format(__part_ps_path__))
+    print("*"*__nasterisks__)
+    exec_ex21(__part_ps_path__, None)

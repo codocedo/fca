@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
 
-from fca.defs import POSET, SetPattern
+from fca.defs import POSET
 from fca.algorithms import lexo
 from fca.algorithms.cbo import CbO, PSCbO
 

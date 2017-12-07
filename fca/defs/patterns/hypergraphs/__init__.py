@@ -18,9 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Kyori code.
 import sys
 from itertools import product, chain
-from fca.defs import SIntent, Intent
+from fca.defs import Intent
 
-class PartitionPattern(SIntent):
+class PartitionPattern(Intent):
     """
     Description is a list of frozensets
     TOP: is a partition with a single element with all attributes

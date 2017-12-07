@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Kyori code.
 from __future__ import print_function
 from functools import reduce
-from fca.defs import OnDiskPOSET, POSET, SSetPattern
+from fca.defs import OnDiskPOSET, POSET, SetPattern
 from fca.reader import FormalContextManager
 from fca.algorithms import Algorithm, lexo
 
@@ -31,8 +31,8 @@ class CbO(Algorithm):
     def __init__(self, ctx, **kwargs):
         self.ctx = ctx
         self.poset = None
-        # self.e_pattern = SSetPattern
-        self.pattern = kwargs.get('pattern', SSetPattern)
+        # self.e_pattern = SetPattern
+        self.pattern = kwargs.get('pattern', SetPattern)
         self.cache = kwargs.get('cache', [])
         self.min_sup = kwargs.get('min_sup', 0)
         self.printer = kwargs.get('printer', lambda a, b, c: None)
@@ -177,7 +177,7 @@ class PSCbO(CbO):
 
     def config(self):
         self.e_pattern = self.pattern
-        self.pattern = SSetPattern
+        self.pattern = SetPattern
 
         
 

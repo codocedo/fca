@@ -17,10 +17,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
 import sys
-from fca.defs import SIntent
-from fca.defs import SSetPattern
+from fca.defs import Intent
+from fca.defs import SetPattern
 
-class IcebergSetPattern(SSetPattern):
+class IcebergSetPattern(SetPattern):
     """
     Generalizes SetPattern to allow for a minimal cardinality representation
     """
@@ -37,7 +37,7 @@ class IcebergSetPattern(SSetPattern):
         new_desc = cls.fix_desc(desc1.intersection(desc2))
         return new_desc
 
-class IntervalPattern(SIntent):
+class IntervalPattern(Intent):
     """
     Interval pattern as defined by Kaytoue
     CONVEX HULL: [a,b] \\cap [x,y] = [min(a,x),max(b,y)]

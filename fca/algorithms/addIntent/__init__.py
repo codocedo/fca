@@ -19,14 +19,14 @@ from __future__ import print_function
 import copy
 import sys
 import os
-from fca.defs import ConceptLattice, SSetPattern
+from fca.defs import ConceptLattice, SetPattern
 from fca.algorithms import Algorithm
 
 class AddIntent(Algorithm):
     """
     AddIntent algorithm executer
     """
-    def __init__(self, input_manager, pattern=SSetPattern, **params):
+    def __init__(self, input_manager, pattern=SetPattern, **params):
         self.ctx = input_manager
         self.lat = ConceptLattice(transformer=self.ctx.transformer)
         self.pattern = pattern

@@ -7,6 +7,7 @@ fca/algorithms/addIntent/__init__.py
 fca/algorithms/canonical_base/__init__.py
 fca/algorithms/cbo/__init__.py
 fca/algorithms/next_closure/__init__.py
+fca/algorithms/pre_closure/__init__.py
 fca/algorithms/previous_closure/__init__.py
 fca/algorithms/previous_closure/static.py
 fca/defs/__init__.py

@@ -71,7 +71,7 @@ class CanonicalBase(PreviousClosure):
                 self.preclos.register_implication(pattern, c_pattern, len(extent))
                 # ENHANCEMENT: Applying proposition 22 in Conceptual Exploration Chapter 3
                 try:
-                    if min(c_pattern - pattern) > max(pattern):
+                    if self.pattern.is_empty(pattern) or min(c_pattern - pattern) > max(pattern):
                         self.stack[-1] = c_pattern
                         self.stack_enum[-1] = self.ctx.n_attributes - 1
                     else:
@@ -83,7 +83,8 @@ class CanonicalBase(PreviousClosure):
                     print "EXTENT:", extent
                     print "PATTERN:",pattern
                     print "CLOSED_PATTERN:",c_pattern
-                    print "DIFFERENCE:",c_pattern.desc - pattern.desc
+                    print "DIFFERENCE:",c_pattern - pattern
+                    print err
                     exit()
             pattern = self.next_closure()
         print ''

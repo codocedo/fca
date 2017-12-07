@@ -30,16 +30,15 @@ setup(
         'fca.algorithms.canonical_base',
         'fca.defs.patterns',
         'fca.defs.patterns.hypergraphs',
-        'fca.defs.'
         'fca.defs',
         'fca.reader'
         ],
-    version='2.01',
+    version='2.02',
     description='A library to implement Formal Concept Analysis tasks and other tools',
     author='Victor Codocedo',
     author_email='victor.codocedo@gmail.com',
     url='https://github.com/codocedo/fca',
-    download_url='https://github.com/codocedo/fca/archive/2.01.tar.gz',
+    download_url='https://github.com/codocedo/fca/archive/2.02.tar.gz',
     keywords=[
         'formal concept analysis',
         'pattern mining',

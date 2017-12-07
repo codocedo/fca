@@ -41,10 +41,15 @@ class PartitionPattern(SIntent):
         new_desc = []
         counter = 0
         for i, j in product(desc1, desc2):
-            intx = i.intersection(j)
-            if bool(intx): # instead of len(x) > 0
-                new_desc.append(intx)
-                counter += len(intx)
+            x, y = (i, j) if len(i) < len(j) else (j, i)
+            if x.issubset(y):
+                new_desc.append(x)
+                counter += len(x)
+            else:
+                intx = x.intersection(y)
+                if bool(intx): # instead of len(x) > 0
+                    new_desc.append(intx)
+                    counter += len(intx)
         # print len(new_desc)
         if len(new_desc) == counter:
             return PartitionPattern.bottom(new_desc)
@@ -83,7 +88,6 @@ class PartitionPattern(SIntent):
 
     @classmethod
     def join(cls, desc1, desc2):
-        print desc1, desc2
         desc1 = cls.fix_desc([desc1[0].union(chain(*desc2))])
 
     @classmethod
@@ -184,10 +188,15 @@ class TrimmedPartitionPattern(PartitionPattern):
         new_desc = []
         counter = 0
         for i, j in product(desc1, desc2):
-            intx = i.intersection(j)
-            if len(intx) > 1: # instead of len(x) > 0
-                new_desc.append(intx)
-                counter += len(intx)
+            x, y = (i, j) if len(i) < len(j) else (j, i)
+            if x.issubset(y):
+                new_desc.append(x)
+                counter += len(x)
+            else:
+                intx = i.intersection(j)
+                if len(intx) > 1: # instead of len(x) > 0
+                    new_desc.append(intx)
+                    counter += len(intx)
 
         if len(new_desc) == counter:
             return cls.bottom()

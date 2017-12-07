@@ -55,11 +55,10 @@ def exec_ex12(filepath):
         lazy=False,
         silent=False
     ).poset
-    print len(poset.concept)
-    # dict_printer(
-    #     poset,
-    #     transposed=transposed
-    # )
+    dict_printer(
+        poset,
+        transposed=transposed
+    )
 
 if __name__ == "__main__":
     __parser__ = argparse.ArgumentParser(

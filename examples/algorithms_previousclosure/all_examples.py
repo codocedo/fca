@@ -44,4 +44,4 @@ if __name__ == "__main__":
     print("Input File: {}".format(__part_ps_path__))
     print("Maximum Parts: INF")
     print("*"*__nasterisks__)
-    exec_ex12(__part_ps_path__, sys.maxint)
+    exec_ex12(__part_ps_path__)

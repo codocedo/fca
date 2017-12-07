@@ -111,38 +111,13 @@ class PSCanonicalBase(PSPreviousClosure, CanonicalBase):
     Chapter 3. The canonical basis
     """
 
-    # def meet_concepts(self, *args):
-    #     new_attribute, old_extent, old_intent = args[1:]
-    #     self.pattern.join(new_attribute, old_intent)
-    #     closed_pattern = self.preclos.preclose_pattern(new_attribute)
-    #     if closed_pattern is None:
-    #         del closed_pattern
-    #         return None, self.pattern.bottom()
-
-    #     # THE FOLLOWING IS A LITTLE MESSY BUT IT CORRESPONDS TO A PERFORMANCE IMPROVEMENT:
-    #     # INSTEAD OF CALCULATING THE EXTENSION INTERSECTION FOR THE ENTIRE NEW INTENT
-    #     # WE CALCULATE IT FOR THOSE NEW ELEMENTS IN IT (closed_pattern - args[3])
-    #     # AND THEN WE CALCULATE THE INTERSECTION BETWEEN THAT EXTENT WITH THE 
-    #     # OLD ONE CONTAINED IN args[2]
-    #     extent = self.e_pattern.intersection(
-    #         old_extent,
-    #         self.derive_extent(*(closed_pattern-old_intent))
-    #     )
-
-    #     if self.evaluate_conditions(extent):
-    #         return extent, closed_pattern
-    #     del closed_pattern, extent
-    #     return None, self.pattern.bottom()
-
-    # def derive_extent(self, *args):
-    #     if not bool(args):
-    #         return self.e_pattern.top()  # frozenset(self.ctx.g_prime.keys())
-    #     return super(PSCanonicalBase, self).derive_extent(*args)
-
     def derive_extent(self, new_attributes, old_extent=None):
         if not bool(new_attributes):
             return self.e_pattern.top()
-        remainder_extent = reduce(self.e_pattern.intersection, [self.ctx.m_prime[i] for i in new_attributes]+[old_extent])#super(PSCanonicalBase, self).derive_extent(new_attributes)
+        remainder_extent = reduce(
+            self.e_pattern.intersection,
+            [self.ctx.m_prime[i] for i in new_attributes]+[old_extent]
+        )
         return remainder_extent
 
 class EnhancedDG(CanonicalBase):
@@ -206,4 +181,3 @@ class EnhancedDG(CanonicalBase):
                 i = max(self.ctx.m_prime.keys())
             else:
                 pattern = set([m for m in range(i + 1) if m in pattern])
-        

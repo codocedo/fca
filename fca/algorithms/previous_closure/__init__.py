@@ -133,9 +133,6 @@ class PreviousClosure(NextClosure):
 
         return new_intent
 
-
-
-
 class PSPreviousClosure(PreviousClosure, PSCbO):
     """
     NextClosure with support for pattern structure at extent level

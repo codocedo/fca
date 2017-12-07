@@ -59,7 +59,6 @@ def exec_ex12(filepath):
         lazy=False,
         silent=False
     ).poset
-
     dict_printer(
         poset,
         transposed=transposed

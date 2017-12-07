@@ -46,6 +46,7 @@ if __name__ == "__main__":
     print("Maximum Parts: INF")
     print("*"*__nasterisks__)
     exec_ex12(__part_ps_path__)
+<<<<<<< HEAD
 
     print("*"*__nasterisks__)
     print("Example 18: PreviousClosure OnDisk - Streaming patterns to disk")
@@ -60,3 +61,5 @@ if __name__ == "__main__":
     # print("Min. Sup.: {}".format(__r_min_sup__))
     print("*"*__nasterisks__)
     exec_ex19(__part_ps_path__, None)
+=======
+>>>>>>> Fixed problems with ex12_ps_trimmed_partitions.py

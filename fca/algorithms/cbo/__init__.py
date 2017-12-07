@@ -39,6 +39,7 @@ class CbO(Algorithm):
         self.conditions = kwargs.get('conditions', [])
         self.ondisk = kwargs.get('ondisk', False)
         self.ondisk_kwargs = kwargs.get('ondisk_kwargs', {})
+        
         self.calls = 0
 
         self.config()
@@ -135,7 +136,7 @@ class CbO(Algorithm):
         for j in range(current_element, self.ctx.n_attributes):
             if not self.pattern.contains(intent, j):
                 self.calls += 1
-                new_extent = self.derive_extent(extent, self.ctx.m_prime[j])
+                new_extent = self.derive_extent([extent, self.ctx.m_prime[j]])
                 if self.evaluate_conditions(new_extent):
                     new_intent = self.derive_intent(new_extent, intent)
                     # CANONICAL TEST
@@ -161,7 +162,7 @@ class PSCbO(CbO):
     It is just a bottom-up enumeration and pattern structures
     are contained by extents, not intents
     """
-    def derive_extent(self, *args):
+    def derive_extent(self, args):
         """
         Obtain next iteration extent
         """
@@ -175,9 +176,10 @@ class PSCbO(CbO):
         return result
 
     def config(self):
-        
         self.e_pattern = self.pattern
         self.pattern = SSetPattern
+
+        
 
         if not self.ondisk:
             self.poset = POSET(transformer=self.ctx.transformer)
@@ -185,6 +187,7 @@ class PSCbO(CbO):
             self.poset = OnDiskPOSET(transformer=self.ctx.transformer, **self.ondisk_kwargs)
 
         map(self.e_pattern.top, self.ctx.g_prime.values())
+        self.all_objects = self.e_pattern.top()
         self.poset.new_formal_concept(
             self.e_pattern.top(),
             self.pattern.bottom(),

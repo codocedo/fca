@@ -70,14 +70,16 @@ class NextClosure(CbO):
         self.stack_enum = [0] # Stack of enumerators
         self.stack_supports = [self.ctx.n_objects]
         self.stack_cid = [self.poset.supremum] # Stack of concept ids mapping the stack to the poset
+        self.stack_extents = [self.all_objects]
 
     def meet_concepts(self, *args):
         """
         Meet Concepts
         """
-        new_extent = self.derive_extent(args[0], args[2])
+        # print args
+        new_extent = self.derive_extent([args[0], args[2]])
         if self.evaluate_conditions(new_extent):
-            new_intent = self.derive_intent(new_extent)
+            new_intent = self.derive_intent(new_extent, args[3])
             return new_extent, new_intent
         del new_extent
         return None, self.pattern.bottom()
@@ -100,16 +102,20 @@ class NextClosure(CbO):
                 if j == self.ctx.n_attributes:
                     self.stack.pop()
                     self.stack_enum.pop()
+                    self.stack_extents.pop()
                     self.stack_cid.pop()
                 else:
                     make_j = False
             self.calls += 1
+            print '\r', "{:100s}".format(str(self.stack_enum)),
+
+            auxiliar_pattern = set([j])
             # CLOSURE
             new_extent, new_intent = self.meet_concepts(
                 self.ctx.m_prime[j], #EXTENT1,
                 self.stack[-1], #INTENT1
-                self.poset.concept[self.stack_cid[-1]].extent, #EXTENT2
-                set([j]) #INTENT2
+                self.stack_extents[-1], #EXTENT2
+                auxiliar_pattern #INTENT2
             )
             # END CLOSURE
 
@@ -120,13 +126,13 @@ class NextClosure(CbO):
             else:
                 found_closure = True
 
-
         self.stack_enum[-1] = j+1
         self.stack.append(new_intent)
         self.stack_enum.append(j+1)
         cid = self.poset.new_formal_concept(new_extent, new_intent)
         self.poset.add_edge(self.stack_cid[-1], cid)
         self.stack_cid.append(cid)
+        self.stack_extents.append(new_extent)
         self.stack_supports.append(len(new_extent))
         self.cache.append(self.pattern.hash(new_intent))
         return new_intent
@@ -137,7 +143,7 @@ class NextClosure(CbO):
         """
         while self.next_closure() is not None:
             continue
-
+        print ('')
 
 
 class PSNextClosure(NextClosure, PSCbO):

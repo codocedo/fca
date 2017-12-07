@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import hashlib
 import copy
 from enum import Enum
+import csv
+import uuid
 
 
 class DiGraph(object):
@@ -179,7 +181,7 @@ class POSET(DiGraph):
         Concept.IMARK = self.INTENT_MARK
 
         self.concept = self.node
-        self.__transformer = transformer
+        self._transformer = transformer
 
     def __getitem__(self, key):
         """
@@ -238,12 +240,12 @@ class POSET(DiGraph):
         g_map: Maps objects' indices to labels
         m_map: Maps attributes' indices to labels
         """
-        if indices or self.__transformer is None:
-            object_translator = lambda *x: x
-            attribute_translator = lambda *x: x
+        if indices or self._transformer is None:
+            object_translator = lambda x: x
+            attribute_translator = lambda x: x
         else:
-            object_translator = self.__transformer.real_objects
-            attribute_translator = self.__transformer.real_attributes
+            object_translator = self._transformer.real_objects
+            attribute_translator = self._transformer.real_attributes
 
         concepts = {}
         ema = self.EXTENT_MARK
@@ -251,13 +253,83 @@ class POSET(DiGraph):
 
         for concept in self.concepts():
             concept_data = {
-                ema: object_translator(*concept[1][ema]),
-                ima: attribute_translator(*concept[1][ima]),
+                ema: object_translator(concept[1][ema]),
+                ima: attribute_translator(concept[1][ima]),
                 'sup': sorted(self.successors(concept[0])),
                 'sub': sorted(self.predecessors(concept[0]))
             }
             concepts[concept[0]] = concept_data
         return concepts
+
+class OnDiskPOSET(POSET):
+    def __init__(self, transformer=None, **kwargs):
+        super(OnDiskPOSET, self).__init__(transformer)
+        
+        self.output_path = kwargs.get('output_path', None)
+        if self.output_path is None:
+            self.output_path = "{}.csv".format(str(uuid.uuid4()))
+        self.fout = open(self.output_path, 'w')
+        self.writer = csv.writer(self.fout, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        self.write_support = kwargs.get('write_support', True)
+        self.write_extent = kwargs.get('write_extent', True)
+        self.write_intent = kwargs.get('write_intent', True)
+
+        # WRITE HEADERS
+        if kwargs.get('write_headers', True):
+            row = ['ID']
+            if self.write_support:
+                row.append("SUPPORT")
+            if self.write_extent:
+                row.append("EXTENT")
+            if self.write_intent:
+                row.append("INTENT")
+            self.writer.writerow(row)
+
+        if kwargs.get('indices', False) or self._transformer is None:
+            
+            self.object_translator = lambda x: x
+            self.attribute_translator = lambda x: x
+        else:
+            self.object_translator = self._transformer.real_objects
+            self.attribute_translator = self._transformer.real_attributes
+        
+
+    def new_formal_concept(self, extent, intent, concept_id=None):
+        """
+        Adds a new concept to the lattice
+        Wraps add_node
+        """
+        if concept_id is None:
+            concept_id = len(self.node)
+        row = [concept_id]
+        if self.write_support:
+            row.append(len(extent))
+        if self.write_extent:
+            row.append(self.object_translator(extent))
+        if self.write_intent:
+            row.append(self.attribute_translator(intent))
+
+        self.writer.writerow(row)
+        # self.fout.flush()
+        self.add_node(concept_id, Concept({
+            self.EXTENT_MARK: len(extent),
+            self.INTENT_MARK: None
+        }))
+        return concept_id
+    def upper_neighbors(self, concept_id):
+        raise NotImplementedError
+    def lower_neighbors(self, concept_id):
+        raise NotImplementedError
+    def as_dict(self, indices=False):
+        raise NotImplementedError
+    def close(self):
+        """
+        Close output file and returns the path
+        return str output_path
+        """
+        self.fout.close()
+        return self.output_path
+    
 
 
 class ConceptLattice(POSET):

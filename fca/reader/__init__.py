@@ -70,7 +70,7 @@ class Transformer(object):
         self.attribute_index[self.attributes.setdefault(att, len(self.attributes))] = att
         return self.attributes[att]
 
-    def real_objects(self, *args):
+    def real_objects(self, args):
         """
         Returns the real objects behind the indexed representation
         args: list of object indices
@@ -78,9 +78,9 @@ class Transformer(object):
         """
         if not bool(args):
             return args
-        return [self.object_index.get(i, i) for i in args]
+        return sorted([self.object_index.get(i, i) for i in args])
 
-    def real_attributes(self, *args):
+    def real_attributes(self, args):
         """
         Returns the real attributes behind the indexed representation
         args: list of attribute indices
@@ -88,7 +88,7 @@ class Transformer(object):
         """
         if not bool(args):
             return args
-        return [self.attribute_index.get(i, i) for i in args]
+        return sorted([self.attribute_index.get(i, i) for i in args])
 
     def transform(self, entry):
         """
@@ -186,20 +186,21 @@ class List2PartitionsTransformer(List2IntervalsTransformer):
         else:
             self.real_attributes = self.real_partition
 
-    def real_partition(self, *args):
+    def real_partition(self, args):
         """
         Outputs the partition the partition
         args: list of sets that represents the partition
 
         return list of tuples
         """
-        return list([tuple(sorted(i)) for i in args])
+        
+        return sorted([tuple(sorted(i)) for i in args])
 
     def parse(self, lst):
         hashes = {}
         for i, j in enumerate(lst):
             hashes.setdefault(j, []).append(i)
-        return [frozenset(i) for i in hashes.values()]
+        return [set(i) for i in hashes.values()]
 #****************************************
 # File Syntax Managers
 #****************************************
@@ -510,8 +511,12 @@ class FormalContextManager(PatternStructureManager):
         # Calculate m_prime
         for object_id, attributes in self.g_prime.items():
             for att in attributes:
-                self.m_prime.setdefault(att, set([])).add(object_id)
-
+                self.m_prime.setdefault(
+                    att,
+                    set([])
+                ).add(
+                    object_id
+                )
         # ATT COUNTER
         self.n_attributes = len(self.m_prime)
 

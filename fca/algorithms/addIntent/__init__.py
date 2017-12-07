@@ -22,19 +22,7 @@ import os
 from fca.defs import ConceptLattice, SSetPattern
 from fca.algorithms import Algorithm
 
-def silence():
-    """
-    Makes printing unavailable
-    """
-    old_stdout = sys.stdout
-    sys.stdout = open(os.devnull, "w")
-    return old_stdout
 
-def talk(old_stdout):
-    """
-    Makes printing available
-    """
-    sys.stdout = old_stdout
 
 class AddIntent(Algorithm):
     """
@@ -78,17 +66,11 @@ class AddIntent(Algorithm):
         representations: iterable of representations
         Pattern: type of pattern to use (SetIntent, IntervalPattern, etc.)
         """
-        if self.silent:
-            oloss = silence()
-        print('*' * 100)
-        print('SePyrot - AddIntent for Python - KY')
-        print('*' * 100)
-
-
         for obj, intent in enumerate(self.ctx.representations):
             print('\r -> EXECUTING OBJECT:{}'.format(obj), end='')
-            intent = self.pattern.fix_desc(intent)
             sys.stdout.flush()
+            
+            intent = self.pattern.fix_desc(intent)
             # self.pattern.join(self.lat[self.lat.infimum].intent, intent)
             self.pattern.top(intent)
 
@@ -98,8 +80,7 @@ class AddIntent(Algorithm):
 
         print ('')
         print('{} concepts found'.format(len(self.lat.nodes())))
-        if self.silent:
-            talk(oloss)
+
 
 
     # # These marks are used to represent extent and intent in dicts

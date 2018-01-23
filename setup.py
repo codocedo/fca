@@ -31,14 +31,18 @@ setup(
         'fca.defs.patterns',
         'fca.defs.patterns.hypergraphs',
         'fca.defs',
-        'fca.reader'
+        'fca.io',
+        'fca.io.file_models',
+        'fca.io.input_models',
+        'fca.io.sorters',
+        'fca.io.transformers'
         ],
-    version='2.02',
+    version='3.0',
     description='A library to implement Formal Concept Analysis tasks and other tools',
     author='Victor Codocedo',
     author_email='victor.codocedo@gmail.com',
     url='https://github.com/codocedo/fca',
-    download_url='https://github.com/codocedo/fca/archive/2.02.tar.gz',
+    download_url='https://github.com/codocedo/fca/archive/3.0.tar.gz',
     keywords=[
         'formal concept analysis',
         'pattern mining',
@@ -52,6 +56,5 @@ setup(
     classifiers=[],
     install_requires=[
         "enum34"
-    ]
+        ]
     )
-  

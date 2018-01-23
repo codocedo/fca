@@ -21,8 +21,7 @@ import re
 import argparse
 from fca.algorithms import dict_printer
 from fca.algorithms.cbo import CbO
-from fca.reader import FormalContextManager
-
+from fca.io.input_models import FormalContextModel
 
 def read_float_input(msg):
     """
@@ -41,7 +40,7 @@ def exec_ex5(filepath, min_sup=0):
     """
     dict_printer(
         CbO(
-            FormalContextManager(
+            FormalContextModel(
                 filepath=filepath
             ),
             min_sup=min_sup,

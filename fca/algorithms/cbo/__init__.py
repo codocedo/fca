@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 from functools import reduce
 from fca.defs import OnDiskPOSET, POSET, SetPattern
-from fca.reader import FormalContextManager
+from fca.io.input_models import FormalContextModel
 from fca.algorithms import Algorithm, lexo
 
 
@@ -39,7 +39,7 @@ class CbO(Algorithm):
         self.conditions = kwargs.get('conditions', [])
         self.ondisk = kwargs.get('ondisk', False)
         self.ondisk_kwargs = kwargs.get('ondisk_kwargs', {})
-        
+
         self.calls = 0
 
         self.config()
@@ -162,13 +162,14 @@ class PSCbO(CbO):
     It is just a bottom-up enumeration and pattern structures
     are contained by extents, not intents
     """
-    def derive_extent(self, args):
+    def derive_extent(self, descriptions):
         """
         Obtain next iteration extent
         """
-        return reduce(self.e_pattern.intersection, args)
+        return reduce(self.e_pattern.intersection, descriptions)
 
     def derive_intent(self, *args):
+        
         new_extent = args[0]
         result = set(
             [m for m, desc in self.ctx.m_prime.items() if m in args[1] or self.e_pattern.leq(new_extent, desc)]

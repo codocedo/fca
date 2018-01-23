@@ -21,7 +21,7 @@ import re
 from fca.algorithms import dict_printer
 from fca.algorithms.addIntent import AddIntent
 from fca.defs.patterns import IcebergSetPattern
-from fca.reader import read_representations
+from fca.io import read_representations
 
 def read_int_input(msg):
     """

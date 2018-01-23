@@ -20,8 +20,9 @@ import sys
 import argparse
 from fca.algorithms import dict_printer
 from fca.algorithms.previous_closure import PSPreviousClosure
-from fca.reader import PatternStructureManager, List2PartitionsTransformer
 from fca.defs.patterns.hypergraphs import TrimmedPartitionPattern, PartitionPattern
+from fca.io.transformers import List2PartitionsTransformer
+from fca.io.input_models import PatternStructureModel
 
 def exec_ex12(filepath):
     """
@@ -40,7 +41,7 @@ def exec_ex12(filepath):
 
     transposed = True
 
-    fctx = PatternStructureManager(
+    fctx = PatternStructureModel(
         filepath=filepath,
         transformer=List2PartitionsTransformer(transposed),
         transposed=transposed,

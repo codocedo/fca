@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Kyori code.
 from __future__ import print_function
 import argparse
-from fca.reader import FormalContextManager
+from fca.io.input_models import FormalContextModel
 from fca.algorithms import dict_printer
 from fca.algorithms.next_closure import NextClosure
 
@@ -27,7 +27,7 @@ def exec_ex9(filepath, min_sup=0):
     """
     Executes NextClosure in a single line
     """
-    dict_printer(NextClosure(FormalContextManager(filepath=filepath), min_sup=min_sup, lazy=False).poset)
+    dict_printer(NextClosure(FormalContextModel(filepath=filepath), min_sup=min_sup, lazy=False).poset)
 
 
 if __name__ == '__main__':

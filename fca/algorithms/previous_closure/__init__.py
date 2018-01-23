@@ -71,9 +71,11 @@ class PreviousClosure(NextClosure):
         Applies canonical test to a description
         """
         current_element, pointer, description = args
+        # print '\t=>', current_element, pointer, description
         if not bool(current_element):
             return True
-        if min(description) < min(current_element):
+        # print '\t\t=>', min(description) , min(current_element)
+        if min(description) < min(pointer, min(current_element)):
             return False
 
         return pointer <= min(description.difference(current_element))
@@ -108,11 +110,13 @@ class PreviousClosure(NextClosure):
             auxiliar_pattern = set([j])
 
             new_extent, new_intent = self.meet_concepts(
-                self.ctx.m_prime[j], #EXTENT1,
+                self.ctx.m_prime[j], #EXTENT1
                 auxiliar_pattern, #INTENT1
                 self.stack_extents[-1], #EXTENT2
                 self.stack[-1], #INTENT2
             )
+            # print new_intent, self.stack[-1], j
+            # print not self.canonical_test(self.stack[-1], j, new_intent), self.pattern.hash(new_intent) in self.cache
             if new_extent is None or \
             not self.canonical_test(self.stack[-1], j, new_intent) \
             or self.pattern.hash(new_intent) in self.cache:
@@ -137,9 +141,6 @@ class PSPreviousClosure(PreviousClosure, PSCbO):
     """
     NextClosure with support for pattern structure at extent level
     """
-    def __init__(self, ctx, **kwargs):
-        super(PSPreviousClosure, self).__init__(ctx, **kwargs)
-
     def config(self):
         """
         Configure the stacks

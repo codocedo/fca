@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Kyori code.
 
 from __future__ import print_function
-import sys
 from ex11_fca import exec_ex11
 from ex12_ps_trimmed_partitions import exec_ex12
 from ex18_ondisk import exec_ex18

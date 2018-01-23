@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 import argparse
 from fca.algorithms import lst2str
-from fca.reader import FormalContextManager
+from fca.io.input_models import FormalContextModel
 from fca.algorithms.canonical_base import EnhancedDG
 
 
@@ -30,7 +30,11 @@ def exec_ex15(filepath):
     in chapter 3 of Conceptual Exploration
     """
     canonical_base = EnhancedDG(
-        FormalContextManager(filepath=filepath), lazy=False, silent=False
+        FormalContextModel(
+            filepath=filepath
+        ),
+        lazy=False,
+        silent=False
     )
     
     for rule, support in canonical_base.get_implications():

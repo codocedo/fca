@@ -19,9 +19,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 import argparse
 from fca.defs.patterns.hypergraphs import PartitionPattern
-from fca.reader import PatternStructureManager, List2IntervalsTransformer
 from fca.algorithms import dict_printer
 from fca.algorithms.cbo import PSCbO
+from fca.io.transformers import List2IntervalsTransformer
+from fca.io.input_models import PatternStructureModel
 
 
 class List2PartitionsTransformer(List2IntervalsTransformer):
@@ -51,7 +52,7 @@ def exec_ex8(filepath):
     # THEM, NOT DOING THIS MAY LEAD TO INCONSISTENCIES
     PartitionPattern.reset()
 
-    fctx = PatternStructureManager(
+    fctx = PatternStructureModel(
         filepath=filepath,
         transformer=List2PartitionsTransformer(int),
         transposed=True,

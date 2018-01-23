@@ -21,8 +21,9 @@ import argparse
 from fca.algorithms import lst2str
 from fca.algorithms.canonical_base import PSCanonicalBase
 from fca.defs.patterns.hypergraphs import TrimmedPartitionPattern
-from fca.reader import List2PartitionsTransformer
-from fca.reader import PatternStructureManager
+from fca.io.transformers import List2PartitionsTransformer
+from fca.io.sorters import PartitionSorter
+from fca.io.input_models import PatternStructureModel
 
 def exec_ex21(filepath, output_fname=None):
     """
@@ -31,9 +32,10 @@ def exec_ex21(filepath, output_fname=None):
     transposed = True
     TrimmedPartitionPattern.reset()
 
-    fctx = PatternStructureManager(
+    fctx = PatternStructureModel(
         filepath=filepath,
         transformer=List2PartitionsTransformer(transposed),
+        sorter=PartitionSorter(),
         transposed=transposed,
         file_manager_params={
             'style': 'tab'
@@ -54,6 +56,9 @@ def exec_ex21(filepath, output_fname=None):
             }
     )
     output_path = canonical_base.poset.close()
+
+    fctx.transformer.attribute_index = {i:j for i, j in enumerate(fctx.sorter.processing_order)}
+    print(fctx.transformer.attribute_index)
 
     for rule, support in canonical_base.get_implications():
         ant, con = rule

@@ -19,14 +19,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 import argparse
 from fca.algorithms.previous_closure import PreviousClosure
-from fca.reader import FormalContextManager
+from fca.io.input_models import FormalContextModel
 
 def exec_ex18(filepath, min_sup=0, output_fname=None):
     """
     Example 18: PreviousClosure OnDisk - Streaming patterns to disk
     """
     ondisk_poset = PreviousClosure(
-        FormalContextManager(
+        FormalContextModel(
             filepath=filepath
         ),
         min_sup=min_sup,

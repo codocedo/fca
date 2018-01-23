@@ -19,10 +19,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 import argparse
 from fca.defs.patterns.hypergraphs import PartitionPattern
-from fca.reader import List2IntervalsTransformer
-from fca.reader import read_representations
 from fca.algorithms import dict_printer
 from fca.algorithms.addIntent import AddIntent
+from fca.io import read_representations
+from fca.io.transformers import List2IntervalsTransformer
 
 
 class List2PartitionsTransformer(List2IntervalsTransformer):

@@ -19,14 +19,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 import argparse
 from fca.algorithms.cbo import CbO
-from fca.reader import FormalContextManager
+from fca.io.input_models import FormalContextModel
 
 def exec_ex16(filepath, min_sup=0, output_fname=None):
     """
     Example 16: CbO OnDisk - Streaming patterns to disk
     """
     ondisk_poset = CbO(
-        FormalContextManager(
+        FormalContextModel(
             filepath=filepath
         ),
         min_sup=min_sup,

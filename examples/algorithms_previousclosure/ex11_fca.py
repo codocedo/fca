@@ -23,17 +23,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from __future__ import print_function
 import argparse
-from fca.reader import FormalContextManager
 from fca.algorithms import dict_printer
 from fca.algorithms.previous_closure import PreviousClosure
-
+from fca.io.input_models import FormalContextModel
 
 
 def exec_ex11(filepath, min_sup=0):
     """
     Executes PreviousClosure in a single line
     """
-    dict_printer(PreviousClosure(FormalContextManager(filepath=filepath), min_sup=min_sup, lazy=False).poset)
+    dict_printer(PreviousClosure(FormalContextModel(filepath=filepath), min_sup=min_sup, lazy=False).poset)
 
 
 if __name__ == '__main__':

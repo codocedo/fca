@@ -21,9 +21,9 @@ import sys
 import argparse
 from fca.algorithms import lst2str
 from fca.algorithms.canonical_base import PSCanonicalBase
-from fca.reader import PatternStructureManager, List2PartitionsTransformer
 from fca.defs.patterns.hypergraphs import TrimmedPartitionPattern, PartitionPattern
-
+from fca.io.transformers import List2PartitionsTransformer
+from fca.io.input_models import PatternStructureModel
 
 def exec_ex13(filepath, max_parts):
     """
@@ -44,7 +44,7 @@ def exec_ex13(filepath, max_parts):
     conditions = [
         lambda pattern: len(pattern) <= max_parts
     ]
-    fctx = PatternStructureManager(
+    fctx = PatternStructureModel(
         filepath=filepath,
         transformer=List2PartitionsTransformer(int),
         transposed=True,

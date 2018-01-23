@@ -20,8 +20,8 @@ from __future__ import print_function
 import argparse
 from fca.algorithms.previous_closure import PSPreviousClosure
 from fca.defs.patterns.hypergraphs import TrimmedPartitionPattern
-from fca.reader import List2PartitionsTransformer
-from fca.reader import PatternStructureManager
+from fca.io.transformers import List2PartitionsTransformer
+from fca.io.input_models import PatternStructureModel
 
 def exec_ex19(filepath, output_fname=None):
     """
@@ -30,7 +30,7 @@ def exec_ex19(filepath, output_fname=None):
     transposed = True
     TrimmedPartitionPattern.reset()
 
-    fctx = PatternStructureManager(
+    fctx = PatternStructureModel(
         filepath=filepath,
         transformer=List2PartitionsTransformer(transposed),
         transposed=transposed,
@@ -46,7 +46,7 @@ def exec_ex19(filepath, output_fname=None):
         ondisk_kwargs={
             'output_path':'/tmp',
             'output_fname':output_fname,
-            'write_extent':False
+            'write_extent':True
         },
         silent=True
     ).poset

@@ -18,9 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Kyori code.
 from __future__ import print_function
 import argparse
-from fca.reader import FormalContextManager
 from fca.algorithms import lst2str
 from fca.algorithms.canonical_base import CanonicalBase
+from fca.io.input_models import FormalContextModel
 
 def exec_ex10(filepath, min_sup=0):
     """
@@ -28,7 +28,7 @@ def exec_ex10(filepath, min_sup=0):
     of Implications Rules with NextClosure
     """
     
-    canonical_base = CanonicalBase(FormalContextManager(filepath=filepath), min_sup=min_sup, lazy=False, silent=False)
+    canonical_base = CanonicalBase(FormalContextModel(filepath=filepath), min_sup=min_sup, lazy=False, silent=False)
     for rule, support in canonical_base.get_implications():
         ant, con = rule
         print('{:>10s} => {:10s}'.format(lst2str(ant),lst2str(con)), support)

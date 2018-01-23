@@ -32,28 +32,16 @@ class CanonicalBase(PreviousClosure):
         self.preclos = PreClosure()
         super(CanonicalBase, self).__init__(ctx, **kwargs)
 
-    def derive_extent(self, new_attributes, old_extent=None):
-        if not bool(new_attributes):
-            return self.all_objects
-        remainder_extent = super(CanonicalBase, self).derive_extent([self.ctx.m_prime[s] for s in new_attributes]+[old_extent])
-        return remainder_extent
-
-    
     def meet_concepts(self, *args):
-        new_attribute, old_extent, old_intent = args[1:]
+        m_prime, new_attribute, old_extent, old_intent = args
         self.pattern.join(new_attribute, old_intent)
         closed_pattern = self.preclos.preclose_pattern(new_attribute)
+
         if closed_pattern is None:
             del closed_pattern
             return None, self.pattern.bottom()
 
-        # THE FOLLOWING IS A LITTLE MESSY BUT IT CORRESPONDS TO A PERFORMANCE IMPROVEMENT:
-        # INSTEAD OF CALCULATING THE EXTENSION INTERSECTION FOR THE ENTIRE NEW INTENT
-        # WE CALCULATE IT FOR THOSE NEW ELEMENTS IN IT (closed_pattern - args[3])
-        # AND THEN WE CALCULATE THE INTERSECTION BETWEEN THAT EXTENT WITH THE 
-        # OLD ONE CONTAINED IN args[2]
-        # extent = old_extent.intersection(self.derive_extent(*(closed_pattern-old_intent)))
-        extent = self.derive_extent(closed_pattern-old_intent, old_extent)# self.derive_extent(*(closed_pattern-old_intent)))
+        extent = self.derive_extent([m_prime, old_extent])
 
         if self.evaluate_conditions(extent):
             return extent, closed_pattern
@@ -82,8 +70,8 @@ class CanonicalBase(PreviousClosure):
                     print "VALUE ERROR"
                     print "EXTENT:", extent
                     print "PATTERN:",pattern
-                    print "CLOSED_PATTERN:",c_pattern
-                    print "DIFFERENCE:",c_pattern - pattern
+                    print "CLOSED_PATTERN:", c_pattern
+                    print "DIFFERENCE:", c_pattern - pattern
                     print err
                     exit()
             pattern = self.next_closure()
@@ -107,19 +95,12 @@ class CanonicalBase(PreviousClosure):
 
 class PSCanonicalBase(PSPreviousClosure, CanonicalBase):
     """
-    Calculates the Canonical Base using NextClosure
-    as explained in "Conceptual Exploration"
-    Chapter 3. The canonical basis
+    Do not really need an implementation, just the
+    definition of the mixture of classes:
+        Using next_closure from PSPreviousClosure and everything else from CanonicalBase
     """
+    pass
 
-    def derive_extent(self, new_attributes, old_extent=None):
-        if not bool(new_attributes):
-            return self.e_pattern.top()
-        remainder_extent = reduce(
-            self.e_pattern.intersection,
-            [self.ctx.m_prime[i] for i in new_attributes]+[old_extent]
-        )
-        return remainder_extent
 
 class EnhancedDG(CanonicalBase):
     """
@@ -128,17 +109,19 @@ class EnhancedDG(CanonicalBase):
     Chapter 3. The canonical basis
     Algorithm 17
     """
-    
+    def derive_extent(self, descriptions):
+        return super(EnhancedDG, self).derive_extent([self.ctx.m_prime[m] for m in descriptions])
+
     def run(self, *args, **kwargs):
         """
         This enumeration works with a sort of relay of attributes
         """
         pattern = set([])  # START WITH EMPTY SET (A IN ALGORITHM DESCRIPTION)
-        extent = self.derive_extent(pattern, self.all_objects)
+        extent = self.all_objects
         c_pattern = self.derive_intent(extent)
         self.calls += 1
 
-        if len(pattern) < len(c_pattern):  # CHECK THAT EMPTY SET IS NOT CLOSED
+        if len(pattern) < len(c_pattern):# CHECK THAT EMPTY SET IS NOT CLOSED
             self.preclos.register_implication(pattern, c_pattern, extent)
 
         # BACKWARDS ENUMERATION
@@ -164,7 +147,7 @@ class EnhancedDG(CanonicalBase):
                         pattern = B
                         i = j
                         break
-            extent = self.derive_extent(pattern, self.all_objects)
+            extent = self.derive_extent(pattern)
             c_pattern = self.derive_intent(extent)
 
             if len(pattern) != len(c_pattern):

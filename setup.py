@@ -37,12 +37,12 @@ setup(
         'fca.io.sorters',
         'fca.io.transformers'
         ],
-    version='3.0',
+    version='3.01',
     description='A library to implement Formal Concept Analysis tasks and other tools',
     author='Victor Codocedo',
     author_email='victor.codocedo@gmail.com',
     url='https://github.com/codocedo/fca',
-    download_url='https://github.com/codocedo/fca/archive/3.0.tar.gz',
+    download_url='https://github.com/codocedo/fca/archive/3.01.tar.gz',
     keywords=[
         'formal concept analysis',
         'pattern mining',

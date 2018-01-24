@@ -115,8 +115,6 @@ class PreviousClosure(NextClosure):
                 self.stack_extents[-1], #EXTENT2
                 self.stack[-1], #INTENT2
             )
-            # print new_intent, self.stack[-1], j
-            # print not self.canonical_test(self.stack[-1], j, new_intent), self.pattern.hash(new_intent) in self.cache
             if new_extent is None or \
             not self.canonical_test(self.stack[-1], j, new_intent) \
             or self.pattern.hash(new_intent) in self.cache:

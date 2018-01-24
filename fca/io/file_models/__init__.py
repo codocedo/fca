@@ -123,7 +123,7 @@ class ParseableModel(FileModel):
         """
         with open(self.filepath, 'r') as fin:
             for line_i, line in enumerate(fin):
-                yield (line_i, self.parser(line.replace('\n', '')))
+                yield (line_i, self.parser(line.replace('\r', '').replace('\n', '')))
 
     def entries_transposed(self):
         """

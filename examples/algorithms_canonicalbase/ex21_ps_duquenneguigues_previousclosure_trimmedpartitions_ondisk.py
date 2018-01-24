@@ -58,11 +58,10 @@ def exec_ex21(filepath, output_fname=None):
     output_path = canonical_base.poset.close()
 
     fctx.transformer.attribute_index = {i:j for i, j in enumerate(fctx.sorter.processing_order)}
-    print(fctx.transformer.attribute_index)
 
-    for rule, support in canonical_base.get_implications():
+    for i, (rule, support) in enumerate(canonical_base.get_implications()):
         ant, con = rule
-        print('{:10s} => {:10s}'.format(lst2str(ant), lst2str(con)), support)
+        print('{}: {:10s} => {:10s}'.format(i+1, lst2str(ant), lst2str(con)), support)
 
     print ("\t=> Pseudo closures stored in {}".format(output_path))
 

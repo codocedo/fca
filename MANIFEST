@@ -13,4 +13,8 @@ fca/algorithms/previous_closure/static.py
 fca/defs/__init__.py
 fca/defs/patterns/__init__.py
 fca/defs/patterns/hypergraphs/__init__.py
-fca/reader/__init__.py
+fca/io/__init__.py
+fca/io/file_models/__init__.py
+fca/io/input_models/__init__.py
+fca/io/sorters/__init__.py
+fca/io/transformers/__init__.py

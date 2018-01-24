@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
+
 from fca.defs import POSET
 from fca.algorithms import lexo
 from fca.algorithms.previous_closure import PreviousClosure, PSPreviousClosure
@@ -50,20 +51,49 @@ class CanonicalBase(PreviousClosure):
 
 
     def run(self, *args, **kwargs):
+        """
+        PreviousClosure takes a pre_closure, adds an attribute to it and then calculate this
+        new set pre_closure. Let us call the first pre_closure X, the attribute m, such that
+        A = (X + {m})
+        L(A) = pre_closure(A)
+        In here we receive L(A) and store it in the variable pattern.
+        Then, we calculate L(A)'' and store it in c_pattern.
+        When A'' != L(A), then L(A) is a pre_closure and also a pseudo-closure.
+        """
         pattern = self.pattern.bottom()
         while pattern is not None:
             extent = self.stack_extents[-1]
             c_pattern = self.derive_intent(extent, pattern)
-
+            
             if len(pattern) != len(c_pattern):
+                """
+                self.stack_enum[-2] + 1 was the new attribute {m} added to the pre_closure X,
+                so it is the maximum of A (read the doc of the function).
+                I had previously just used max(pattern), but pattern is the pseudo-closure
+                of A, not A. This was a mistake very hard to track down, because it
+                triggers errors under very specific circumstances.
+
+                self.stack_enum keeps the stack of attributes to be added next by levels.
+                So, self.stack_enum[-1] contains the attribute to be added to L(A).
+                Instead, self.stack_enum[-2] contains the attribute to be added next to X,
+                thus self.stack_enum[-2] + 1 is the attribute that was added to X and the maximum
+                of A.
+                """
+                i = self.stack_enum[-2] + 1
+                j = min(c_pattern - pattern)
+
                 self.preclos.register_implication(pattern, c_pattern, len(extent))
                 # ENHANCEMENT: Applying proposition 22 in Conceptual Exploration Chapter 3
                 try:
-                    if self.pattern.is_empty(pattern) or min(c_pattern - pattern) > max(pattern):
+                    if self.pattern.is_empty(pattern) or i < j:
                         self.stack[-1] = c_pattern
                         self.stack_enum[-1] = self.ctx.n_attributes - 1
                     else:
+                        """
+                        This effectively means, skip calculations on the next level (right of i)
+                        """
                         self.stack_enum[-1] = self.stack_enum[-2]
+
                 # THIS ERROR HAPPENED BECAUSE OF SOMETHING, I DON'T REMEMBER :P
                 except ValueError as err:
                     print ""

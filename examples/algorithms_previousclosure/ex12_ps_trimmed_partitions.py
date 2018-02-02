@@ -21,11 +21,12 @@ import argparse
 from fca.algorithms import dict_printer
 from fca.algorithms.previous_closure import PSPreviousClosure
 from fca.defs.patterns.hypergraphs import TrimmedPartitionPattern, PartitionPattern
-<<<<<<< HEAD:examples/algorithms_previousclosure/ex12_ps_trimmed_partitions.py
+
+
 from fca.io.transformers import List2PartitionsTransformer
 from fca.io.input_models import PatternStructureModel
 =======
->>>>>>> Fixed problems with previous closure canonical test:examples/algorithms_previousclosure/ex12_ps_trimmed_partitions.py
+>>>>>>> fbc33a0e489261871c011b8c725cb94e1ccf3d43:examples/algorithms_previousclosure/ex12_ps_trimmed_partitions.py
 
 def exec_ex12(filepath):
     """

@@ -23,7 +23,10 @@ from fca.defs import ConceptLattice, SetPattern
 from fca.algorithms import Algorithm
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> fbc33a0e489261871c011b8c725cb94e1ccf3d43
 
 
 >>>>>>> Fixed problems with previous closure canonical test
@@ -84,7 +87,10 @@ class AddIntent(Algorithm):
         print ('')
         print('{} concepts found'.format(len(self.lat.nodes())))
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> fbc33a0e489261871c011b8c725cb94e1ccf3d43
 
 
 

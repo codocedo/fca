@@ -20,6 +20,7 @@ from __future__ import print_function
 import argparse
 from fca.algorithms.next_closure import NextClosure
 <<<<<<< HEAD
+<<<<<<< HEAD
 from fca.io.input_models import FormalContextModel
 
 def exec_ex17(filepath, min_sup=0, output_fname=None):
@@ -28,10 +29,16 @@ from fca.reader import FormalContextManager
 
 def exec_ex17(filepath, min_sup=0, output_path=None):
 >>>>>>> Fixed problems with previous closure canonical test
+=======
+from fca.reader import FormalContextManager
+
+def exec_ex17(filepath, min_sup=0, output_path=None):
+>>>>>>> fbc33a0e489261871c011b8c725cb94e1ccf3d43
     """
     Example 17: NextClosure OnDisk - Streaming patterns to disk
     """
     ondisk_poset = NextClosure(
+<<<<<<< HEAD
 <<<<<<< HEAD
         FormalContextModel(
             filepath=filepath
@@ -42,6 +49,8 @@ def exec_ex17(filepath, min_sup=0, output_path=None):
             'output_path':'/tmp',
             'output_fname':output_fname
 =======
+=======
+>>>>>>> fbc33a0e489261871c011b8c725cb94e1ccf3d43
         FormalContextManager(
             filepath=filepath
         ),
@@ -49,7 +58,10 @@ def exec_ex17(filepath, min_sup=0, output_path=None):
         ondisk = True,
         ondisk_kwargs = {
             'output_path':output_path
+<<<<<<< HEAD
 >>>>>>> Fixed problems with previous closure canonical test
+=======
+>>>>>>> fbc33a0e489261871c011b8c725cb94e1ccf3d43
         },
         silent=False
     ).poset
@@ -70,12 +82,17 @@ if __name__ == '__main__':
     __parser__.add_argument(
         '-o',
 <<<<<<< HEAD
+<<<<<<< HEAD
         '--output_fname',
         metavar='output_fname',
 =======
         '--output_path',
         metavar='output_path',
 >>>>>>> Fixed problems with previous closure canonical test
+=======
+        '--output_path',
+        metavar='output_path',
+>>>>>>> fbc33a0e489261871c011b8c725cb94e1ccf3d43
         type=str,
         help='Output file to save formal concepts',
         default=None
@@ -91,8 +108,13 @@ if __name__ == '__main__':
 
     __args__ = __parser__.parse_args()
 <<<<<<< HEAD
+<<<<<<< HEAD
     exec_ex17(__args__.context_path, __args__.min_sup, __args__.output_fname)
 =======
     exec_ex17(__args__.context_path, __args__.min_sup, __args__.output_path)
 # okay decompiling ex5_cbo.pyc
 >>>>>>> Fixed problems with previous closure canonical test
+=======
+    exec_ex17(__args__.context_path, __args__.min_sup, __args__.output_path)
+# okay decompiling ex5_cbo.pyc
+>>>>>>> fbc33a0e489261871c011b8c725cb94e1ccf3d43

@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
 <<<<<<< HEAD
+<<<<<<< HEAD
 from ex9_fca import exec_ex9
 from ex14_ps_partitions import exec_ex14
 from ex17_ondisk import exec_ex17
@@ -27,6 +28,11 @@ import sys
 from ex9_fca import exec_ex9
 from ex14_ps_partitions import exec_ex14
 >>>>>>> Fixed problems with previous closure canonical test
+=======
+import sys
+from ex9_fca import exec_ex9
+from ex14_ps_partitions import exec_ex14
+>>>>>>> fbc33a0e489261871c011b8c725cb94e1ccf3d43
 
 __fctx_path__ = 'data/example.txt'
 __ps_path__ = 'data/numerical_data.txt'
@@ -52,6 +58,7 @@ if __name__ == "__main__":
     print("*"*__nasterisks__)
     exec_ex14(__part_ps_path__, __max_parts__)
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     print("*"*__nasterisks__)
     print("Example 17: NextClosure OnDisk - Streaming patterns to disk")
@@ -61,3 +68,5 @@ if __name__ == "__main__":
     exec_ex17(__fctx_path__, 0)
 =======
 >>>>>>> Fixed problems with previous closure canonical test
+=======
+>>>>>>> fbc33a0e489261871c011b8c725cb94e1ccf3d43

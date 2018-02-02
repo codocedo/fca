@@ -77,19 +77,7 @@ class NextClosure(CbO):
         Meet Concepts
         """
         # print args
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         new_extent = self.derive_extent([args[0], args[2]])
-=======
-        new_extent = self.derive_extent(args[0], args[2])
->>>>>>> Several performance improvements
-=======
-        new_extent = self.derive_extent([args[0], args[2]])
->>>>>>> Fixed problems with previous closure canonical test
-=======
-        new_extent = self.derive_extent([args[0], args[2]])
->>>>>>> fbc33a0e489261871c011b8c725cb94e1ccf3d43
         if self.evaluate_conditions(new_extent):
             new_intent = self.derive_intent(new_extent, args[3])
             return new_extent, new_intent

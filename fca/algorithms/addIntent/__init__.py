@@ -22,14 +22,6 @@ import os
 from fca.defs import ConceptLattice, SetPattern
 from fca.algorithms import Algorithm
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> fbc33a0e489261871c011b8c725cb94e1ccf3d43
-
-
->>>>>>> Fixed problems with previous closure canonical test
 class AddIntent(Algorithm):
     """
     AddIntent algorithm executer
@@ -86,24 +78,6 @@ class AddIntent(Algorithm):
 
         print ('')
         print('{} concepts found'.format(len(self.lat.nodes())))
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> fbc33a0e489261871c011b8c725cb94e1ccf3d43
-
-
-
-    # # These marks are used to represent extent and intent in dicts
-    # def to_bottom(self, atts):
-    #     """
-    #     Adds a set of attributes to the infimum of the lattice
-    #     lattice: ConceptLattice(DiGraph)
-    #     atts: list of attributes
-    #     """
-    #     self.lat[self.lat.supremum].intent.meet(atts)
-
->>>>>>> Fixed problems with previous closure canonical test
 
     def add_object(self, concept, obj, depth=1):
         """

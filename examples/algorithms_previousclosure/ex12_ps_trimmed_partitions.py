@@ -25,8 +25,7 @@ from fca.defs.patterns.hypergraphs import TrimmedPartitionPattern, PartitionPatt
 
 from fca.io.transformers import List2PartitionsTransformer
 from fca.io.input_models import PatternStructureModel
-=======
->>>>>>> fbc33a0e489261871c011b8c725cb94e1ccf3d43:examples/algorithms_previousclosure/ex12_ps_trimmed_partitions.py
+
 
 def exec_ex12(filepath):
     """

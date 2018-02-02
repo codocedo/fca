@@ -30,19 +30,12 @@ def exec_ex15(filepath):
     in chapter 3 of Conceptual Exploration
     """
     canonical_base = EnhancedDG(
-<<<<<<< HEAD:examples/algorithms_canonicalbase/ex15_duquenneguigues_enhanced.py
-<<<<<<< HEAD:examples/algorithms_canonicalbase/ex15_duquenneguigues_enhanced.py
+
         FormalContextModel(
             filepath=filepath
         ),
         lazy=False,
         silent=False
-=======
-        FormalContextManager(filepath=filepath), lazy=False, silent=False
->>>>>>> Fixed problems with previous closure canonical test:examples/algorithms_canonicalbase/ex15_duquenneguigues_enhanced.py
-=======
-        FormalContextManager(filepath=filepath), lazy=False, silent=False
->>>>>>> fbc33a0e489261871c011b8c725cb94e1ccf3d43:examples/algorithms_canonicalbase/ex15_duquenneguigues_enhanced.py
     )
     
     for rule, support in canonical_base.get_implications():

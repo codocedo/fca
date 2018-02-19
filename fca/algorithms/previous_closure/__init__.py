@@ -72,10 +72,10 @@ class PreviousClosure(NextClosure):
         """
         current_element, pointer, description = args
         # print '\t=>', current_element, pointer, description
-        if not bool(current_element):
-            return True
-        # print '\t\t=>', min(description) , min(current_element)
-        if min(description) < min(pointer, min(current_element)):
+        # if not bool(current_element):
+        #     return True
+        # print '\n\t\t=>', min(description) , min(pointer, min(current_element) if bool(current_element) else 1000)
+        if min(description) < min(pointer, min(current_element) if bool(current_element) else sys.maxint):
             return False
 
         return pointer <= min(description.difference(current_element))
@@ -105,7 +105,7 @@ class PreviousClosure(NextClosure):
 
             # CLOSURE
             self.calls += 1
-            print '\r', "{:100s}".format(str(self.stack_enum)),
+            print '\r', "{:30s}".format(str(self.stack_enum)),
             sys.stdout.flush()
             auxiliar_pattern = set([j])
 
@@ -115,6 +115,7 @@ class PreviousClosure(NextClosure):
                 self.stack_extents[-1], #EXTENT2
                 self.stack[-1], #INTENT2
             )
+
             if new_extent is None or \
             not self.canonical_test(self.stack[-1], j, new_intent) \
             or self.pattern.hash(new_intent) in self.cache:

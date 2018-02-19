@@ -42,7 +42,7 @@ setup(
     author='Victor Codocedo',
     author_email='victor.codocedo@gmail.com',
     url='https://github.com/codocedo/fca',
-    download_url='https://github.com/codocedo/fca/archive/3.01.tar.gz',
+    download_url='https://github.com/codocedo/fca/archive/3.2.tar.gz',
     keywords=[
         'formal concept analysis',
         'pattern mining',

@@ -46,7 +46,7 @@ def exec_ex21(filepath, output_fname=None):
         fctx,
         pattern=StrippedPartitions,
         lazy=False,
-        silent=False,
+        silent=True,
         ondisk=True,
         ondisk_kwargs={
             'output_path':'/tmp',

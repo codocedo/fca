@@ -21,8 +21,8 @@ from __future__ import print_function
 import sys
 sys.path.append('./algorithms_addIntent')
 sys.path.append('./algorithms_cbo')
-sys.path.append('./algorithms_previousclosure')
-sys.path.append('./algorithms_nextclosure')
+sys.path.append('./algorithms_lecenumclosures')
+sys.path.append('./algorithms_lexenumclosures')
 sys.path.append('./algorithms_canonicalbase')
 
 from ex1_fca import exec_ex1
@@ -40,11 +40,11 @@ from ex9_fca import exec_ex9
 from ex14_ps_partitions import exec_ex14
 from ex17_ondisk import exec_ex17
 
-from ex10_duquenneguigues_previousclosure import exec_ex10
-from ex13_ps_duquenneguigues_previousclosure_trimmedpartitions import exec_ex13
+from ex10_duquenneguigues_lecenumclosures import exec_ex10
+from ex13_ps_duquenneguigues_lecenumclosures_trimmedpartitions import exec_ex13
 from ex15_duquenneguigues_enhanced import exec_ex15
-from ex20_duquenneguigues_previousclosure_ondisk import exec_ex20
-from ex21_ps_duquenneguigues_previousclosure_trimmedpartitions_ondisk import exec_ex21
+from ex20_duquenneguigues_lecenumclosures_ondisk import exec_ex20
+from ex21_ps_duquenneguigues_lecenumclosures_strippedpartitions_ondisk import exec_ex21
 
 from ex11_fca import exec_ex11
 from ex12_ps_trimmed_partitions import exec_ex12
@@ -117,28 +117,28 @@ if __name__ == "__main__":
     
 
     print("*"*__nasterisks__)
-    print("Example 9: FCA with NextClosure")
+    print("Example 9: FCA with LexEnumClosures")
     print("Input File: {}".format(__fctx_path__))
     print("Min. Sup.: {}".format(__r_min_sup__))
     print("*"*__nasterisks__)
     exec_ex9(__fctx_path__, __r_min_sup__)
 
     print("*"*__nasterisks__)
-    print("Example 10: Duquenne-Guigues Canonical Basis of Implication Rules with NextClosure")
+    print("Example 10: Duquenne-Guigues Canonical Basis of Implication Rules with LexEnumClosures")
     print("Input File: {}".format(__fctx_path__))
     print("Min. Sup.: {}".format(__r_min_sup__))
     print("*"*__nasterisks__)
     exec_ex10(__fctx_path__, __r_min_sup__)
 
     print("*"*__nasterisks__)
-    print("Example 11: FCA with PreviousClosure")
+    print("Example 11: FCA with LecEnumClosures")
     print("Input File: {}".format(__fctx_path__))
     # print("Min. Sup.: {}".format(__r_min_sup__))
     print("*"*__nasterisks__)
     exec_ex11(__fctx_path__, 0)
 
     print("*"*__nasterisks__)
-    print("Example 12 - Partition Pattern Structure Mining with PreviousClosure")
+    print("Example 12 - Partition Pattern Structure Mining with LecEnumClosures")
     print("Input File: {}".format(__part_ps_path__))
     print("Maximum Parts: INF")
     print("*"*__nasterisks__)
@@ -173,21 +173,21 @@ if __name__ == "__main__":
     exec_ex16(__ps_path__, __r_min_sup__, None)
 
     print("*"*__nasterisks__)
-    print("Example 17: NextClosure OnDisk - Streaming patterns to disk")
+    print("Example 17: LexEnumClosures OnDisk - Streaming patterns to disk")
     print("Input File: {}".format(__fctx_path__))
     # print("Min. Sup.: {}".format(__r_min_sup__))
     print("*"*__nasterisks__)
     exec_ex17(__fctx_path__, 0)
 
     print("*"*__nasterisks__)
-    print("Example 18: PreviousClosure OnDisk - Streaming patterns to disk")
+    print("Example 18: LecEnumClosures OnDisk - Streaming patterns to disk")
     print("Input File: {}".format(__fctx_path__))
     # print("Min. Sup.: {}".format(__r_min_sup__))
     print("*"*__nasterisks__)
     exec_ex18(__fctx_path__, 0, None)
 
     print("*"*__nasterisks__)
-    print("Example 19: TrimmedPartitions with PreviousClosure OnDisk - Streaming patterns to disk")
+    print("Example 19: StrippedPartitions with LecEnumClosures OnDisk - Streaming patterns to disk")
     print("Input File: {}".format(__part_ps_path__))
     # print("Min. Sup.: {}".format(__r_min_sup__))
     print("*"*__nasterisks__)
@@ -201,7 +201,7 @@ if __name__ == "__main__":
     exec_ex20(__fctx_path__, __r_min_sup__, None)
 
     print("*"*__nasterisks__)
-    print("Example 21: Duquenne Guigues Base using TrimmedPartitions with PreviousClosure OnDisk - Streaming patterns to disk")
+    print("Example 21: Duquenne Guigues Base using StrippedPartitions with LecEnumClosures OnDisk - Streaming patterns to disk")
     print("Input File: {}".format(__part_ps_path__))
     print("*"*__nasterisks__)
     exec_ex21(__part_ps_path__, None)

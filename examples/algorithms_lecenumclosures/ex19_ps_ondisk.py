@@ -25,7 +25,7 @@ from fca.io.input_models import PatternStructureModel
 
 def exec_ex19(filepath, output_fname=None):
     """
-    Example 19: TrimmedPartitions with PreviousClosure OnDisk - Streaming patterns to disk
+    Example 19: StrippedPartitions with PreviousClosure OnDisk - Streaming patterns to disk
     """
     transposed = True
     StrippedPartitions.reset()

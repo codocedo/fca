@@ -58,7 +58,7 @@ def exec_ex13(filepath, max_parts):
         pattern=PartitionPattern,
         conditions=conditions,
         lazy=False,
-        silent=False
+        silent=True
     )
 
     for rule, support in canonical_base.get_implications():

@@ -18,35 +18,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Kyori code.
 from __future__ import print_function
 import argparse
-from fca.algorithms.previous_closure import PSPreviousClosure
-from fca.defs.patterns.hypergraphs import TrimmedPartitionPattern
-from fca.io.transformers import List2PartitionsTransformer
-from fca.io.input_models import PatternStructureModel
+from fca.algorithms.lecenum_closures import LecEnumClosures
+from fca.io.input_models import FormalContextModel
 
-def exec_ex19(filepath, output_fname=None):
+def exec_ex18(filepath, min_sup=0, output_fname=None):
     """
-    Example 19: TrimmedPartitions with PreviousClosure OnDisk - Streaming patterns to disk
+    Example 18: LecEnumClosures OnDisk - Streaming patterns to disk
     """
-    transposed = True
-    TrimmedPartitionPattern.reset()
-
-    fctx = PatternStructureModel(
-        filepath=filepath,
-        transformer=List2PartitionsTransformer(transposed),
-        transposed=transposed,
-        file_manager_params={
-            'style': 'tab'
-        }
-    )
-
-    ondisk_poset = PSPreviousClosure(
-        fctx,
-        pattern=TrimmedPartitionPattern,
+    ondisk_poset = LecEnumClosures(
+        FormalContextModel(
+            filepath=filepath
+        ),
+        min_sup=min_sup,
         ondisk=True,
         ondisk_kwargs={
             'output_path':'/tmp',
             'output_fname':output_fname,
-            'write_extent':True
         },
         silent=True
     ).poset
@@ -55,7 +42,7 @@ def exec_ex19(filepath, output_fname=None):
 
 if __name__ == '__main__':
     __parser__ = argparse.ArgumentParser(
-        description='Example 19: TrimmedPartitions with PreviousClosure OnDisk - Streaming patterns to disk'
+        description='Example 18: LecEnumClosures OnDisk - Streaming patterns to disk'
     )
     __parser__.add_argument(
         'context_path',
@@ -71,6 +58,14 @@ if __name__ == '__main__':
         help='Output file to save formal concepts',
         default=None
     )
+    __parser__.add_argument(
+        '-m',
+        '--min_sup',
+        metavar='min_sup',
+        type=float,
+        help='Relative minimum support [0,1]',
+        default=0.0
+    )
 
     __args__ = __parser__.parse_args()
-    exec_ex19(__args__.context_path, __args__.output_fname)
+    exec_ex18(__args__.context_path, __args__.min_sup, __args__.output_fname)

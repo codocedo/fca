@@ -35,29 +35,28 @@ __max_parts__ = 3
 if __name__ == "__main__":
 
     print("*"*__nasterisks__)
-    print("Example 11: FCA with PreviousClosure")
+    print("Example 11: FCA with LecEnumClosures")
     print("Input File: {}".format(__fctx_path__))
     # print("Min. Sup.: {}".format(__r_min_sup__))
     print("*"*__nasterisks__)
     exec_ex11(__fctx_path__, 0)
 
     print("*"*__nasterisks__)
-    print("Example 12 - Partition Pattern Structure Mining with PreviousClosure")
+    print("Example 12 - Partition Pattern Structure Mining with LecEnumClosures")
     print("Input File: {}".format(__part_ps_path__))
     print("Maximum Parts: INF")
     print("*"*__nasterisks__)
     exec_ex12(__part_ps_path__)
 
     print("*"*__nasterisks__)
-    print("Example 18: PreviousClosure OnDisk - Streaming patterns to disk")
+    print("Example 18: LecEnumClosures OnDisk - Streaming patterns to disk")
     print("Input File: {}".format(__fctx_path__))
     # print("Min. Sup.: {}".format(__r_min_sup__))
     print("*"*__nasterisks__)
     exec_ex18(__fctx_path__, 0, None)
 
     print("*"*__nasterisks__)
-    print("Example 19: TrimmedPartitions with PreviousClosure OnDisk - Streaming patterns to disk")
+    print("Example 19: StrippedPartitions with LecEnumClosures OnDisk - Streaming patterns to disk")
     print("Input File: {}".format(__part_ps_path__))
-    # print("Min. Sup.: {}".format(__r_min_sup__))
     print("*"*__nasterisks__)
     exec_ex19(__part_ps_path__, None)

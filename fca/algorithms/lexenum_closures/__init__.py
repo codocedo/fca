@@ -21,11 +21,13 @@ from fca.defs import POSET
 from fca.algorithms import lexo
 from fca.algorithms.cbo import CbO, PSCbO
 
-class NextClosure(CbO):
+class LexEnumClosures(CbO):
     """
-    Applies NextClosure algorithm
+    Applies LexEnumClosures algorithm
+    Enumerates Closures in Lexical Order
     Extends configuration from Close By One Algorithm
-    Let the lectical order be: 1 < 2 < 3 < 4
+
+    Let the lexical order be: 1 < 2 < 3 < 4
     Then the enumeration goes:
     1
     12
@@ -54,7 +56,7 @@ class NextClosure(CbO):
         self.stack_supports = None
         self.calls = 0
 
-        super(NextClosure, self).__init__(ctx, **kwargs)
+        super(LexEnumClosures, self).__init__(ctx, **kwargs)
 
     def config(self):
         """
@@ -64,7 +66,7 @@ class NextClosure(CbO):
         stack_enum: stack with the enumerators used for in the stack
         stack_cid: stack witht the mappings to the poset of formal concepts
         """
-        super(NextClosure, self).config()
+        super(LexEnumClosures, self).config()
 
         self.stack = [self.pattern.bottom()] # Stack of patterns
         self.stack_enum = [0] # Stack of enumerators
@@ -146,9 +148,9 @@ class NextClosure(CbO):
         print ('')
 
 
-class PSNextClosure(NextClosure, PSCbO):
+class PSLexEnumClosures(LexEnumClosures, PSCbO):
     """
-    NextClosure with support for pattern structure at extent level
+    LexEnumClosures with support for pattern structure at extent level
     """
     def __init__(self, ctx, **kwargs):
-        super(PSNextClosure, self).__init__(ctx, **kwargs)
+        super(PSLexEnumClosures, self).__init__(ctx, **kwargs)

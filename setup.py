@@ -37,7 +37,7 @@ setup(
         'fca.io.sorters',
         'fca.io.transformers'
         ],
-    version='3.01',
+    version='3.2',
     description='A library to implement Formal Concept Analysis tasks and other tools',
     author='Victor Codocedo',
     author_email='victor.codocedo@gmail.com',

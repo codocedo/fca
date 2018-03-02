@@ -18,10 +18,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Kyori code.
 from fca.defs import POSET
 from fca.algorithms import lexo
-from fca.algorithms.previous_closure import PreviousClosure, PSPreviousClosure
+from fca.algorithms.lecenum_closures import LecEnumClosures, PSLecEnumClosures
 from fca.algorithms.pre_closure import PreClosure
 
-class CanonicalBase(PreviousClosure):
+class CanonicalBase(LecEnumClosures):
     """
     Calculates the Canonical Base using NextClosure
     as explained in "Conceptual Exploration"
@@ -51,7 +51,7 @@ class CanonicalBase(PreviousClosure):
 
     def run(self, *args, **kwargs):
         """
-        PreviousClosure takes a pre_closure, adds an attribute to it and then calculate this
+        LecEnumClosures takes a pre_closure, adds an attribute to it and then calculate this
         new set pre_closure. Let us call the first pre_closure X, the attribute m, such that
         A = (X + {m})
         L(A) = pre_closure(A)
@@ -121,11 +121,11 @@ class CanonicalBase(PreviousClosure):
         ]
         return sorted(base, key=lambda s: (len(s[0][0]), tuple(sorted(s[0][0]))))
 
-class PSCanonicalBase(PSPreviousClosure, CanonicalBase):
+class PSCanonicalBase(PSLecEnumClosures, CanonicalBase): # pylint: disable=too-many-ancestors
     """
     Do not really need an implementation, just the
     definition of the mixture of classes:
-        Using next_closure from PSPreviousClosure and everything else from CanonicalBase
+        Using next_closure from PSLecEnumClosures and everything else from CanonicalBase
     """
     pass
 
@@ -154,7 +154,7 @@ class EnhancedDG(CanonicalBase):
 
         # BACKWARDS ENUMERATION
         i = max(self.ctx.m_prime.keys())
-        
+
         # ENUMERATE UNTIL WE GET THE TOP INTENT
         while len(pattern) < len(self.ctx.m_prime.keys()):
             # BACKWARDS ENUMERATION
@@ -168,7 +168,7 @@ class EnhancedDG(CanonicalBase):
                             set([j])
                             )
                         )
-                    
+
                     C = B - pattern
                     # THE FOLLOWING IS A SORT OF CANONICAL TEST
                     if not bool(self.pattern.intersection(C, set(range(j)))):
@@ -193,4 +193,3 @@ class EnhancedDG(CanonicalBase):
                 i = max(self.ctx.m_prime.keys())
             else:
                 pattern = set([m for m in range(i + 1) if m in pattern])
-        

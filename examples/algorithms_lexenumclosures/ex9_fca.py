@@ -20,14 +20,14 @@ from __future__ import print_function
 import argparse
 from fca.io.input_models import FormalContextModel
 from fca.algorithms import dict_printer
-from fca.algorithms.next_closure import NextClosure
+from fca.algorithms.lexenum_closures import LexEnumClosures
 
 
 def exec_ex9(filepath, min_sup=0):
     """
     Executes NextClosure in a single line
     """
-    dict_printer(NextClosure(FormalContextModel(filepath=filepath), min_sup=min_sup, lazy=False).poset)
+    dict_printer(LexEnumClosures(FormalContextModel(filepath=filepath), min_sup=min_sup, lazy=False).poset)
 
 
 if __name__ == '__main__':

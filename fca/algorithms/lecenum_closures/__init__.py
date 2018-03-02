@@ -17,16 +17,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
 import sys
-from fca.algorithms.next_closure import NextClosure
+from fca.algorithms.lexenum_closures import LexEnumClosures
 from fca.algorithms.cbo import PSCbO
 from fca.algorithms import lexo
 # import objgraph
 
-class PreviousClosure(NextClosure):
+class LecEnumClosures(LexEnumClosures):
     """
-    Same as NextClosure
-    but enumerates backwards
-    Let the lectical order be: 1 < 2 < 3 < 4
+    Applies LexEnumClosures algorithm
+    Enumeraes Closures in Lectical Order
+    Enumerates in lectical order:
+    A < B \iff \exists_i (i \in B, i \not \in A, \forall_{j<i} (j \in A \iff j \in B))
+
+    Let the lexical order be: 1 < 2 < 3 < 4
     Then the enumeration goes:
     4
     3
@@ -57,7 +60,7 @@ class PreviousClosure(NextClosure):
         stack_enum: stack with the enumerators used for in the stack
         stack_cid: stack witht the mappings to the poset of formal concepts
         """
-        super(PreviousClosure, self).config()
+        super(LecEnumClosures, self).config()
 
         # self.stack = [self.pattern(set([]))] # Stack of patterns
         self.stack = [self.pattern.bottom()] # Stack of patterns
@@ -136,9 +139,9 @@ class PreviousClosure(NextClosure):
 
         return new_intent
 
-class PSPreviousClosure(PreviousClosure, PSCbO):
+class PSLecEnumClosures(LecEnumClosures, PSCbO):
     """
-    NextClosure with support for pattern structure at extent level
+    LexEnumClosures with support for pattern structure at extent level
     """
     def config(self):
         """
@@ -148,5 +151,5 @@ class PSPreviousClosure(PreviousClosure, PSCbO):
         stack_enum: stack with the enumerators used for in the stack
         stack_cid: stack witht the mappings to the poset of formal concepts
         """
-        super(PSPreviousClosure, self).config()
+        super(PSLecEnumClosures, self).config()
         self.stack_extents = [self.e_pattern.top()]

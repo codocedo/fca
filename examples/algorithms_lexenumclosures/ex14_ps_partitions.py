@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 import argparse
 from fca.algorithms import dict_printer
-from fca.algorithms.next_closure import PSNextClosure
+from fca.algorithms.lexenum_closures import PSLexEnumClosures
 from fca.defs.patterns.hypergraphs import PartitionPattern
 from fca.io.transformers import List2PartitionsTransformer
 from fca.io.input_models import PatternStructureModel
@@ -54,7 +54,7 @@ def exec_ex14(filepath, max_parts):
             'style': 'tab'
         }
     )
-    poset = PSNextClosure(
+    poset = PSLexEnumClosures(
         fctx,
         conditions=conditions,
         pattern=PartitionPattern,

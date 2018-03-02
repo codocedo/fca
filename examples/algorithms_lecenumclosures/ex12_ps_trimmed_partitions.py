@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 import argparse
 from fca.algorithms import dict_printer
-from fca.algorithms.previous_closure import PSPreviousClosure
+from fca.algorithms.lecenum_closures import PSLecEnumClosures
 from fca.defs.patterns.hypergraphs import TrimmedPartitionPattern, PartitionPattern
 
 
@@ -53,11 +53,11 @@ def exec_ex12(filepath):
         }
     )
 
-    poset = PSPreviousClosure(
+    poset = PSLecEnumClosures(
         fctx,
         pattern=PartitionPattern,
         lazy=False,
-        silent=False
+        silent=True
     ).poset
     dict_printer(
         poset,
@@ -66,7 +66,7 @@ def exec_ex12(filepath):
 
 if __name__ == "__main__":
     __parser__ = argparse.ArgumentParser(
-        description='Example 12 - Trimmed Partitions PreviousClosure'
+        description='Example 12 - Trimmed Partitions LecEnumClosures'
     )
     __parser__.add_argument(
         'context_path',

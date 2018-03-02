@@ -1,3 +1,9 @@
+# uncompyle6 version 2.12.0
+# Python bytecode 2.7 (62211)
+# Decompiled from: Python 2.7.13 |Continuum Analytics, Inc.| (default, Dec 20 2016, 23:05:08) 
+# [GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.57)]
+# Embedded file name: /Users/victorcodocedo/Work/kyori_lab/github/fca/examples/ex9_next_closure.py
+# Compiled at: 2017-09-27 11:43:36
 """
 FCA - Python libraries to support FCA tasks
 Copyright (C) 2017  Victor Codocedo
@@ -15,30 +21,24 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-# Kyori code.
 from __future__ import print_function
 import argparse
-from fca.algorithms import lst2str
-from fca.algorithms.canonical_base import CanonicalBase
+from fca.algorithms import dict_printer
+from fca.algorithms.lecenum_closures import LecEnumClosures
 from fca.io.input_models import FormalContextModel
 
-def exec_ex10(filepath, min_sup=0):
-    """
-    Example 10 - Obtains the Duquenne-Guigues Canonical Base
-    of Implications Rules with NextClosure
-    """
-    
-    canonical_base = CanonicalBase(FormalContextModel(filepath=filepath), min_sup=min_sup, lazy=False, silent=False)
 
-    for rule, support in canonical_base.get_implications():
-        ant, con = rule
-        print('{:>10s} => {:10s}'.format(lst2str(ant),lst2str(con)), support)
+def exec_ex11(filepath, min_sup=0):
+    """
+    Executes LecEnumClosures in a single line
+    """
+    dict_printer(LecEnumClosures(FormalContextModel(filepath=filepath), min_sup=min_sup, lazy=False).poset)
 
 
 if __name__ == '__main__':
-    __parser__ = argparse.ArgumentParser(description='Example 10 - Obtains the Duquenne-Guigues Canonical Base\n                       of Implications Rules with NextClosure\n                    ')
-    __parser__.add_argument('context_path', metavar='context_path', type=str, help='path to the formal context in txt, space separated values, one object representation per line')
+    __parser__ = argparse.ArgumentParser(description='Example 11 - FCA with LecEnumClosures')
+    __parser__.add_argument('context_path', metavar='context_path', type=str, help='path to the formal context in txt, space separated values, one object representation per line', action='store')
     __parser__.add_argument('-m', '--min_sup', metavar='min_sup', type=float, help='Relative minimum support [0,1]', default=0.0)
     __args__ = __parser__.parse_args()
-    exec_ex10(__args__.context_path, __args__.min_sup)
-# okay decompiling ex10_dg_imp_base_nc.pyc
+    exec_ex11(__args__.context_path, __args__.min_sup)
+

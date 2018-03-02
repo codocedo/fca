@@ -17,25 +17,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
 from __future__ import print_function
-import sys
 import argparse
-# from fca.algorithms.previous_closure import PSPreviousClosure
 from fca.algorithms import lst2str
 from fca.algorithms.canonical_base import PSCanonicalBase
-from fca.defs.patterns.hypergraphs import TrimmedPartitionPattern
-from fca.reader import List2PartitionsTransformer
-from fca.reader import PatternStructureManager
+from fca.defs.patterns.hypergraphs import StrippedPartitions
+from fca.io.transformers import List2PartitionsTransformer
+from fca.io.sorters import PartitionSorter
+from fca.io.input_models import PatternStructureModel
 
-def exec_ex21(filepath, output_path=None):
+def exec_ex21(filepath, output_fname=None):
     """
-    Example 21: Duquenne Guigues Base using TrimmedPartitions with PreviousClosure OnDisk - Streaming patterns to disk
+    Example 21: Duquenne Guigues Base using StrippedPartitions with LecEnumClosures OnDisk - Streaming patterns to disk
     """
     transposed = True
-    TrimmedPartitionPattern.reset()
+    StrippedPartitions.reset()
 
-    fctx = PatternStructureManager(
+    fctx = PatternStructureModel(
         filepath=filepath,
         transformer=List2PartitionsTransformer(transposed),
+        sorter=PartitionSorter(),
         transposed=transposed,
         file_manager_params={
             'style': 'tab'
@@ -44,23 +44,26 @@ def exec_ex21(filepath, output_path=None):
     canonical_base = PSCanonicalBase(
         # PSPreviousClosure(
         fctx,
-        pattern=TrimmedPartitionPattern,
+        pattern=StrippedPartitions,
         lazy=False,
         silent=False,
         ondisk=True,
         ondisk_kwargs={
-            'output_path': output_path,
+            'output_path':'/tmp',
+            'output_fname': output_fname,
             'write_support':True,
             'write_extent':False
             }
     )
     output_path = canonical_base.poset.close()
 
-    for rule, support in canonical_base.get_implications():
-        ant, con = rule
-        print('{:>10s} => {:10s}'.format(lst2str(ant),lst2str(con)), support)
+    fctx.transformer.attribute_index = {i:j for i, j in enumerate(fctx.sorter.processing_order)}
 
-    print ("\t=> Results stored in {}".format(output_path))
+    for i, (rule, support) in enumerate(canonical_base.get_implications()):
+        ant, con = rule
+        print('{}: {:10s} => {:10s}'.format(i+1, lst2str(ant), lst2str(con)), support)
+
+    print ("\t=> Pseudo closures stored in {}".format(output_path))
 
 if __name__ == '__main__':
     __parser__ = argparse.ArgumentParser(
@@ -74,13 +77,12 @@ if __name__ == '__main__':
     )
     __parser__.add_argument(
         '-o',
-        '--output_path',
-        metavar='output_path',
+        '--output_fname',
+        metavar='output_fname',
         type=str,
         help='Output file to save formal concepts',
         default=None
     )
 
     __args__ = __parser__.parse_args()
-    exec_ex21(__args__.context_path, __args__.output_path)
-# okay decompiling ex5_cbo.pyc
+    exec_ex21(__args__.context_path, __args__.output_fname)

@@ -20,11 +20,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 import sys
 
-from ex10_duquenneguigues_previousclosure import exec_ex10
-from ex13_ps_duquenneguigues_previousclosure_trimmedpartitions import exec_ex13
+from ex10_duquenneguigues_lecenumclosures import exec_ex10
+from ex13_ps_duquenneguigues_lecenumclosures_trimmedpartitions import exec_ex13
 from ex15_duquenneguigues_enhanced import exec_ex15
-from ex20_duquenneguigues_previousclosure_ondisk import exec_ex20
-from ex21_ps_duquenneguigues_previousclosure_trimmedpartitions_ondisk import exec_ex21
+from ex20_duquenneguigues_lecenumclosures_ondisk import exec_ex20
+from ex21_ps_duquenneguigues_lecenumclosures_strippedpartitions_ondisk import exec_ex21
 
 __fctx_path__ = 'data/example.txt'
 __ps_path__ = 'data/numerical_data.txt'
@@ -37,7 +37,7 @@ __max_parts__ = 3
 if __name__ == "__main__":
 
     print("*"*__nasterisks__)
-    print("Example 10: Duquenne-Guigues Canonical Basis of Implication Rules with NextClosure")
+    print("Example 10: Duquenne-Guigues Canonical Basis of Implication Rules with LecEnumClosures")
     print("Input File: {}".format(__fctx_path__))
     print("Min. Sup.: {}".format(__r_min_sup__))
     print("*"*__nasterisks__)
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     exec_ex20(__fctx_path__, __r_min_sup__, None)
 
     print("*"*__nasterisks__)
-    print("Example 21: Duquenne Guigues Base using TrimmedPartitions with PreviousClosure OnDisk - Streaming patterns to disk")
+    print("Example 21: Duquenne Guigues Base using TrimmedPartitions with LecEnumClosures OnDisk - Streaming patterns to disk")
     print("Input File: {}".format(__part_ps_path__))
     print("*"*__nasterisks__)
     exec_ex21(__part_ps_path__, None)

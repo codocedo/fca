@@ -49,11 +49,11 @@ def dict_printer(poset, **kwargs): #print_support=False, transposed=False, indic
         len(s[1][ema]), s[1][ima]
     )
     for i, (concept_id, concept) in enumerate(sorted(poset.as_dict(indices).items(), key=order)):
-        print template.format(
+        print (template.format(
             str(i+1),
             str(extent_postproc(concept[ema])),
             str(intent_postproc(concept[ima]))
-        )
+        ))
 
 
 class Algorithm(object):

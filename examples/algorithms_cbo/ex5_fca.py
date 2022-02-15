@@ -23,17 +23,6 @@ from fca.algorithms import dict_printer
 from fca.algorithms.cbo import CbO
 from fca.io.input_models import FormalContextModel
 
-def read_float_input(msg):
-    """
-    Returns a float from user interface
-    """
-    entry = ''
-    while re.match('^\\d+\\.\\d+$|^\\d+$', entry) is None or float(entry) > 1:
-        entry = raw_input(msg)
-
-    return float(entry)
-
-
 def exec_ex5(filepath, min_sup=0):
     """
     Executes CbO in a single line
@@ -47,7 +36,6 @@ def exec_ex5(filepath, min_sup=0):
             lazy=False
         ).poset
     )
-
 
 if __name__ == '__main__':
     __parser__ = argparse.ArgumentParser(description='Example 5 - FCA with Close-by-One (CbO)')

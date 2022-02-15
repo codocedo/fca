@@ -43,7 +43,6 @@ class CbO(Algorithm):
         self.calls = 0
 
         self.config()
-
         super(CbO, self).__init__(**kwargs)
 
     def config(self):
@@ -64,8 +63,7 @@ class CbO(Algorithm):
         )
         self.pattern.top(set(self.ctx.m_prime.keys()))
         self.conditions.append(
-            lambda new_extent: len(
-                new_extent) >= self.min_sup * self.ctx.n_objects
+            lambda new_extent: len(new_extent) >= self.min_sup * self.ctx.n_objects
         )
 
     def evaluate_conditions(self, new_extent):
@@ -85,11 +83,11 @@ class CbO(Algorithm):
         Applies canonical test to a description
         """
         current_element, pointer, description = args
-        mask = set(range(pointer + 1))
-        # return lexo(mask.desc, description.intersection(mask).desc)
+        mask = set(range(pointer))
+
         desc1 = self.pattern.intersection(current_element, mask)
         desc2 = self.pattern.intersection(description, mask)
-        return lexo(desc1, desc2)
+        return desc1 == desc2
 
     def derive_extent(self, descriptions):
         """
@@ -122,7 +120,6 @@ class CbO(Algorithm):
         depth: int depth in the recursion
         BASIC CLOSE BY ONE ITERATION
         """
-
         if concept_id is None:
             concept_id = self.poset.supremum
             extent = set(self.ctx.g_prime.keys())# self.poset.concept[self.poset.supremum][POSET.EXTENT_MARK]
@@ -136,15 +133,11 @@ class CbO(Algorithm):
         for j in range(current_element, self.ctx.n_attributes):
             if not self.pattern.contains(intent, j):
                 self.calls += 1
-                new_extent = self.derive_extent([extent, self.ctx.m_prime[j]])
+                new_extent = self.derive_extent( (extent, self.ctx.m_prime[j]) )
                 if self.evaluate_conditions(new_extent):
                     new_intent = self.derive_intent(new_extent, intent)
                     # CANONICAL TEST
-                    if not self.canonical_test(intent, j, new_intent) or \
-                            self.pattern.hash(new_intent) in self.cache:
-                        pass
-                    else:
-                        self.cache.append(self.pattern.hash(new_intent))
+                    if self.canonical_test(intent, j, new_intent):
                         new_concept = self.poset.new_formal_concept(
                             new_extent,
                             new_intent
@@ -179,8 +172,6 @@ class PSCbO(CbO):
     def config(self):
         self.e_pattern = self.pattern
         self.pattern = SetPattern
-
-        
 
         if not self.ondisk:
             self.poset = POSET(transformer=self.ctx.transformer)

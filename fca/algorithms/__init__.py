@@ -17,8 +17,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
 import os
+from functools import reduce
 
-lst2str = lambda lst: reduce(lambda x, y: str(x)+', '+str(y), lst+['']).strip()[:-1] if len(lst) > 0 else "[]"
+lst2str = lambda lst: ', '.join(map(str, lst)) if len(lst) > 0 else "[]"
 
 def lexo(set_a, set_b):
     """

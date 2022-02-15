@@ -78,7 +78,7 @@ class LecEnumClosures(LexEnumClosures):
         # if not bool(current_element):
         #     return True
         # print '\n\t\t=>', min(description) , min(pointer, min(current_element) if bool(current_element) else 1000)
-        if min(description) < min(pointer, min(current_element) if bool(current_element) else sys.maxint):
+        if min(description) < min(pointer, min(current_element) if bool(current_element) else sys.maxsize):
             return False
 
         return pointer <= min(description.difference(current_element))
@@ -108,7 +108,7 @@ class LecEnumClosures(LexEnumClosures):
 
             # CLOSURE
             self.calls += 1
-            print '\r', "{:30s}".format(str(self.stack_enum)),
+            print ("\r{:30s}".format(str(self.stack_enum)), end='')
             sys.stdout.flush()
             auxiliar_pattern = set([j])
 

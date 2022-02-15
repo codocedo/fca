@@ -23,27 +23,18 @@ import os
 #****************************************
 FILE_MANAGERS = {}
 
-def register_file_manager(target_class):
+
+
+
+def file_manager(target_class):
     """
     Function that registers file managers, used in conjunction with
     the metaclass MCFileModel
     """
     FILE_MANAGERS[target_class.__name__] = target_class
+    return target_class
 
-class MCFileModel(type):
-    """
-    Metaclass used to register file managers
-    """
-    def __new__(mcs, clsname, bases, attrs):
-        """
-        cls: class
-        clsname: classname
-        """
-        newclass = super(MCFileModel, mcs).__new__(mcs, clsname, bases, attrs)
-        register_file_manager(newclass)  # here is your register function
-        return newclass
-
-
+@file_manager
 class FileModel(object):
     """
     Abstract Class for File Models
@@ -60,7 +51,6 @@ class FileModel(object):
     The "extension" should refer to the default extensions that the 
     file manager can be applied, e.g. txt, csv, cxt, etc.
     """
-    __metaclass__ = MCFileModel
     _cfgs = []
     def __init__(self, filepath, **params):
         """
@@ -97,8 +87,7 @@ class FileModel(object):
         """
         raise NotImplementedError()
 
-
-
+@file_manager
 class ParseableModel(FileModel):
     """
     Default parser, this one deals with separated values
@@ -138,7 +127,7 @@ class ParseableModel(FileModel):
         for i, j in sorted(new_representation.items(), key=lambda s: s[0]):
             yield (i, j)
 
-
+@file_manager
 class CXTModel(ParseableModel):
     """
     Manages a CXT context file
@@ -182,10 +171,7 @@ class CXTModel(ParseableModel):
                         representations.append((objects[len(representations)], out))
         return representations
 
-
-
-
-
+@file_manager
 class TableModel(ParseableModel):
     """
     Numerical data where each of the M entries is a row with N values
@@ -216,7 +202,7 @@ class FileModelFactory(object):
     """
     FileModelFactory allows creating a suitable FileModel
     given the characteristics of the file and the options provided
-    by the user. Uses the registry created by the metclass
+    by the user. Uses the registry created by the metaclass
     """
     def __init__(self, filename, **kwargs):
         """

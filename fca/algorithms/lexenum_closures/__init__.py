@@ -109,7 +109,7 @@ class LexEnumClosures(CbO):
                 else:
                     make_j = False
             self.calls += 1
-            print '\r', "{:100s}".format(str(self.stack_enum)),
+            print ("\r{:100s}".format(str(self.stack_enum)), end='')
 
             auxiliar_pattern = set([j])
             # CLOSURE

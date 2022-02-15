@@ -94,16 +94,16 @@ class CanonicalBase(LecEnumClosures):
                         self.stack_enum[-1] = self.stack_enum[-2]
                 # THIS ERROR HAPPENED BECAUSE OF SOMETHING, I DON'T REMEMBER :P
                 except ValueError as err:
-                    print ""
-                    print "VALUE ERROR"
-                    print "EXTENT:", extent
-                    print "PATTERN:",pattern
-                    print "CLOSED_PATTERN:", c_pattern
-                    print "DIFFERENCE:", c_pattern - pattern
-                    print err
+                    print ("")
+                    print ("VALUE ERROR")
+                    print ("EXTENT:", extent)
+                    print ("PATTERN:",pattern)
+                    print ("CLOSED_PATTERN:", c_pattern)
+                    print ("DIFFERENCE:", c_pattern - pattern)
+                    print (err)
                     exit()
             pattern = self.next_closure()
-        print ''
+        print ('')
 
     def get_implications(self):
         """

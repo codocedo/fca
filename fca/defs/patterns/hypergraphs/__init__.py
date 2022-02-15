@@ -178,6 +178,7 @@ class TrimmedPartitionPattern(PartitionPattern):
         n_elements = sum([len(i) for i in desc])
         if cls.n_elements < n_elements:
             cls.n_elements = n_elements
+        desc = list(desc) #update
         for i in range(len(desc)-1, -1, -1):
             if len(desc[i]) == 1:
                 del desc[i]

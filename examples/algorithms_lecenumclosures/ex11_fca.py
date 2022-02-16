@@ -32,7 +32,7 @@ def exec_ex11(filepath, min_sup=0):
     """
     Executes LecEnumClosures in a single line
     """
-    dict_printer(LecEnumClosures(FormalContextModel(filepath=filepath), min_sup=min_sup, lazy=False).poset)
+    dict_printer(LecEnumClosures(FormalContextModel(filepath=filepath), min_sup=min_sup, lazy=False, silent=False).poset)
 
 
 if __name__ == '__main__':

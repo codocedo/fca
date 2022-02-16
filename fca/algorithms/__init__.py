@@ -44,8 +44,6 @@ def dict_printer(poset, **kwargs): #print_support=False, transposed=False, indic
         ema = poset.INTENT_MARK
         ima = poset.EXTENT_MARK
 
-    
-
     order = lambda s: (
         len(s[1][ema]), s[1][ima]
     )

@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
-from __future__ import print_function
 from functools import reduce
 from fca.defs import OnDiskPOSET, POSET, SetPattern
 from fca.io.input_models import FormalContextModel
@@ -120,6 +119,7 @@ class CbO(Algorithm):
         depth: int depth in the recursion
         BASIC CLOSE BY ONE ITERATION
         """
+        #print("\t"*depth, extent, intent)
         if concept_id is None:
             concept_id = self.poset.supremum
             extent = set(self.ctx.g_prime.keys())# self.poset.concept[self.poset.supremum][POSET.EXTENT_MARK]
@@ -137,6 +137,7 @@ class CbO(Algorithm):
                 if self.evaluate_conditions(new_extent):
                     new_intent = self.derive_intent(new_extent, intent)
                     # CANONICAL TEST
+                    #print("\t"*depth, '::', intent, j, new_intent)
                     if self.canonical_test(intent, j, new_intent):
                         new_concept = self.poset.new_formal_concept(
                             new_extent,
@@ -178,7 +179,7 @@ class PSCbO(CbO):
         else:
             self.poset = OnDiskPOSET(transformer=self.ctx.transformer, **self.ondisk_kwargs)
 
-        map(self.e_pattern.top, self.ctx.g_prime.values())
+        list(map(self.e_pattern.top, self.ctx.g_prime.values()))
         self.all_objects = self.e_pattern.top()
         self.poset.new_formal_concept(
             self.e_pattern.top(),
@@ -186,6 +187,7 @@ class PSCbO(CbO):
             self.poset.supremum
         )
         self.ctx.m_prime = {g: self.e_pattern.fix_desc(desc) for g, desc in self.ctx.g_prime.items()}
+        
         self.ctx.n_attributes = len(self.ctx.g_prime)
 
         # THE NOTION OF MINIMUM SUPPORT SHOULD NOT BE APPLIED

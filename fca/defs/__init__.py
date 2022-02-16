@@ -251,6 +251,7 @@ class POSET(DiGraph):
         ima = self.INTENT_MARK
 
         for concept in self.concepts():
+            
             concept_data = {
                 ema: object_translator(concept[1][ema]),
                 ima: attribute_translator(concept[1][ima]),
@@ -298,7 +299,6 @@ class OnDiskPOSET(POSET):
             self.writer.writerow(row)
 
         if kwargs.get('indices', False) or self._transformer is None:
-            
             self.object_translator = lambda x: x
             self.attribute_translator = lambda x: x
         else:
@@ -312,14 +312,14 @@ class OnDiskPOSET(POSET):
         Wraps add_node
         """
         if concept_id is None:
-            concept_id = len(self.node)
+            concept_id = len(self.node) + 1
         row = [concept_id]
         if self.write_support:
             row.append(len(extent))
         if self.write_extent:
-            row.append(self.object_translator(extent))
+            row.append( ', '.join(map(str, self.object_translator(extent))))
         if self.write_intent:
-            row.append(self.attribute_translator(intent))
+            row.append(', '.join(map(str, self.attribute_translator(intent))))
 
         self.writer.writerow(row)
         # self.fout.flush()

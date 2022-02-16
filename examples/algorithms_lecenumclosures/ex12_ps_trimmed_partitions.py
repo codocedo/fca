@@ -20,7 +20,7 @@ import sys
 import argparse
 from fca.algorithms import dict_printer
 from fca.algorithms.lecenum_closures import PSLecEnumClosures
-from fca.defs.patterns.hypergraphs import TrimmedPartitionPattern, PartitionPattern
+from fca.defs.patterns.hypergraphs import TrimmedPartitionPattern
 
 
 from fca.io.transformers import List2PartitionsTransformer
@@ -55,7 +55,7 @@ def exec_ex12(filepath):
 
     poset = PSLecEnumClosures(
         fctx,
-        pattern=PartitionPattern,
+        pattern=TrimmedPartitionPattern,
         lazy=False,
         silent=True
     ).poset

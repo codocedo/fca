@@ -55,7 +55,7 @@ def exec_ex13(filepath, max_parts):
 
     canonical_base = PSCanonicalBase(
         fctx,
-        pattern=PartitionPattern,
+        e_pattern=PartitionPattern,
         conditions=conditions,
         lazy=False,
         silent=True
@@ -82,7 +82,7 @@ if __name__ == "__main__":
         metavar='max_parts',
         type=int,
         help='Maximum number of parts in a partition, between 0 and the number of rows',
-        default=sys.maxint
+        default=sys.maxsize
     )
     __args__ = __parser__.parse_args()
     exec_ex13(__args__.context_path, __args__.max_parts)

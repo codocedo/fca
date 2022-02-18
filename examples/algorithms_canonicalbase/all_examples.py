@@ -48,7 +48,7 @@ if __name__ == "__main__":
     print("Input File: {}".format(__part_ps_path__))
     print("Maximum Parts: INF")
     print("*"*__nasterisks__)
-    exec_ex13(__part_ps_path__, sys.maxint)
+    exec_ex13(__part_ps_path__, sys.maxsize)
 
     print("*"*__nasterisks__)
     print("Example 15 - Duquenne Guiges base with EnhanceDG")

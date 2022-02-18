@@ -33,7 +33,8 @@ def exec_ex5(filepath, min_sup=0):
                 filepath=filepath
             ),
             min_sup=min_sup,
-            lazy=False
+            lazy=False,
+            silent=False
         ).poset
     )
 

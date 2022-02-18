@@ -17,11 +17,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
 
-from fca.defs import POSET
-from fca.algorithms import lexo
-from fca.algorithms.cbo import CbO, PSCbO
+from fca.algorithms.lecenum_closures import LecEnumClosures
+from functools import reduce
 
-class LexEnumClosures(CbO):
+class LexEnumClosures(LecEnumClosures):
     """
     Applies LexEnumClosures algorithm
     Enumerates Closures in Lexical Order
@@ -42,115 +41,68 @@ class LexEnumClosures(CbO):
     34
     4
     """
-    def __init__(self, ctx, **kwargs):
+    def next_closure(self, X):
+        # What's the preffix?
+        j = max(X)+1 if bool(X) else 0
+        while True:
+            for m in range(j, self.ctx.n_attributes):
+            # if m < self.ctx.n_attributes:
+                Y = self.e_pattern.intersection( self.stack[-1][1], self.ctx.m_prime[m] )
+                Xc = self.derive_extent(Y)
+                if self.canonical_test(X, m, Xc):
+                    self.stack.append( (m , Y) )
+                    return Xc
+                # else:
+                #     X = X.union([m])
+            end = True
+            for i in range(self.ctx.n_attributes-1, -1, -1):
+                if i in X:
+                    X.remove(i)
+                    if self.stack[-1][0] == i:
+                        self.stack.pop()
+                    j = i+1
+                    end = False
+                    if j < self.ctx.n_attributes:
+                        break
+            if end:
+                return None
+
+    def canonical_test(self, *args):
         """
-        Initialize stacks to maintain the trace of the execution
-        Extends configurations from Close By One
-        Particularly, minimal support and poset initialization
-
-        This class uses a close_pattern that is a method to close an intent
-        It can be changed externally to support other closures
+        Applies canonical test to a description
         """
-        self.stack = None # Stack of patterns
-        self.stack_enum = None # Stack of enumerators
-        self.stack_supports = None
-        self.calls = 0
+        current_element, pointer, description = args
+        mask = set(range(pointer))
 
-        super(LexEnumClosures, self).__init__(ctx, **kwargs)
-
-    def config(self):
-        """
-        Configure the stacks
-
-        stack: stack with the patterns
-        stack_enum: stack with the enumerators used for in the stack
-        stack_cid: stack witht the mappings to the poset of formal concepts
-        """
-        super(LexEnumClosures, self).config()
-
-        self.stack = [self.pattern.bottom()] # Stack of patterns
-        self.stack_enum = [0] # Stack of enumerators
-        self.stack_supports = [self.ctx.n_objects]
-        self.stack_cid = [self.poset.supremum] # Stack of concept ids mapping the stack to the poset
-        self.stack_extents = [self.all_objects]
-
-    def meet_concepts(self, *args):
-        """
-        Meet Concepts
-        """
-        # print args
-        new_extent = self.derive_extent([args[0], args[2]])
-        if self.evaluate_conditions(new_extent):
-            new_intent = self.derive_intent(new_extent, args[3])
-            return new_extent, new_intent
-        del new_extent
-        return None, self.pattern.bottom()
-
-    def next_closure(self):
-        """
-        Computes the next closure in the stack
-        Can be used externally or in a batch with self.run()
-        """
-        found_closure = False
-
-        while not found_closure:
-            make_j = True
-            while make_j:
-                if not bool(self.stack):
-                    return None
-                j = self.stack_enum[-1]
-                while j in self.stack[-1]:
-                    j += 1
-                if j == self.ctx.n_attributes:
-                    self.stack.pop()
-                    self.stack_enum.pop()
-                    self.stack_extents.pop()
-                    self.stack_cid.pop()
-                else:
-                    make_j = False
-            self.calls += 1
-            print ("\r{:100s}".format(str(self.stack_enum)), end='')
-
-            auxiliar_pattern = set([j])
-            # CLOSURE
-            new_extent, new_intent = self.meet_concepts(
-                self.ctx.m_prime[j], #EXTENT1,
-                self.stack[-1], #INTENT1
-                self.stack_extents[-1], #EXTENT2
-                auxiliar_pattern #INTENT2
-            )
-            # END CLOSURE
-
-            if new_extent is None or \
-            not self.canonical_test(self.stack[-1], j, new_intent) \
-            or self.pattern.hash(new_intent) in self.cache:
-                self.stack_enum[-1] = j+1
-            else:
-                found_closure = True
-
-        self.stack_enum[-1] = j+1
-        self.stack.append(new_intent)
-        self.stack_enum.append(j+1)
-        cid = self.poset.new_formal_concept(new_extent, new_intent)
-        self.poset.add_edge(self.stack_cid[-1], cid)
-        self.stack_cid.append(cid)
-        self.stack_extents.append(new_extent)
-        self.stack_supports.append(len(new_extent))
-        self.cache.append(self.pattern.hash(new_intent))
-        return new_intent
-
-    def run(self, *args, **kwargs):
-        """
-        Computes all the closures and store them in the poset
-        """
-        while self.next_closure() is not None:
-            continue
-        print ('')
+        desc1 = self.pattern.intersection(current_element, mask)
+        desc2 = self.pattern.intersection(description, mask)
+        return desc1 == desc2
 
 
-class PSLexEnumClosures(LexEnumClosures, PSCbO):
+class PSLexEnumClosures(LexEnumClosures):
     """
     LexEnumClosures with support for pattern structure at extent level
     """
     def __init__(self, ctx, **kwargs):
         super(PSLexEnumClosures, self).__init__(ctx, **kwargs)
+
+    def config(self):
+        self.ctx.m_prime = {g: self.e_pattern.fix_desc(desc) for g, desc in self.ctx.g_prime.items()}
+        list(map(self.e_pattern.top, self.ctx.m_prime.values()))
+        
+        self.ctx.n_attributes = len(self.ctx.g_prime)
+
+
+    def derive_intent(self, P):
+        """
+        Derive an intent and obtain the associated pattern
+        """
+        if not bool(P):
+            return self.e_pattern.top()
+        return reduce(self.e_pattern.intersection, (self.ctx.m_prime[m] for m in P))
+    
+    def derive_extent(self, P):
+        """
+        Derive an extent to obtain its intent
+        """
+        return set([ei for ei, e in self.ctx.m_prime.items() if self.e_pattern.leq(P, e)])

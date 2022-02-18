@@ -20,17 +20,17 @@ from __future__ import print_function
 import argparse
 from fca.algorithms import lst2str
 from fca.algorithms.canonical_base import PSCanonicalBase
-from fca.defs.patterns.hypergraphs import StrippedPartitions
+from fca.defs.patterns.hypergraphs import StrippedPartitionPattern
 from fca.io.transformers import List2PartitionsTransformer
 from fca.io.sorters import PartitionSorter
 from fca.io.input_models import PatternStructureModel
 
 def exec_ex21(filepath, output_fname=None):
     """
-    Example 21: Duquenne Guigues Base using StrippedPartitions with LecEnumClosures OnDisk - Streaming patterns to disk
+    Example 21: Duquenne Guigues Base using StrippedPartitionPattern with LecEnumClosures OnDisk - Streaming patterns to disk
     """
     transposed = True
-    StrippedPartitions.reset()
+    StrippedPartitionPattern.reset()
 
     fctx = PatternStructureModel(
         filepath=filepath,
@@ -44,7 +44,7 @@ def exec_ex21(filepath, output_fname=None):
     canonical_base = PSCanonicalBase(
         # PSPreviousClosure(
         fctx,
-        pattern=StrippedPartitions,
+        e_pattern=StrippedPartitionPattern,
         lazy=False,
         silent=True,
         ondisk=True,

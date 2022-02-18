@@ -115,9 +115,9 @@ class PartitionPattern(Intent):
     @classmethod
     def top(cls, top_rep=None):
         if cls._top is None:
-            cls._top = [set([])]
+            cls._top = [ set([]) ]
         if top_rep is not None:
-            cls._top[0].update(set(list(chain(*top_rep))))
+            cls._top[0].update(set(chain(*top_rep)))
         return cls._top
 
     @classmethod
@@ -204,7 +204,7 @@ class TrimmedPartitionPattern(PartitionPattern):
         return cls.fix_desc(new_desc)
 
 
-class StrippedPartitions(TrimmedPartitionPattern):
+class StrippedPartitionPattern(TrimmedPartitionPattern):
     '''
     Same as stripped partitions buy with a much more clever intersection.
     Algorithm defined in

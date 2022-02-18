@@ -18,8 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Kyori code.
 from inspect import stack
 from functools import reduce
-from fca.defs import OnDiskPOSET, POSET, SetPattern
-from fca.algorithms.cbo import PSCbO
+from fca.defs import SetPattern
 from fca.algorithms import Algorithm, lexo
 # import objgraph
 
@@ -52,35 +51,11 @@ class LecEnumClosures(Algorithm):
     have already been enumerated
     This is particularly needed for calculating pre-closure and implications
     """
-    def __init__(self, ctx, **kwargs):
-        self.ctx = ctx
-        self.poset = None
-        self.e_pattern = SetPattern
-        self.pattern = kwargs.get('pattern', SetPattern)
-        self.cache = kwargs.get('cache', [])
-        self.min_sup = kwargs.get('min_sup', 0)
-        self.printer = kwargs.get('printer', lambda a, b, c: None)
-        self.conditions = kwargs.get('conditions', [])
-        self.ondisk = kwargs.get('ondisk', False)
-        self.ondisk_kwargs = kwargs.get('ondisk_kwargs', {})
-        
-        self.calls = 0
-
-        self.config()
-        super(LecEnumClosures, self).__init__(**kwargs)
-
     def config(self):
-        """
-        Configure the stacks
+        pass
 
-        stack: stack with the patterns
-        stack_enum: stack with the enumerators used for in the stack
-        stack_cid: stack witht the mappings to the poset of formal concepts
-        """
-        if not self.ondisk:
-            self.poset = POSET(transformer=self.ctx.transformer)
-        else:
-            self.poset = OnDiskPOSET(transformer=self.ctx.transformer, **self.ondisk_kwargs)
+    # def __init__(self, ctx, **kwargs):
+    #     super(LecEnumClosures, self).__init__(ctx, **kwargs)
 
     def next_closure(self, X):
         """
@@ -114,42 +89,21 @@ class LecEnumClosures(Algorithm):
         self.stack = [ (None, Y) ]
 
         while X is not None:
-            self.poset.new_formal_concept(self.stack[-1][1], self.pattern.copy(X) )
+            self.poset.new_formal_concept( self.stack[-1][1], self.pattern.copy(X) )
             X = self.next_closure(X)
 
-    def derive_intent(self, P):
-        """
-        Derive an intent to obtain its extent
-        """
-        return set([ei for ei, e in self.ctx.g_prime.items() if P.issubset(e)])
 
-    def derive_extent(self, P):
-        """
-        Derive an extent to obtain its intent
-        """
-        return set([ei for ei, e in self.ctx.m_prime.items() if P.issubset(e)])
 
 class PSLecEnumClosures(LecEnumClosures):
     """
     LexEnumClosures with support for pattern structure at extent level
     """
     def config(self):
-        
-        self.e_pattern = self.pattern
-        self.pattern = SetPattern
-
-        if not self.ondisk:
-            self.poset = POSET(transformer=self.ctx.transformer)
-        else:
-            self.poset = OnDiskPOSET(transformer=self.ctx.transformer, **self.ondisk_kwargs)
-
-        list(map(self.e_pattern.top, self.ctx.g_prime.values()))
-
-        self.all_objects = self.e_pattern.top()
-
         self.ctx.m_prime = {g: self.e_pattern.fix_desc(desc) for g, desc in self.ctx.g_prime.items()}
+        list(map(self.e_pattern.top, self.ctx.m_prime.values()))
         
         self.ctx.n_attributes = len(self.ctx.g_prime)
+
 
     def derive_intent(self, P):
         """

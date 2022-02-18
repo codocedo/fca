@@ -140,7 +140,6 @@ class DiGraph(object):
         """
         return self.successors(node)
 
-
 class Concept(dict):
     """
     extends dictionary to add two properties
@@ -162,7 +161,6 @@ class Concept(dict):
         access intent
         """
         return self[self.IMARK]
-
 
 class POSET(DiGraph):
     """
@@ -249,9 +247,7 @@ class POSET(DiGraph):
         concepts = {}
         ema = self.EXTENT_MARK
         ima = self.INTENT_MARK
-
         for concept in self.concepts():
-            
             concept_data = {
                 ema: object_translator(concept[1][ema]),
                 ima: attribute_translator(concept[1][ima]),
@@ -341,8 +337,6 @@ class OnDiskPOSET(POSET):
         """
         self.fout.close()
         return self.path
-    
-
 
 class ConceptLattice(POSET):
     """
@@ -391,12 +385,9 @@ class ConceptLattice(POSET):
         """
         return not self.concept[concept_id]['not_visited']
 
-################
-"""
-    Abstract class
-"""
 class Intent(object):
     """
+    Abstract class
     Shell Intent or Static Intent, it provides a shell for the 
     intent behavior, while the descriptions is stored somewhere else
     This avoids creating one object per actual intent
@@ -553,7 +544,6 @@ class Intent(object):
         """
         raise NotImplementedError
 
-
 class SetPattern(Intent):
     """
     Implements the shell set intent representation
@@ -565,12 +555,12 @@ class SetPattern(Intent):
     @classmethod
     def bottom(cls, bot_rep=None):
         if cls._bottom is None:
-            cls._bottom = frozenset([])
+            cls._bottom = set([])
         return cls._bottom
 
     @classmethod
     def top(cls, top_rep=None):
-        if cls._top is None:
+        if cls._top is None and cls._top is None:
             cls._top = set([])
         if top_rep is not None:
             cls._top.update(top_rep)

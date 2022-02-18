@@ -21,20 +21,59 @@ import os
 #****************************************
 # File Syntax Models
 #****************************************
-FILE_MANAGERS = {}
 
-
-
-
-def file_manager(target_class):
+class FileModelFactory(object):
     """
-    Function that registers file managers, used in conjunction with
-    the metaclass MCFileModel
+    FileModelFactory allows creating a suitable FileModel
+    given the characteristics of the file and the options provided
+    by the user. Uses the registry created by the metaclass
     """
-    FILE_MANAGERS[target_class.__name__] = target_class
-    return target_class
+    FILE_MANAGERS = {}
+    def __init__(self, filename, **kwargs):
+        """
+        @param filename: str file name to be analyzed
+        @param extension: str allows the user to specify an extension, if not provided it is obtained from filename
+        @param style: str style of the file, oa: one object per line with separated symbols for attributes, tab: matrix format
+        @kwargs: optional parameters to configure the FileModel
 
-@file_manager
+        """
+        self._extensions = {}
+        for cls in FileModelFactory.FILE_MANAGERS.values():
+            for style_extension in cls.configurations():
+                self._extensions[style_extension] = cls
+        self._extension = ''
+        self._style = 'oa' # By default, style is object-attribute
+        if kwargs.get('extension', False):
+            # If the user has forced an extension, we'll treat the file using it
+            self._extension = kwargs['extension']
+        else:
+            # If the user didn't force an extension, we'll obtain it from the file and
+            # try to use it to process the file
+            self._extension = filename[filename.rindex('.')+1:].lower()
+            kwargs['extension'] = self._extension
+        if kwargs.get('style', False):
+            # If the user has specified a file-style, we'll treat the file using it
+            self._style = kwargs['style']
+        assert (self._style, self._extension) in self._extensions, 'Style and Extension {} should be one in {}'.format((self._style, self._extension), self._extensions)
+        self.filename = filename
+        self.kwargs = kwargs
+
+    @classmethod
+    def file_manager(cls, target_class):
+        """
+        Function that registers file managers, used as a decorator
+        """
+        FileModelFactory.FILE_MANAGERS[target_class.__name__] = target_class
+        return target_class
+
+    @property
+    def build_file_manager(self):
+        """
+        Builds the file manager configured at creation
+        """
+        return self._extensions[(self._style, self._extension)](self.filename, **self.kwargs)
+
+@FileModelFactory.file_manager
 class FileModel(object):
     """
     Abstract Class for File Models
@@ -87,7 +126,7 @@ class FileModel(object):
         """
         raise NotImplementedError()
 
-@file_manager
+@FileModelFactory.file_manager
 class ParseableModel(FileModel):
     """
     Default parser, this one deals with separated values
@@ -127,7 +166,7 @@ class ParseableModel(FileModel):
         for i, j in sorted(new_representation.items(), key=lambda s: s[0]):
             yield (i, j)
 
-@file_manager
+@FileModelFactory.file_manager
 class CXTModel(ParseableModel):
     """
     Manages a CXT context file
@@ -171,7 +210,7 @@ class CXTModel(ParseableModel):
                         representations.append((objects[len(representations)], out))
         return representations
 
-@file_manager
+@FileModelFactory.file_manager
 class TableModel(ParseableModel):
     """
     Numerical data where each of the M entries is a row with N values
@@ -197,46 +236,3 @@ class TableModel(ParseableModel):
             new_representation.append([i[coli] for i in reps])
         for i, j in enumerate(new_representation):
             yield (i, j)
-
-class FileModelFactory(object):
-    """
-    FileModelFactory allows creating a suitable FileModel
-    given the characteristics of the file and the options provided
-    by the user. Uses the registry created by the metaclass
-    """
-    def __init__(self, filename, **kwargs):
-        """
-        @param filename: str file name to be analyzed
-        @param extension: str allows the user to specify an extension, if not provided it is obtained from filename
-        @param style: str style of the file, oa: one object per line with separated symbols for attributes, tab: matrix format
-        @kwargs: optional parameters to configure the FileModel
-
-        """
-        self._extensions = {}
-        for cls in FILE_MANAGERS.values():
-            for style_extension in cls.configurations():
-                self._extensions[style_extension] = cls
-        self._file_manager = None
-        self._extension = ''
-        self._style = 'oa' # By default, style is object-attribute
-        if kwargs.get('extension', False):
-            # If the user has forced an extension, we'll treat the file using it
-            self._extension = kwargs['extension']
-        else:
-            # If the user didn't force an extension, we'll obtain it from the file and
-            # try to use it to process the file
-            self._extension = filename[filename.rindex('.')+1:].lower()
-            kwargs['extension'] = self._extension
-        if kwargs.get('style', False):
-            # If the user has specified a file-style, we'll treat the file using it
-            self._style = kwargs['style']
-        assert (self._style, self._extension) in self._extensions, 'Style and Extension {} should be one in {}'.format((self._style, self._extension), self._extensions)
-        self.filename = filename
-        self.kwargs = kwargs
-
-    @property
-    def file_manager(self):
-        """
-        Builds the file manager configured at creation
-        """
-        return self._extensions[(self._style, self._extension)](self.filename, **self.kwargs)

@@ -20,10 +20,11 @@ from fca.algorithms import Algorithm, lexo
 from fca.algorithms.cbo import CbO
 from fca.defs import POSET, SSetPattern
 from fca.defs.patterns.enumerators import SetObjectEnumerator
+from functools import reduce
 
 
 #####################################################################################
-#### ALGORITHM
+#### ALGORITHM - DEPRECATED
 #####################################################################################
 
 class CbOPS(CbO):

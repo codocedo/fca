@@ -55,9 +55,9 @@ def exec_ex12(filepath):
 
     poset = PSLecEnumClosures(
         fctx,
-        pattern=TrimmedPartitionPattern,
+        e_pattern=TrimmedPartitionPattern,
         lazy=False,
-        silent=True
+        silent=False
     ).poset
     dict_printer(
         poset,

@@ -19,22 +19,17 @@ from __future__ import print_function
 import copy
 import sys
 import os
-from fca.defs import ConceptLattice, SetPattern
+from fca.defs import ConceptLattice
 from fca.algorithms import Algorithm
 
 class AddIntent(Algorithm):
     """
     AddIntent algorithm executer
     """
-    def __init__(self, input_manager, pattern=SetPattern, **params):
-        self.ctx = input_manager
-        self.lat = ConceptLattice(transformer=self.ctx.transformer)
-        self.pattern = pattern
-        self.silent = params.get('silent', True)
-
-        self.config()
-
-        super(AddIntent, self).__init__(**params)
+    def __init__(self, input_manager, **params):
+        
+        
+        super(AddIntent, self).__init__(input_manager, **params)
 
     @property
     def lattice(self):
@@ -47,13 +42,14 @@ class AddIntent(Algorithm):
         """
         Configure the algorithm parameters
         """
+        self.lat = ConceptLattice(transformer=self.ctx.transformer)
         # Infimum
         self.lat.supremum = self.lat.infimum
 
         self.lat.new_concept(
             self.lat.infimum,
-            {self.lat.INTENT_MARK:self.pattern.top(), self.lat.EXTENT_MARK:[]}
-            )
+            { self.lat.INTENT_MARK:self.pattern.top(), self.lat.EXTENT_MARK:[] }
+        )
         
 
     def run(self, *args, **kwargs):
@@ -69,7 +65,6 @@ class AddIntent(Algorithm):
             sys.stdout.flush()
             
             intent = self.pattern.fix_desc(intent)
-            # self.pattern.join(self.lat[self.lat.infimum].intent, intent)
             self.pattern.top(intent)
 
             aid = self.add_intent_iteration(intent, self.lat.infimum)
@@ -97,12 +92,11 @@ class AddIntent(Algorithm):
         for j in self.lat.upper_neighbors(concept):
             self.add_object(j, obj, depth+1)
 
-
-
     def get_maximal_concept(self, intent, current_concept):
         """
         Given an intent, we explore the lattice and obtain the unique formal concept
-        the intent of which subsumes the intent. We call this the maximal concept.
+        the intent of which subsumes the sought intent. 
+        We call this the maximal concept.
         """
         # If the given intent is empty (or is the bottom intent),
         # the maximal concept in the lattice is the supremum
@@ -145,7 +139,6 @@ class AddIntent(Algorithm):
                     del new_parents[new_parents.index(parent)]
             if add_parent:
                 new_parents.append(candidate)
-
 
         new_id = self.lat.new_formal_concept(copy.copy(self.lat[generator].extent), intent)
 

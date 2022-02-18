@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 import argparse
 from fca.algorithms.lecenum_closures import PSLecEnumClosures
-from fca.defs.patterns.hypergraphs import StrippedPartitions
+from fca.defs.patterns.hypergraphs import StrippedPartitionPattern
 from fca.io.transformers import List2PartitionsTransformer
 from fca.io.input_models import PatternStructureModel
 
@@ -28,7 +28,7 @@ def exec_ex19(filepath, output_fname=None):
     Example 19: StrippedPartitions with PreviousClosure OnDisk - Streaming patterns to disk
     """
     transposed = True
-    StrippedPartitions.reset()
+    StrippedPartitionPattern.reset()
 
     fctx = PatternStructureModel(
         filepath=filepath,
@@ -41,7 +41,7 @@ def exec_ex19(filepath, output_fname=None):
 
     ondisk_poset = PSLecEnumClosures(
         fctx,
-        pattern=StrippedPartitions,
+        e_pattern=StrippedPartitionPattern,
         ondisk=True,
         ondisk_kwargs={
             'output_path':'/tmp',

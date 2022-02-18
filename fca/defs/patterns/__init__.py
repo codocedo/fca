@@ -51,6 +51,7 @@ class IntervalPattern(Intent):
 
     @classmethod
     def bottom(cls, bot_rep=None):
+        
         if cls._bottom is None:
             cls._bottom = []
         if bot_rep is not None:
@@ -78,6 +79,8 @@ class IntervalPattern(Intent):
         # print desc1, desc2,
         if desc1==cls._bottom:
             return True
+        elif desc1 == cls._top:
+            return False
         for i, j in zip(desc1, desc2):
             if i[0] > j[0] or i[1] < j[1]:
                 return False

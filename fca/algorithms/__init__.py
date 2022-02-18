@@ -18,8 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 import os
 from functools import reduce
+from fca.defs import OnDiskPOSET, POSET, SetPattern
 
-lst2str = lambda lst: ', '.join(map(str, lst)) if len(lst) > 0 else "[]"
+lst2str = lambda lst: ','.join(map(str, lst[:8])) if len(lst) > 0 else "[]"
 
 def lexo(set_a, set_b):
     """
@@ -32,7 +33,7 @@ def dict_printer(poset, **kwargs): #print_support=False, transposed=False, indic
     """
     Nicely print the concepts in the poset
     """
-    template = kwargs.get('template', '{:4s}\t{:20s}\t{:20s}')
+    template = kwargs.get('template', '{:4s}\t{:30s}\t{:30s}')
     transposed = kwargs.get('transposed', False)
     indices = kwargs.get('indices', False)
     extent_postproc = kwargs.get('extent_postproc', lst2str)
@@ -60,14 +61,34 @@ class Algorithm(object):
     Abstract class for algorithm.
     Implemented by AddIntent and PSCbO
     """
-    def __init__(self, **params):
+    def __init__(self, ctx, **kwargs):
         """
         if not lazy it should run the algorithm as soon as this class
         is instantiated
         """
+        self.ctx = ctx
+        self.poset = None
+        self.pattern = kwargs.get('pattern', SetPattern)
+        self.e_pattern = kwargs.get('e_pattern', SetPattern)
+        
+        self.min_sup = kwargs.get('min_sup', 0)
+        self.printer = kwargs.get('printer', lambda a, b, c: None)
+
+        self.calls = 0
         self.stdout = sys.stdout
-        self.lazy = params.get('lazy', False)
-        self.silent = params.get('silent', True)
+        self.lazy = kwargs.get('lazy', False)
+        self.silent = kwargs.get('silent', True)
+
+        self.ondisk = kwargs.get('ondisk', False)
+        self.ondisk_kwargs = kwargs.get('ondisk_kwargs', {})
+
+        self.config()
+        
+        if not self.ondisk:
+            self.poset = POSET(transformer=self.ctx.transformer)
+        else:
+            self.poset = OnDiskPOSET(transformer=self.ctx.transformer, **self.ondisk_kwargs)
+    
         if not self.lazy:
             if self.silent:
                 self.silence()
@@ -98,3 +119,15 @@ class Algorithm(object):
         Makes printing available
         """
         sys.stdout = self.stdout
+    
+    def derive_intent(self, P):
+        """
+        Derive an intent to obtain its extent
+        """
+        return set([ ei for ei, e in self.ctx.g_prime.items() if P.issubset(e)] )
+
+    def derive_extent(self, P):
+        """
+        Derive an extent to obtain its intent
+        """
+        return set([ei for ei, e in self.ctx.m_prime.items() if P.issubset(e)])

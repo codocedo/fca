@@ -61,4 +61,4 @@ if __name__ == "__main__":
     print("Min. Sup.: {}".format(__r_min_sup__))
     print("*"*__nasterisks__)
     print (__ps_path__)
-    exec_ex16(__ps_path__, __r_min_sup__, None)
+    exec_ex16(__fctx_path__, __r_min_sup__, None)

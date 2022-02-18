@@ -1,5 +1,7 @@
+from functools import reduce
 from fca.io.transformers import List2SetTransformer
 from fca.io.file_models import FileModelFactory
+
 
 #****************************************
 # Input Models
@@ -15,12 +17,12 @@ class InputModel(object):
         # Choose the parser if it has not been provided according to the extension
         file_manager_params = file_manager_params if file_manager_params is not None else {}
 
-        self.__fmgr = FileModelFactory(filepath, **file_manager_params).file_manager
+        self._fmgr = FileModelFactory(filepath, **file_manager_params).build_file_manager
 
         if not transposed:
-            self._representations = self.__fmgr.entries()
+            self._representations = self._fmgr.entries()
         else:
-            self._representations = self.__fmgr.entries_transposed()
+            self._representations = self._fmgr.entries_transposed()
 
     @property
     def representations(self):
@@ -107,5 +109,4 @@ class FormalContextModel(PatternStructureModel):
         '''
         if not bool(intent):
             return self.g_prime.keys()
-        return reduce(lambda x, y: x.intersection(y),
-                      [self.m_prime[m] for m in intent])
+        return reduce(lambda x, y: x.intersection(y), [self.m_prime[m] for m in intent])

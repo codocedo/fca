@@ -33,7 +33,7 @@ def exec_ex6(filepath, theta):
     """
     fctx = FormalContextModel(filepath=filepath, transformer=List2IntervalsTransformer(int))
     MaxLengthIntervalPattern.THETA = theta
-    dict_printer(PSCbO(fctx, pattern=MaxLengthIntervalPattern, lazy=False).poset, transposed=True)
+    dict_printer(PSCbO(fctx, e_pattern=MaxLengthIntervalPattern, lazy=False, silent=False).poset, transposed=True)
 
 
 if __name__ == '__main__':

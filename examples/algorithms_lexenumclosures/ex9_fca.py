@@ -27,7 +27,14 @@ def exec_ex9(filepath, min_sup=0):
     """
     Executes NextClosure in a single line
     """
-    dict_printer(LexEnumClosures(FormalContextModel(filepath=filepath), min_sup=min_sup, lazy=False).poset)
+    dict_printer(
+        LexEnumClosures(
+            FormalContextModel(filepath=filepath),
+            min_sup=min_sup,
+            lazy=False,
+            silent=False,
+            ).poset,
+        )
 
 
 if __name__ == '__main__':

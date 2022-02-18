@@ -60,7 +60,7 @@ def exec_ex8(filepath):
             'style': 'tab'
         }
     )
-    dict_printer(PSCbO(fctx, pattern=PartitionPattern, lazy=False, silent=False).poset, transposed=True)
+    dict_printer(PSCbO(fctx, e_pattern=PartitionPattern, lazy=False, silent=False).poset, transposed=True)
 
 
 if __name__ == '__main__':

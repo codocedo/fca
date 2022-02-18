@@ -32,7 +32,7 @@ def exec_ex10(filepath, min_sup=0):
         FormalContextModel(filepath=filepath),
         min_sup=min_sup,
         lazy=False,
-        silent=True
+        silent=False
     )
 
     for rule, support in canonical_base.get_implications():

@@ -57,7 +57,7 @@ def exec_ex14(filepath, max_parts):
     poset = PSLexEnumClosures(
         fctx,
         conditions=conditions,
-        pattern=PartitionPattern,
+        e_pattern=PartitionPattern,
         lazy=False
     ).poset
     dict_printer(
@@ -81,7 +81,7 @@ if __name__ == "__main__":
         metavar='max_parts',
         type=int,
         help='Maximum number of parts in a partition, between 0 and the number of rows',
-        default=sys.maxint
+        default=sys.maxsize
     )
     __args__ = __parser__.parse_args()
     exec_ex14(__args__.context_path, __args__.max_parts)

@@ -17,9 +17,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 # Kyori code.
 from fca.defs import POSET
-from fca.algorithms import lexo
+from fca.algorithms import Algorithm, lexo
 from fca.algorithms.lecenum_closures import LecEnumClosures, PSLecEnumClosures
 from fca.algorithms.pre_closure import PreClosure
+from fca.defs import SetPattern
 
 class CanonicalBase(LecEnumClosures):
     """
@@ -28,26 +29,27 @@ class CanonicalBase(LecEnumClosures):
     Chapter 3. The canonical basis
     """
 
-    def __init__(self, ctx, **kwargs):
+    def config(self):
         self.preclos = PreClosure()
-        super(CanonicalBase, self).__init__(ctx, **kwargs)
+    # def __init__(self, ctx, **kwargs):
+        
+    #     # super(CanonicalBase, self).__init__(ctx, **kwargs)
+    #     super(CanonicalBase, self).__init__(ctx, **kwargs)
 
-    def meet_concepts(self, *args):
-        m_prime, new_attribute, old_extent, old_intent = args
-        self.pattern.join(new_attribute, old_intent)
-        closed_pattern = self.preclos.preclose_pattern(new_attribute)
-
-        if closed_pattern is None:
-            del closed_pattern
-            return None, self.pattern.bottom()
-
-        extent = self.derive_extent([m_prime, old_extent])
-
-        if self.evaluate_conditions(extent):
-            return extent, closed_pattern
-        del closed_pattern, extent
-        return None, self.pattern.bottom()
-
+    def next_closure(self, X):
+        """
+        Original Next Closure algorithm as found in the book "Conceptual Exploration" by Ganter and Obiedkov
+        Receives a closed pattern set X and returns the lectically next closed pattern set.
+        If X contains all attributes, the algorithms will return None so AllClosures can end
+        """
+        for m in range(self.ctx.n_attributes-1, -1, -1):
+            if m in X:
+                X.remove(m)
+            else:
+                Xc = self.preclos.preclose_pattern(X.union([m]))
+                if m <= min(Xc - X): # CANONICAL TEST
+                    return Xc
+        return None
 
     def run(self, *args, **kwargs):
         """
@@ -59,51 +61,20 @@ class CanonicalBase(LecEnumClosures):
         Then, we calculate L(A)'' and store it in c_pattern.
         When A'' != L(A), then L(A) is a pre_closure and also a pseudo-closure.
         """
-        pattern = self.pattern.bottom()
-        while pattern is not None:
-            extent = self.stack_extents[-1]
-            c_pattern = self.derive_intent(extent, pattern)
-            
-            if len(pattern) != len(c_pattern):
-                """
-                self.stack_enum[-2] + 1 was the new attribute {m} added to the pre_closure X,
-                so it is the maximum of A (read the doc of the function).
-                I had previously just used max(pattern), but pattern is the pseudo-closure
-                of A, not A. This was a mistake very hard to track down, because it
-                triggers errors under very specific circumstances.
+        X = self.pattern.bottom()
 
-                self.stack_enum keeps the stack of attributes to be added next by levels.
-                So, self.stack_enum[-1] contains the attribute to be added to L(A).
-                Instead, self.stack_enum[-2] contains the attribute to be added next to X,
-                thus self.stack_enum[-2] + 1 is the attribute that was added to X and the maximum
-                of A.
-                """
-                i = self.stack_enum[-2] + 1
-                j = min(c_pattern - pattern)
+        while X is not None:
+            Y = self.derive_intent(X)
+            Xc = self.derive_extent(Y)
 
-                self.preclos.register_implication(pattern, c_pattern, len(extent))
+            if len(X) != len(Xc):
+                self.preclos.register_implication(set(X), set(Xc), len(Y))
                 # ENHANCEMENT: Applying proposition 22 in Conceptual Exploration Chapter 3
-                try:
-                    if self.pattern.is_empty(pattern) or i < j:
-                        self.stack[-1] = c_pattern
-                        self.stack_enum[-1] = self.ctx.n_attributes - 1
-                    else:
-                        """
-                        This effectively means, skip calculations on the next level (right of i)
-                        """
-                        self.stack_enum[-1] = self.stack_enum[-2]
-                # THIS ERROR HAPPENED BECAUSE OF SOMETHING, I DON'T REMEMBER :P
-                except ValueError as err:
-                    print ("")
-                    print ("VALUE ERROR")
-                    print ("EXTENT:", extent)
-                    print ("PATTERN:",pattern)
-                    print ("CLOSED_PATTERN:", c_pattern)
-                    print ("DIFFERENCE:", c_pattern - pattern)
-                    print (err)
-                    exit()
-            pattern = self.next_closure()
-        print ('')
+                i = max(X)
+                j = min(Xc - X)
+                if i < j:
+                    X = Xc
+            X = self.next_closure(X)
 
     def get_implications(self):
         """
@@ -127,7 +98,16 @@ class PSCanonicalBase(PSLecEnumClosures, CanonicalBase): # pylint: disable=too-m
     definition of the mixture of classes:
         Using next_closure from PSLecEnumClosures and everything else from CanonicalBase
     """
-    pass
+    def config(self):
+        
+        # self.e_pattern = self.pattern
+        # self.pattern = SetPattern
+
+        list(map(self.e_pattern.top, self.ctx.g_prime.values()))
+        self.all_objects = self.e_pattern.top()
+        self.ctx.m_prime = {g: self.e_pattern.fix_desc(desc) for g, desc in self.ctx.g_prime.items()}
+        self.ctx.n_attributes = len(self.ctx.g_prime)
+        self.preclos = PreClosure()
 
 
 class EnhancedDG(CanonicalBase):
@@ -137,59 +117,57 @@ class EnhancedDG(CanonicalBase):
     Chapter 3. The canonical basis
     Algorithm 17
     """
-    def derive_extent(self, descriptions):
-        return super(EnhancedDG, self).derive_extent([self.ctx.m_prime[m] for m in descriptions])
+    # def derive_extent(self, descriptions):
+    #     return super(EnhancedDG, self).derive_extent([self.ctx.m_prime[m] for m in descriptions])
 
     def run(self, *args, **kwargs):
         """
         This enumeration works with a sort of relay of attributes
         """
-        pattern = set([])  # START WITH EMPTY SET (A IN ALGORITHM DESCRIPTION)
-        extent = self.all_objects
-        c_pattern = self.derive_intent(extent)
+        X = set([])  # START WITH EMPTY SET (A IN ALGORITHM DESCRIPTION)
+        extent = self.derive_intent(X)
+        Xc = self.derive_intent(extent)
         self.calls += 1
 
-        if len(pattern) < len(c_pattern):# CHECK THAT EMPTY SET IS NOT CLOSED
-            self.preclos.register_implication(pattern, c_pattern, extent)
+        if len(X) < len(Xc):# CHECK THAT EMPTY SET IS NOT CLOSED
+            self.preclos.register_implication(X, Xc, len(extent))
 
         # BACKWARDS ENUMERATION
         i = max(self.ctx.m_prime.keys())
 
         # ENUMERATE UNTIL WE GET THE TOP INTENT
-        while len(pattern) < len(self.ctx.m_prime.keys()):
+        while len(X) < len(self.ctx.m_prime.keys()):
             # BACKWARDS ENUMERATION
             for j in range(i, -1, -1):
-                if j in pattern:
-                    pattern = pattern - set([j])
+                if j in X:
+                    X = X - set([j])
                 else:
                     self.calls += 1
                     B = self.preclos.preclose_pattern(
-                        pattern.union(
+                        X.union(
                             set([j])
                             )
                         )
-
-                    C = B - pattern
+                    C = B - X
                     # THE FOLLOWING IS A SORT OF CANONICAL TEST
                     if not bool(self.pattern.intersection(C, set(range(j)))):
-                        pattern = B
+                        X = B
                         i = j
                         break
-            extent = self.derive_extent(pattern)
-            c_pattern = self.derive_intent(extent)
-
-            if len(pattern) != len(c_pattern):
+            extent = self.derive_intent(X)
+            Xc = self.derive_extent(extent)
+            if len(X) != len(Xc):
                 self.preclos.register_implication(
-                    pattern,
-                    c_pattern,
-                    extent
+                    X,
+                    Xc,
+                    len(extent)
                 )
 
-            C = c_pattern - pattern
+            C = Xc - X
 
             # CANONICAL TEST FOR THE CONSEQUENCE OF THE IMPLICATION
             if not bool(C.intersection(set(range(i)))):
-                pattern = c_pattern
+                X = Xc
                 i = max(self.ctx.m_prime.keys())
             else:
-                pattern = set([m for m in range(i + 1) if m in pattern])
+                X = set([m for m in range(i + 1) if m in X])

@@ -66,7 +66,6 @@ class FileModelFactory(object):
         FileModelFactory.FILE_MANAGERS[target_class.__name__] = target_class
         return target_class
 
-    @property
     def build_file_manager(self):
         """
         Builds the file manager configured at creation

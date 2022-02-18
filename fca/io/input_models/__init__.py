@@ -12,12 +12,13 @@ class InputModel(object):
     """
     def __init__(self, filepath, transposed=False, transformer=None, file_manager_params=None, **params):
         self.transformer = transformer if transformer is not None else List2SetTransformer()
+
         self._representations = None
 
         # Choose the parser if it has not been provided according to the extension
         file_manager_params = file_manager_params if file_manager_params is not None else {}
 
-        self._fmgr = FileModelFactory(filepath, **file_manager_params).build_file_manager
+        self._fmgr = FileModelFactory(filepath, **file_manager_params).build_file_manager()
 
         if not transposed:
             self._representations = self._fmgr.entries()

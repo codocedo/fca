@@ -105,11 +105,12 @@ class List2SetTransformer(Transformer):
         entry: (object, list)
         """
         self.register_object(entry[0])
-        atts = self.parse(entry[1])
-        return atts
+        return set(map(self.register_attribute, entry[1]))
+        # atts = self.register_attributes(entry[1])
+        # return atts
 
-    def parse(self, lst):
-        return set([self.register_attribute(att) for att in lst])
+    # def register_attributes(self, lst):
+    #     return set([self.register_attribute(att) for att in lst])
 
 class List2IntervalsTransformer(Transformer):
     """

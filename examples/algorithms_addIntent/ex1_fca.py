@@ -25,9 +25,12 @@ from fca.io import read_representations
 def exec_ex1(filepath):
     """
     In this example we mine formal concepts in a single line
+    read_representations generates an InputModel for the AddIntent algorithm from a file
+    File can have TXT extension and be a single-line per object with separated attribute IDs
+    
+    lazy=False signals the algorithm that it should execute inmediately.
     """
-    dict_printer(AddIntent(read_representations(filepath), lazy=False, silent=False).lat)
-
+    dict_printer(AddIntent(read_representations(filepath), lazy=False).lat)
 
 if __name__ == '__main__':
     __parser__ = argparse.ArgumentParser(description='Example 1 - Single Line FCA with AddIntent')

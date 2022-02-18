@@ -114,6 +114,12 @@ class PartitionPattern(Intent):
 
     @classmethod
     def top(cls, top_rep=None):
+        '''
+        returns and set the top
+        when top_rep is not None, the meet between
+        top_rep and _top will be assigned to _top
+        before it is returned.
+        '''
         if cls._top is None:
             cls._top = [ set([]) ]
         if top_rep is not None:
@@ -202,7 +208,6 @@ class TrimmedPartitionPattern(PartitionPattern):
         if len(new_desc) == counter:
             return cls.bottom()
         return cls.fix_desc(new_desc)
-
 
 class StrippedPartitionPattern(TrimmedPartitionPattern):
     '''

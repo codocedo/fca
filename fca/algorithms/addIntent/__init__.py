@@ -15,10 +15,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from __future__ import print_function
 import copy
 import sys
-import os
 from fca.defs import ConceptLattice
 from fca.algorithms import Algorithm
 
@@ -27,8 +25,6 @@ class AddIntent(Algorithm):
     AddIntent algorithm executer
     """
     def __init__(self, input_manager, **params):
-        
-        
         super(AddIntent, self).__init__(input_manager, **params)
 
     @property
@@ -50,7 +46,6 @@ class AddIntent(Algorithm):
             self.lat.infimum,
             { self.lat.INTENT_MARK:self.pattern.top(), self.lat.EXTENT_MARK:[] }
         )
-        
 
     def run(self, *args, **kwargs):
         """
@@ -123,7 +118,7 @@ class AddIntent(Algorithm):
 
         if generator != self.lat.infimum and self.pattern.is_equal(self.lat[generator].intent, intent):
             return generator
-        # print ('FOUND GEN',generator)
+            
         new_parents = []
         for candidate in self.lat.upper_neighbors(generator):
             if not self.pattern.leq(self.lat[candidate].intent, intent):

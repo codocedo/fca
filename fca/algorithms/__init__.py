@@ -68,6 +68,7 @@ class Algorithm(object):
         """
         self.ctx = ctx
         self.poset = None
+        
         self.pattern = kwargs.get('pattern', SetPattern)
         self.e_pattern = kwargs.get('e_pattern', SetPattern)
         

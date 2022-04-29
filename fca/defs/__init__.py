@@ -228,7 +228,15 @@ class POSET(DiGraph):
         Obtains a list of pairs with the concept index and the concept data
         Wraps nodes(data=True)
         """
-        return self.nodes(data=True)
+        output = []
+        for n in self.nodes(data=True):
+            output.append(
+                {
+                    'extent': sorted(n[1]['ex']),
+                    'intent': sorted(n[1]['in']),
+                }
+            )
+        return output#self.nodes(data=True)
 
     def as_dict(self, indices=False):
         """
@@ -247,7 +255,7 @@ class POSET(DiGraph):
         concepts = {}
         ema = self.EXTENT_MARK
         ima = self.INTENT_MARK
-        for concept in self.concepts():
+        for concept in self.concept.items():
             concept_data = {
                 ema: object_translator(concept[1][ema]),
                 ima: attribute_translator(concept[1][ima]),
@@ -345,6 +353,23 @@ class ConceptLattice(POSET):
     Also adds functionality that belongs to a concept lattice rather than
     to a generic direcgted graph.
     """
+
+    def concepts(self):
+        """
+        Obtains a list of pairs with the concept index and the concept data
+        Wraps nodes(data=True)
+        """
+        output = []
+        for n in self.nodes(data=True):
+            output.append(
+                {
+                    'id': n[0],
+                    'extent': sorted(n[1]['ex']),
+                    'intent': sorted(n[1]['in']),
+                    'parents': sorted(self.successors(n[0]))
+                }
+            )
+        return output#self.nodes(data=True)
 
     def new_concept(self, concept_id, concept_data):
         """

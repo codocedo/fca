@@ -49,7 +49,6 @@ def exec_ex2(filepath, min_sup):
         silent=False
     ).lat
     dict_printer(lattice, transposed=False, indices=False)
-    fctx = read_representations(filepath, transposed=True)
 
 if __name__ == '__main__':
     __parser__ = argparse.ArgumentParser(description='Example 2 - IcebergSetPattern with AddIntent')

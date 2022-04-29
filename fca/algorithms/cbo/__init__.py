@@ -26,55 +26,19 @@ class CbO(Algorithm):
     """
 
     def __init__(self, ctx, **kwargs):
-    #     self.ctx = ctx
-    #     self.poset = None
-    #     # self.e_pattern = SetPattern
-    #     self.pattern = kwargs.get('pattern', SetPattern)
-    #     self.cache = kwargs.get('cache', [])
-    #     self.min_sup = kwargs.get('min_sup', 0)
-    #     self.printer = kwargs.get('printer', lambda a, b, c: None)
         self.conditions = kwargs.get('conditions', [])
-    #     self.ondisk = kwargs.get('ondisk', False)
-    #     self.ondisk_kwargs = kwargs.get('ondisk_kwargs', {})
-        
-    #     self.calls = 0
-
-    #     self.config()
         super(CbO, self).__init__(ctx, **kwargs)
 
     def config(self):
         """
         Configure the internal parameters of the class
         """
-        # if not self.ondisk:
-        #     self.poset = POSET(transformer=self.ctx.transformer)
-        # else:
-        #     self.poset = OnDiskPOSET(transformer=self.ctx.transformer, **self.ondisk_kwargs)
         self.e_pattern.top(set(self.ctx.g_prime.keys()))
-
-        # self.all_objects = set(self.ctx.g_prime.keys())
-
-        # self.poset.new_formal_concept(
-        #     self.all_objects,
-        #     self.pattern.bottom(),
-        #     self.poset.supremum
-        # )
-        # self.pattern.top(set(self.ctx.m_prime.keys()))
-        self.conditions.append(
-            lambda new_extent: len(new_extent) >= self.min_sup * self.ctx.n_objects
-        )
-
-    def evaluate_conditions(self, new_extent):
-        """
-        Evaluates if a new_extent holds arbitrary conditions
-        such as minimal support. These conditions have been
-        predefined in a list of conditions that by default
-        test minimal conditions. More can be included.
-        """
-        for res in self.conditions:
-            if not res(new_extent):
-                return False
-        return True
+        # Add conditions - These should be monotonic w.r.t. the lattice order
+        if self.min_sup > 0:
+            self.conditions.append(
+                lambda new_extent: len(new_extent) >= self.min_sup * self.ctx.n_objects
+            )
 
     def canonical_test(self, *args):
         """
@@ -100,8 +64,7 @@ class CbO(Algorithm):
             intent = self.pattern.bottom()#self.poset.concept[self.poset.supremum][POSET.INTENT_MARK]
         # print (extent, intent)
         
-        if self.pattern.length(intent) == self.ctx.n_attributes or current_element >= self.ctx.n_attributes:
-            
+        if self.pattern.length(intent) == self.ctx.n_attributes or current_element >= self.ctx.n_attributes:            
             return
 
         self.printer(extent, intent, depth)
@@ -109,18 +72,16 @@ class CbO(Algorithm):
         for j in range(current_element, self.ctx.n_attributes):
             if not self.pattern.contains(intent, j):
                 self.calls += 1
+                new_extent = self.e_pattern.intersection( extent, self.ctx.m_prime[j])
                 
-                new_extent = self.e_pattern.intersection( extent, self.ctx.m_prime[j])# self.derive_extent( (extent, self.ctx.m_prime[j]) )
-                # print('ME',new_extent)
-                # if self.evaluate_conditions(new_extent):
-                new_intent = self.derive_extent(new_extent)
-                if self.canonical_test(intent, j, new_intent):
-                    new_concept = self.poset.new_formal_concept(
-                        new_extent,
-                        new_intent
-                    )
-                    # self.poset.add_edge(concept_id, new_concept)
-                    self.cbo(new_concept, new_extent, new_intent, j + 1, depth + 1)
+                if all(res(new_extent) for res in self.conditions):
+                    new_intent = self.derive_extent(new_extent)
+                    if self.canonical_test(intent, j, new_intent):
+                        new_concept = self.poset.new_formal_concept(
+                            new_extent,
+                            new_intent
+                        )
+                        self.cbo(new_concept, new_extent, new_intent, j + 1, depth + 1)
 
     def run(self, *args, **kwargs):
         # First Closure

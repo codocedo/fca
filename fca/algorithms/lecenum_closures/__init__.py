@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Kyori code.
 from inspect import stack
 from functools import reduce
-from fca.defs import SetPattern
 from fca.algorithms import Algorithm, lexo
 # import objgraph
 
@@ -51,11 +50,17 @@ class LecEnumClosures(Algorithm):
     have already been enumerated
     This is particularly needed for calculating pre-closure and implications
     """
-    def config(self):
-        pass
 
-    # def __init__(self, ctx, **kwargs):
-    #     super(LecEnumClosures, self).__init__(ctx, **kwargs)
+    def __init__(self, ctx, **kwargs):
+        self.conditions = kwargs.get('conditions', [])
+
+        super(LecEnumClosures, self).__init__(ctx, **kwargs)
+        
+    def config(self):
+        if self.min_sup > 0:
+            self.conditions.append(
+                lambda new_extent: len(new_extent) >= self.min_sup * self.ctx.n_objects
+            )
 
     def next_closure(self, X):
         """
@@ -70,10 +75,11 @@ class LecEnumClosures(Algorithm):
                     self.stack.pop()
             else:
                 Y = self.e_pattern.intersection( self.stack[-1][1], self.ctx.m_prime[m] )
-                Xc = self.derive_extent(Y)
-                if m <= min(Xc - X): # CANONICAL TEST
-                    self.stack.append( (m , Y) )
-                    return Xc
+                if all(res(Y) for res in self.conditions):
+                    Xc = self.derive_extent(Y)
+                    if m <= min(Xc - X): # CANONICAL TEST
+                        self.stack.append( (m , Y) )
+                        return Xc
         return None
 
     def run(self, *args, **kwargs):
@@ -92,8 +98,6 @@ class LecEnumClosures(Algorithm):
             self.poset.new_formal_concept( self.stack[-1][1], self.pattern.copy(X) )
             X = self.next_closure(X)
 
-
-
 class PSLecEnumClosures(LecEnumClosures):
     """
     LexEnumClosures with support for pattern structure at extent level
@@ -103,7 +107,6 @@ class PSLecEnumClosures(LecEnumClosures):
         list(map(self.e_pattern.top, self.ctx.m_prime.values()))
         
         self.ctx.n_attributes = len(self.ctx.g_prime)
-
 
     def derive_intent(self, P):
         """

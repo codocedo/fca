@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from distutils.core import setup
+
 setup(
     name='fca',
     packages=[
@@ -24,8 +25,8 @@ setup(
         'fca.algorithms',
         'fca.algorithms.addIntent',
         'fca.algorithms.cbo',
-        'fca.algorithms.next_closure',
-        'fca.algorithms.previous_closure',
+        'fca.algorithms.lecenum_closures',
+        'fca.algorithms.lexenum_closures',
         'fca.algorithms.pre_closure',
         'fca.algorithms.canonical_base',
         'fca.defs.patterns',
